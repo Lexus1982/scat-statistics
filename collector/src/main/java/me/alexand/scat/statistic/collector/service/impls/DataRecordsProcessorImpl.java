@@ -1,17 +1,24 @@
 package me.alexand.scat.statistic.collector.service.impls;
 
 import me.alexand.scat.statistic.collector.model.IPFIXDataRecord;
+import me.alexand.scat.statistic.collector.model.IPFIXMessage;
+import me.alexand.scat.statistic.collector.model.IPFIXSet;
 import me.alexand.scat.statistic.collector.model.RawDataPacket;
 import me.alexand.scat.statistic.collector.repository.DataRecordsRepository;
 import me.alexand.scat.statistic.collector.repository.PacketsReceiver;
 import me.alexand.scat.statistic.collector.service.DataRecordsProcessor;
 import me.alexand.scat.statistic.collector.service.IPFIXParser;
+import me.alexand.scat.statistic.collector.service.StatCollector;
+import me.alexand.scat.statistic.collector.utils.exceptions.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 /**
+ * Процессор, управляющий логикой получения пакета по сети,
+ * преобразования его в IPFIX-сообщение и сохранения декодированных
+ * данных во внутреннем буфере
  * @author asidorov84@gmail.com
  */
 
@@ -24,8 +31,12 @@ public class DataRecordsProcessorImpl implements DataRecordsProcessor {
     private final IPFIXParser parser;
     private final PacketsReceiver receiver;
     private final DataRecordsRepository recordsRepository;
+    private final StatCollector statCollector;
 
-    public DataRecordsProcessorImpl(IPFIXParser parser, PacketsReceiver receiver, DataRecordsRepository recordsRepository) {
+    public DataRecordsProcessorImpl(IPFIXParser parser,
+                                    PacketsReceiver receiver,
+                                    DataRecordsRepository recordsRepository,
+                                    StatCollector statCollector) {
         synchronized (DataRecordsProcessorImpl.class) {
             processorId = ++processorsCounter;
         }
@@ -33,12 +44,14 @@ public class DataRecordsProcessorImpl implements DataRecordsProcessor {
         this.parser = parser;
         this.receiver = receiver;
         this.recordsRepository = recordsRepository;
+        this.statCollector = statCollector;
     }
 
     @Override
     public void run() {
         Thread currentThread = Thread.currentThread();
         LOGGER.info("...start new processor with id = {}", processorId);
+        statCollector.registerProcessorThread();
 
         while (!currentThread.isInterrupted()) {
             RawDataPacket rawDataPacket;
@@ -49,10 +62,27 @@ public class DataRecordsProcessorImpl implements DataRecordsProcessor {
                 break;
             }
 
-            IPFIXDataRecord dataRecord = parser.parse(rawDataPacket);
-            recordsRepository.save(dataRecord);
+            try {
+                IPFIXMessage message = parser.parse(rawDataPacket.getPdu());
+                statCollector.registerProcessedPacket();
+
+                for (IPFIXSet set : message.getSets()) {
+                    int setID = set.getSetID();
+
+                    if (setID >= 256 && setID <= 65535) {
+                        set.getRecords().forEach(record -> recordsRepository.save((IPFIXDataRecord) record));
+                    }
+                }
+            } catch (MalformedMessageException |
+                    UnknownProtocolException |
+                    UnknownDataRecordFormatException |
+                    UnknownInfoModelException e) {
+            } catch (IPFIXParseException e) {
+                statCollector.registerFailedPacket();
+            }
         }
 
         LOGGER.info("...shutdown of processor with id = {} complete", processorId);
+        statCollector.unregisterProcessorThread();
     }
 }

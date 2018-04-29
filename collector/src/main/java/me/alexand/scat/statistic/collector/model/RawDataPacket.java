@@ -6,13 +6,17 @@ package me.alexand.scat.statistic.collector.model;
  * @author asidorov84@gmail.com
  */
 public class RawDataPacket {
-    private byte[] rawPacket;
+    private byte[] pdu;
 
-    public RawDataPacket(byte[] rawPacket) {
-        this.rawPacket = rawPacket;
+    public RawDataPacket(byte[] pdu) {
+        this.pdu = pdu;
     }
 
-    public byte[] getRawPacket() {
-        return rawPacket;
+    public byte[] getPdu() {
+        return pdu;
+    }
+
+    public int getLength() {
+        return pdu.length;
     }
 }

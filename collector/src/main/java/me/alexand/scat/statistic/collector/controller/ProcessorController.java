@@ -1,6 +1,7 @@
 package me.alexand.scat.statistic.collector.controller;
 
 import me.alexand.scat.statistic.collector.service.DataRecordsProcessorFactory;
+import me.alexand.scat.statistic.collector.service.DataTemplateService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,9 +25,11 @@ public class ProcessorController {
 
     @Autowired
     public ProcessorController(@Value("${processors.count}") final int processorsCount,
-                               final DataRecordsProcessorFactory dataRecordsProcessorFactory) {
+                               final DataRecordsProcessorFactory dataRecordsProcessorFactory,
+                               DataTemplateService dataTemplateService) {
         registerShutdownHook();
         processorsPool = Executors.newFixedThreadPool(processorsCount);
+        dataTemplateService.loadFromXML("");
 
         LOGGER.info("starting processors...");
 

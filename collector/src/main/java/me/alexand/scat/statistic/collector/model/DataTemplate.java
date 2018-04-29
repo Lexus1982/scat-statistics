@@ -10,11 +10,11 @@ import java.util.Objects;
  */
 public class DataTemplate {
     private final TemplateType type;
-    private final List<IPFIXFieldSpecifier> fieldSpecifiers;
+    private final List<InfoModelEntity> specifiers;
 
     private DataTemplate(DataTemplate.Builder builder) {
         this.type = builder.type;
-        this.fieldSpecifiers = builder.fieldSpecifiers;
+        this.specifiers = builder.specifiers;
     }
 
     public static DataTemplate.Builder builder() {
@@ -25,8 +25,8 @@ public class DataTemplate {
         return type;
     }
 
-    public List<IPFIXFieldSpecifier> getFieldSpecifiers() {
-        return fieldSpecifiers;
+    public List<InfoModelEntity> getSpecifiers() {
+        return specifiers;
     }
 
     @Override
@@ -35,37 +35,36 @@ public class DataTemplate {
         if (o == null || getClass() != o.getClass()) return false;
         DataTemplate template = (DataTemplate) o;
         return type == template.type &&
-                Objects.equals(fieldSpecifiers, template.fieldSpecifiers);
+                Objects.equals(specifiers, template.specifiers);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(type, fieldSpecifiers);
+        return Objects.hash(type, specifiers);
     }
 
     @Override
     public String toString() {
         return "DataTemplate{" +
                 "type=" + type +
-                ", fieldSpecifiers=" + fieldSpecifiers +
+                ", specifiers=" + specifiers +
                 '}';
     }
 
     public static class Builder {
         private TemplateType type;
-        private List<IPFIXFieldSpecifier> fieldSpecifiers;
+        private List<InfoModelEntity> specifiers;
 
         private Builder() {
         }
-
 
         public Builder type(TemplateType type) {
             this.type = type;
             return this;
         }
 
-        public Builder fieldSpecifiers(List<IPFIXFieldSpecifier> fieldSpecifiers) {
-            this.fieldSpecifiers = fieldSpecifiers;
+        public Builder specifiers(List<InfoModelEntity> specifiers) {
+            this.specifiers = specifiers;
             return this;
         }
 

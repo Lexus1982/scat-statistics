@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 public class DataRecordsRepositoryImpl implements DataRecordsRepository {
     @Override
     public IPFIXDataRecord save(IPFIXDataRecord record) {
+        //TODO сохранить в HSQLDB в соответствующую таблицу в зависимости от типа record
         return null;
     }
 

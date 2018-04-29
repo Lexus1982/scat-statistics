@@ -7,24 +7,34 @@ package me.alexand.scat.statistic.collector.model;
  */
 
 public enum IANAAbstractDataTypes {
-    UNSIGNED8,
-    UNSIGNED16,
-    UNSIGNED32,
-    UNSIGNED64,
-    SIGNED8,
-    SIGNED16,
-    SIGNED32,
-    SIGNED64,
-    FLOAT32,
-    FLOAT64,
-    BOOLEAN,
-    MAC_ADDRESS,
-    OCTET_ARRAY,
-    STRING,
-    DATE_TIME_SECONDS,
-    DATE_TIME_MILLISECONDS,
-    DATE_TIME_MICROSECONDS,
-    DATE_TIME_NANOSECONDS,
-    IPV4_ADDRESS,
-    IPV6_ADDRESS
+    UNSIGNED8(1),
+    UNSIGNED16(2),
+    UNSIGNED32(4),
+    UNSIGNED64(8),
+    SIGNED8(1),
+    SIGNED16(2),
+    SIGNED32(4),
+    SIGNED64(8),
+    FLOAT32(4),
+    FLOAT64(8),
+    BOOLEAN(0),
+    MAC_ADDRESS(0),
+    OCTET_ARRAY(0),
+    STRING(65535),
+    DATE_TIME_SECONDS(4),
+    DATE_TIME_MILLISECONDS(8),
+    DATE_TIME_MICROSECONDS(0),
+    DATE_TIME_NANOSECONDS(0),
+    IPV4_ADDRESS(4),
+    IPV6_ADDRESS(0);
+
+    private int length;
+
+    IANAAbstractDataTypes(int length) {
+        this.length = length;
+    }
+
+    public int getLength() {
+        return length;
+    }
 }

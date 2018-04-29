@@ -1,60 +1,73 @@
 package me.alexand.scat.statistic.collector.model;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author asidorov84@gmail.com
  */
-public class IPFIXDataRecord {
-    private final long id;
-    private final long observationDomainID;
-    private final long exportTime;
-    private final int templateID;
-    private final List<FieldData> fieldData;
+public class IPFIXDataRecord extends AbstractIPFIXRecord {
+    private final TemplateType type;
+    private final List<IPFIXFieldValue> fieldValues;
 
-    public IPFIXDataRecord(long id,
-                           long observationDomainID,
-                           long exportTime,
-                           int templateID,
-                           List<FieldData> fieldData) {
-        this.id = id;
-        this.observationDomainID = observationDomainID;
-        this.exportTime = exportTime;
-        this.templateID = templateID;
-        this.fieldData = fieldData;
+    public static IPFIXDataRecord.Builder builder() {
+        return new IPFIXDataRecord.Builder();
     }
 
-    public long getId() {
-        return id;
+    private IPFIXDataRecord(IPFIXDataRecord.Builder builder) {
+        this.type = builder.type;
+        this.fieldValues = builder.fieldValues;
     }
 
-    public long getObservationDomainID() {
-        return observationDomainID;
+    public TemplateType getType() {
+        return type;
     }
 
-    public long getExportTime() {
-        return exportTime;
+    public List<IPFIXFieldValue> getFieldValues() {
+        return fieldValues;
     }
 
-    public int getTemplateID() {
-        return templateID;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        IPFIXDataRecord that = (IPFIXDataRecord) o;
+        return type == that.type &&
+                Objects.equals(fieldValues, that.fieldValues);
     }
 
-    public List<FieldData> getFieldData() {
-        return fieldData;
+    @Override
+    public int hashCode() {
+        return Objects.hash(type, fieldValues);
     }
 
     @Override
     public String toString() {
         return "IPFIXDataRecord{" +
-                "observationDomainID=" + observationDomainID +
-                ", exportTime=" + exportTime +
-                ", templateID=" + templateID +
-                ", fieldData=" + fieldData +
+                "type=" + type +
+                ", fieldValues=" + fieldValues +
                 '}';
     }
 
-    public int getFieldsCount() {
-        return fieldData.size();
+    public static class Builder {
+        private TemplateType type;
+        private List<IPFIXFieldValue> fieldValues;
+
+        private Builder() {
+        }
+
+        public Builder type(TemplateType type) {
+            this.type = type;
+            return this;
+        }
+
+        public Builder fieldValues(List<IPFIXFieldValue> fieldValues) {
+            this.fieldValues = fieldValues;
+            return this;
+        }
+
+        public IPFIXDataRecord build() {
+            return new IPFIXDataRecord(this);
+        }
     }
 }
