@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
  * Процессор, управляющий логикой получения пакета по сети,
  * преобразования его в IPFIX-сообщение и сохранения декодированных
  * данных во внутреннем буфере
+ *
  * @author asidorov84@gmail.com
  */
 
@@ -70,7 +71,10 @@ public class DataRecordsProcessorImpl implements DataRecordsProcessor {
                     int setID = set.getSetID();
 
                     if (setID >= 256 && setID <= 65535) {
-                        set.getRecords().forEach(record -> recordsRepository.save((IPFIXDataRecord) record));
+                        set.getRecords().forEach(record -> {
+                            int exportedRecords = recordsRepository.save((IPFIXDataRecord) record);
+                            statCollector.registerExportedRecords(exportedRecords);
+                        });
                     }
                 }
             } catch (MalformedMessageException |

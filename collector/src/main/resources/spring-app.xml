@@ -1,9 +1,9 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
-       xmlns:task="http://www.springframework.org/schema/task"
+       xmlns:task="http://www.springframework.org/schema/task" xmlns:jdbc="http://www.springframework.org/schema/jdbc"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd">
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd">
 
     <context:property-placeholder location="classpath:app.properties,file:${conf.dir}/collector.cfg"
                                   system-properties-mode="NEVER"
@@ -11,4 +11,21 @@
 
     <context:component-scan base-package="me.alexand.scat.statistic.collector"/>
     <task:annotation-driven/>
+
+    <bean id="hsqldbDataSource" class="org.apache.commons.dbcp2.BasicDataSource">
+        <property name="driverClassName" value="${db.hsqldb.driverClassName}"/>
+        <property name="url" value="${db.hsqldb.url}"/>
+        <property name="username" value="${db.hsqldb.username}"/>
+        <property name="password" value="${db.hsqldb.password}"/>
+        <property name="initialSize" value="${processors.count}"/>
+        <property name="maxTotal" value="${processors.count}"/>
+    </bean>
+
+    <jdbc:initialize-database data-source="hsqldbDataSource">
+        <jdbc:script location="classpath:db/initBuffer.sql"/>
+    </jdbc:initialize-database>
+
+    <bean id="bufferJDBCTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+        <constructor-arg ref="hsqldbDataSource"/>
+    </bean>
 </beans>

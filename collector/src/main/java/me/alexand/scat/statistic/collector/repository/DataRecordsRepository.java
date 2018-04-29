@@ -5,10 +5,12 @@ import me.alexand.scat.statistic.collector.model.IPFIXDataRecord;
 import java.time.LocalDateTime;
 
 /**
+ * Репозиторий для хранения всех IPFIX-записей
+ *
  * @author asidorov84@gmail.com
  */
 public interface DataRecordsRepository {
-    IPFIXDataRecord save(IPFIXDataRecord record);
+    int save(IPFIXDataRecord record);
 
-    boolean deleteBetween(LocalDateTime start, LocalDateTime end);
+    int deleteBetween(LocalDateTime start, LocalDateTime end);
 }
