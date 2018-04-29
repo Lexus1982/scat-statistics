@@ -61,3 +61,6 @@ CREATE TABLE generic (
 
 CREATE INDEX generic_flow_start_idx
   ON generic (flow_start_millisecond);
+
+CREATE INDEX generic_flow_end_idx
+  ON generic (flow_end_millisecond);

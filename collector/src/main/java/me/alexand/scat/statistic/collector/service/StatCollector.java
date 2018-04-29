@@ -125,7 +125,7 @@ public class StatCollector {
                 .append(" packets/sec").append("\n");
 
         sb.append("\tinput buffer overflows: ")
-                .append(counters.get(CounterName.INPUT_BUFFER_OVERFLOWS).getAndSet(0))
+                .append(counters.get(CounterName.INPUT_BUFFER_OVERFLOWS).get())
                 .append("\n");
 
         long processedPackets = counters.get(CounterName.PROCESSED_PACKETS).getAndSet(0);
@@ -137,11 +137,11 @@ public class StatCollector {
                 .append(" packets/sec").append("\n");
 
         sb.append("\tfailed packets (malformed/unknown info model/unknown protocol/unknown data record format/total): ")
-                .append(counters.get(CounterName.MALFORMED_PACKETS).getAndSet(0)).append("/")
-                .append(counters.get(CounterName.UNKNOWN_INFO_MODEL).getAndSet(0)).append("/")
-                .append(counters.get(CounterName.UNKNOWN_PROTOCOL_PACKETS).getAndSet(0)).append("/")
-                .append(counters.get(CounterName.UNKNOWN_FORMAT_DATA_RECORDS).getAndSet(0)).append("/")
-                .append(counters.get(CounterName.FAILED_PACKETS).getAndSet(0)).append("\n");
+                .append(counters.get(CounterName.MALFORMED_PACKETS).get()).append("/")
+                .append(counters.get(CounterName.UNKNOWN_INFO_MODEL).get()).append("/")
+                .append(counters.get(CounterName.UNKNOWN_PROTOCOL_PACKETS).get()).append("/")
+                .append(counters.get(CounterName.UNKNOWN_FORMAT_DATA_RECORDS).get()).append("/")
+                .append(counters.get(CounterName.FAILED_PACKETS).get()).append("\n");
 
         long dataRecords = counters.get(CounterName.DATA_RECORDS).getAndSet(0);
 
@@ -155,10 +155,10 @@ public class StatCollector {
                 .append(" records/sec").append("\n");
 
         sb.append("\n\texported records to buffer: ")
-                .append(counters.get(CounterName.EXPORTED_RECORDS).getAndSet(0)).append("\n");
+                .append(counters.get(CounterName.EXPORTED_RECORDS).get()).append("\n");
 
         sb.append("\n\tdeleted records from buffer: ")
-                .append(counters.get(CounterName.DELETED_RECORDS).getAndSet(0)).append("\n");
+                .append(counters.get(CounterName.DELETED_RECORDS).get()).append("\n");
 
         LOGGER.info(sb.toString());
     }

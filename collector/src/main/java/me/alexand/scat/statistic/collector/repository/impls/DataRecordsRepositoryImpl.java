@@ -43,7 +43,7 @@ public class DataRecordsRepositoryImpl implements DataRecordsRepository {
             " http_host, dpi_protocol, login, post_nat_source_ipv4_address, post_nat_source_transport_port) " +
             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-    private static final String GENERIC_DELETE = "DELETE FROM generic WHERE flow_start_millisecond <= ?";
+    private static final String GENERIC_DELETE = "DELETE FROM generic WHERE flow_end_millisecond <= ?";
 
     private JdbcTemplate jdbcTemplate;
 
@@ -79,9 +79,21 @@ public class DataRecordsRepositoryImpl implements DataRecordsRepository {
     public int deleteOld(LocalDateTime before) {
         int deletedRecords = 0;
 
-        deletedRecords += jdbcTemplate.update(CS_REQ_DELETE, before);
-        deletedRecords += jdbcTemplate.update(CS_RESP_DELETE, before);
-        deletedRecords += jdbcTemplate.update(GENERIC_DELETE, before);
+        try {
+            LOGGER.info("CS_REQ before count: {}", jdbcTemplate.queryForObject("SELECT count(*) FROM cs_req", Integer.class));
+            LOGGER.info("CS_RESP before count: {}", jdbcTemplate.queryForObject("SELECT count(*) FROM cs_resp", Integer.class));
+            LOGGER.info("GENERIC before count: {}", jdbcTemplate.queryForObject("SELECT count(*) FROM generic", Integer.class));
+
+            deletedRecords += jdbcTemplate.update(CS_REQ_DELETE, before);
+            deletedRecords += jdbcTemplate.update(CS_RESP_DELETE, before);
+            deletedRecords += jdbcTemplate.update(GENERIC_DELETE, before);
+
+            LOGGER.info("CS_REQ after count: {}", jdbcTemplate.queryForObject("SELECT count(*) FROM cs_req", Integer.class));
+            LOGGER.info("CS_RESP after count: {}", jdbcTemplate.queryForObject("SELECT count(*) FROM cs_resp", Integer.class));
+            LOGGER.info("GENERIC after count: {}", jdbcTemplate.queryForObject("SELECT count(*) FROM generic", Integer.class));
+        } catch (DataAccessException e) {
+            LOGGER.error(e.getMessage());
+        }
 
         return deletedRecords;
     }

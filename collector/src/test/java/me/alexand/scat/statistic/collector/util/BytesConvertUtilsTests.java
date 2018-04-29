@@ -2,10 +2,10 @@ package me.alexand.scat.statistic.collector.util;
 
 import org.junit.Test;
 
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 
-import static me.alexand.scat.statistic.collector.utils.BytesConvertUtils.fourBytesToLong;
-import static me.alexand.scat.statistic.collector.utils.BytesConvertUtils.twoBytesToInt;
+import static me.alexand.scat.statistic.collector.utils.BytesConvertUtils.*;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -51,6 +51,14 @@ public class BytesConvertUtilsTests {
                 .array();
 
         assertEquals(SIGNED_FOUR_BYTES_DATA, fourBytesToLong(payload));
+    }
+
+    @Test
+    public void testConvertEightBytesToBigInteger() {
+        byte[] bytes = {0x7f, (byte) 0xff, (byte) 0xff, (byte) 0xff,
+                (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff};
+
+        assertEquals(new BigInteger("9223372036854775807"), eightBytesToBigInteger(bytes));
     }
 
     //TODO сделать тесты оставшихся методов

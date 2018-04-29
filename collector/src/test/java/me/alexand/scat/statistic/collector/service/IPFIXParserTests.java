@@ -3,6 +3,7 @@ package me.alexand.scat.statistic.collector.service;
 import me.alexand.scat.statistic.collector.model.IPFIXMessage;
 import me.alexand.scat.statistic.collector.repository.DataTemplateRepository;
 import me.alexand.scat.statistic.collector.repository.InfoModelRepository;
+import me.alexand.scat.statistic.collector.utils.BytesConvertUtils;
 import me.alexand.scat.statistic.collector.utils.exceptions.MalformedMessageException;
 import me.alexand.scat.statistic.collector.utils.exceptions.UnknownProtocolException;
 import org.junit.Before;
@@ -13,6 +14,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import java.math.BigInteger;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 import static me.alexand.scat.statistic.collector.util.IPFIXMessageTestEntities.IPFIX_MESSAGE_WITH_CS_REQ_DATA;
 import static me.alexand.scat.statistic.collector.util.IPFIXMessageTestEntities.IPFIX_MESSAGE_WITH_CS_REQ_TEMPLATE;
@@ -51,7 +57,7 @@ public class IPFIXParserTests {
 
     @Test
     public void testParseCSREQTemplate() throws Exception {
-        IPFIXMessage actual = parser.parse(RAW_GENERIC_TEMPLATE);
+        IPFIXMessage actual = parser.parse(RAW_CS_REQ_TEMPLATE);
         assertNotNull(actual);
 
         LOGGER.info("\n\nexpected:\n\t {}\n\nactual:\n\t {}\n", IPFIX_MESSAGE_WITH_CS_REQ_TEMPLATE, actual);
@@ -61,7 +67,7 @@ public class IPFIXParserTests {
 
     @Test
     public void testParseCSREQData() throws Exception {
-        assertNotNull(parser.parse(RAW_GENERIC_TEMPLATE));
+        assertNotNull(parser.parse(RAW_CS_REQ_TEMPLATE));
 
         IPFIXMessage actual = parser.parse(RAW_CS_REQ_DATA_PAYLOAD);
         assertNotNull(actual);
@@ -74,6 +80,26 @@ public class IPFIXParserTests {
     @Test
     public void testParser() throws Exception {
         parser.parse(RAW_TEMPLATES_PAYLOAD);
+    }
+
+    @Test
+    public void testParseGenericData() throws Exception {
+        parser.parse(RAW_GENERIC_TEMPLATE);
+
+        IPFIXMessage actual = parser.parse(RAW_GENERIC_DATA);
+
+        byte[] raw_flow_start = {0x00, 0x00, 0x01, 0x62, 0x13, 0x27, 0x38, (byte) 0x85};
+        byte[] raw_flow_end = {0x00, 0x00, 0x01, 0x63, 0x13, 0x27, 0x45, 0x47};
+
+        BigInteger flowStart = BytesConvertUtils.eightBytesToBigInteger(raw_flow_start);
+        BigInteger flowEnd = BytesConvertUtils.eightBytesToBigInteger(raw_flow_end);
+
+        System.out.println("Flow start (ms): " + flowStart);
+        System.out.println("Flow end (ms): " + flowEnd);
+        System.out.println("Duration (ms): " + flowEnd.subtract(flowStart));
+        System.out.println("Flow start at: " + LocalDateTime.ofInstant(Instant.ofEpochMilli(flowStart.longValue()), ZoneId.systemDefault()));
+        System.out.println("Flow end at: " + LocalDateTime.ofInstant(Instant.ofEpochMilli(flowEnd.longValue()), ZoneId.systemDefault()));
+
     }
 
     @Test(expected = NullPointerException.class)

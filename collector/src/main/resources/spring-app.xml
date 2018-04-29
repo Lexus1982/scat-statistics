@@ -10,7 +10,8 @@
                                   ignore-resource-not-found="true"/>
 
     <context:component-scan base-package="me.alexand.scat.statistic.collector"/>
-    <task:annotation-driven/>
+    <task:annotation-driven scheduler="poolScheduler"/>
+    <task:scheduler id="poolScheduler" pool-size="4"/>
 
     <bean id="hsqldbDataSource" class="org.apache.commons.dbcp2.BasicDataSource">
         <property name="driverClassName" value="${db.hsqldb.driverClassName}"/>
