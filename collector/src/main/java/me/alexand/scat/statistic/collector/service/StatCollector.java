@@ -94,6 +94,10 @@ public class StatCollector {
         counters.get(CounterName.EXPORTED_RECORDS).updateAndGet(operand -> operand + insertedCount);
     }
 
+    public void registerDeletedRecordsCount(int deletedCount) {
+        counters.get(CounterName.DELETED_RECORDS).updateAndGet(operand -> operand + deletedCount);
+    }
+
     @Scheduled(fixedDelay = 10_000)
     public void report() {
         long secondsSinceLastReport = ChronoUnit.SECONDS.between(lastReport, LocalDateTime.now());
@@ -150,8 +154,11 @@ public class StatCollector {
                 .append(dataRecords / secondsSinceLastReport)
                 .append(" records/sec").append("\n");
 
-        sb.append("\n\texported records to database: ")
+        sb.append("\n\texported records to buffer: ")
                 .append(counters.get(CounterName.EXPORTED_RECORDS).getAndSet(0)).append("\n");
+
+        sb.append("\n\tdeleted records from buffer: ")
+                .append(counters.get(CounterName.DELETED_RECORDS).getAndSet(0)).append("\n");
 
         LOGGER.info(sb.toString());
     }
@@ -169,6 +176,7 @@ public class StatCollector {
         TEMPLATE_RECORDS,
         OPTIONAL_TEMPLATE_RECORDS,
         DATA_RECORDS,
+        DELETED_RECORDS,
         EXPORTED_RECORDS
     }
 }

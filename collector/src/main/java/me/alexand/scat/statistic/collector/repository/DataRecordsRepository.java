@@ -12,5 +12,5 @@ import java.time.LocalDateTime;
 public interface DataRecordsRepository {
     int save(IPFIXDataRecord record);
 
-    int deleteBetween(LocalDateTime start, LocalDateTime end);
+    int deleteOld(LocalDateTime before);
 }

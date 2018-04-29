@@ -18,12 +18,8 @@ CREATE TABLE cs_req (
   method     SMALLINT
 );
 
-CREATE INDEX cs_req_timestamp_idx
+CREATE INDEX cs_req_event_time_idx
   ON cs_req (event_time);
-CREATE INDEX cs_req_ip_src_idx
-  ON cs_req (ip_src);
-CREATE INDEX cs_req_hostname_idx
-  ON cs_req (hostname);
 
 CREATE TABLE cs_resp (
   event_time     TIMESTAMP,
@@ -35,6 +31,9 @@ CREATE TABLE cs_resp (
   content_type   VARCHAR(8000),
   session_id     DECIMAL
 );
+
+CREATE INDEX cs_resp_event_time_idx
+  ON cs_resp (event_time);
 
 CREATE TABLE generic (
   octet_delta_count              DECIMAL,
@@ -59,3 +58,6 @@ CREATE TABLE generic (
   post_nat_source_ipv4_address   CHAR(15),
   post_nat_source_transport_port INTEGER
 );
+
+CREATE INDEX generic_flow_start_idx
+  ON generic (flow_start_millisecond);
