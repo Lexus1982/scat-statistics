@@ -4,8 +4,8 @@ import me.alexand.scat.statistic.collector.model.IPFIXDataRecord;
 import me.alexand.scat.statistic.collector.model.IPFIXMessage;
 import me.alexand.scat.statistic.collector.model.IPFIXSet;
 import me.alexand.scat.statistic.collector.model.RawDataPacket;
-import me.alexand.scat.statistic.collector.repository.DataRecordsRepository;
-import me.alexand.scat.statistic.collector.repository.PacketsReceiver;
+import me.alexand.scat.statistic.collector.network.PacketsReceiver;
+import me.alexand.scat.statistic.collector.repository.InterimBufferRepository;
 import me.alexand.scat.statistic.collector.service.DataRecordsProcessor;
 import me.alexand.scat.statistic.collector.service.IPFIXParser;
 import me.alexand.scat.statistic.collector.service.StatCollector;
@@ -31,12 +31,12 @@ public class DataRecordsProcessorImpl implements DataRecordsProcessor {
     private int processorId;
     private final IPFIXParser parser;
     private final PacketsReceiver receiver;
-    private final DataRecordsRepository recordsRepository;
+    private final InterimBufferRepository interimBufferRepository;
     private final StatCollector statCollector;
 
     public DataRecordsProcessorImpl(IPFIXParser parser,
                                     PacketsReceiver receiver,
-                                    DataRecordsRepository recordsRepository,
+                                    InterimBufferRepository interimBufferRepository,
                                     StatCollector statCollector) {
         synchronized (DataRecordsProcessorImpl.class) {
             processorId = ++processorsCounter;
@@ -44,7 +44,7 @@ public class DataRecordsProcessorImpl implements DataRecordsProcessor {
 
         this.parser = parser;
         this.receiver = receiver;
-        this.recordsRepository = recordsRepository;
+        this.interimBufferRepository = interimBufferRepository;
         this.statCollector = statCollector;
     }
 
@@ -72,8 +72,10 @@ public class DataRecordsProcessorImpl implements DataRecordsProcessor {
 
                     if (setID >= 256 && setID <= 65535) {
                         set.getRecords().forEach(record -> {
-                            int exportedRecords = recordsRepository.save((IPFIXDataRecord) record);
-                            statCollector.registerExportedRecords(exportedRecords);
+                            boolean savingStatus = interimBufferRepository.save((IPFIXDataRecord) record);
+                            if (savingStatus) {
+                                statCollector.registerExportedRecords(1);
+                            }
                         });
                     }
                 }

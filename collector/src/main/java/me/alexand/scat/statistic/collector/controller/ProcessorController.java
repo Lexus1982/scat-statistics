@@ -8,11 +8,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PreDestroy;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * Главный контроллер коллектора.
+ * Контроллер коллектора.
+ * <p>
+ * Загружает шаблоны СКАТ из XML-файла
  * Создает и запускает в разных потоках процессоры для обработки.
  *
  * @author asidorov84@gmail.com
@@ -26,38 +29,36 @@ public class ProcessorController {
     @Autowired
     public ProcessorController(@Value("${processors.count}") final int processorsCount,
                                final DataRecordsProcessorFactory dataRecordsProcessorFactory,
-                               DataTemplateService dataTemplateService) {
-        registerShutdownHook();
-        processorsPool = Executors.newFixedThreadPool(processorsCount);
+                               final DataTemplateService dataTemplateService) {
+        LOGGER.info("Loading SCAT templates");
         dataTemplateService.loadFromXML("");
 
-        LOGGER.info("starting processors...");
+        LOGGER.info("Initializing processors thread pool with fixed thread count: {}", processorsCount);
+        processorsPool = Executors.newFixedThreadPool(processorsCount);
 
+        LOGGER.info("Starting processors");
         for (int i = 0; i < processorsCount; i++) {
             processorsPool.submit(dataRecordsProcessorFactory.getProcessor());
         }
     }
 
+    @PreDestroy
     private void shutdown() {
-        LOGGER.info("start collector shutdown...");
+        LOGGER.info("Shutdown begin...");
 
         try {
             processorsPool.shutdownNow();
 
-            LOGGER.info("...wait until all processors stopped");
+            LOGGER.info("...waiting until all processors stopped");
 
             while (!processorsPool.isTerminated()) {
                 Thread.sleep(100);
             }
         } catch (Exception e) {
-            LOGGER.info("shutdown failed");
+            LOGGER.info("Normal shutdown failed");
             return;
         }
 
-        LOGGER.info("shutdown complete successfully");
-    }
-
-    private void registerShutdownHook() {
-        Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
+        LOGGER.info("Shutdown complete successfully");
     }
 }

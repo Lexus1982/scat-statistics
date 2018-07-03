@@ -1,5 +1,5 @@
 .idea
-collector.iml
+*.iml
 out
 log
 /collector/dependency-reduced-pom.xml

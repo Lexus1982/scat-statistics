@@ -1,4 +1,4 @@
-package me.alexand.scat.statistic.collector.util;
+package me.alexand.scat.statistic.collector.entities;
 
 /**
  * @author asidorov84@gmail.com

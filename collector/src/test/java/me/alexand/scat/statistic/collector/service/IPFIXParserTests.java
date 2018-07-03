@@ -20,9 +20,9 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
-import static me.alexand.scat.statistic.collector.util.IPFIXMessageTestEntities.IPFIX_MESSAGE_WITH_CS_REQ_DATA;
-import static me.alexand.scat.statistic.collector.util.IPFIXMessageTestEntities.IPFIX_MESSAGE_WITH_CS_REQ_TEMPLATE;
-import static me.alexand.scat.statistic.collector.util.RawPacketsEntities.*;
+import static me.alexand.scat.statistic.collector.entities.IPFIXMessageTestEntities.IPFIX_MESSAGE_WITH_CS_REQ_DATA;
+import static me.alexand.scat.statistic.collector.entities.IPFIXMessageTestEntities.IPFIX_MESSAGE_WITH_CS_REQ_TEMPLATE;
+import static me.alexand.scat.statistic.collector.entities.RawPacketsEntities.*;
 import static me.alexand.scat.statistic.collector.utils.DataTemplateEntities.DATA_TEMPLATE_LIST;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -34,7 +34,7 @@ import static org.junit.Assert.assertNotNull;
  */
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration("classpath:spring-app.xml")
+@ContextConfiguration("classpath:spring-test.xml")
 public class IPFIXParserTests {
     private static final Logger LOGGER = LoggerFactory.getLogger(IPFIXParserTests.class);
 

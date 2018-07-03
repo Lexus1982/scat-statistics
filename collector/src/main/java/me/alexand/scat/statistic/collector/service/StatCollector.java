@@ -94,7 +94,7 @@ public class StatCollector {
         counters.get(CounterName.EXPORTED_RECORDS).updateAndGet(operand -> operand + insertedCount);
     }
 
-    public void registerDeletedRecordsCount(int deletedCount) {
+    public void registerDeletedRecordsCount(long deletedCount) {
         counters.get(CounterName.DELETED_RECORDS).updateAndGet(operand -> operand + deletedCount);
     }
 
