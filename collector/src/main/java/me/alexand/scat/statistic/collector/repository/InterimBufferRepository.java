@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * Промежуточный буфер для всех IPFIX-записей
+ * Промежуточный буфер для хранения всех IPFIX-записей
  *
  * @author asidorov84@gmail.com
  */
@@ -16,7 +16,7 @@ public interface InterimBufferRepository {
     /**
      * Получить количество IPFIX-записей указанного типа
      *
-     * @param type тип записей
+     * @param type тип записей (обязательный)
      * @return количество записей
      */
     long getCount(TemplateType type);
@@ -24,26 +24,43 @@ public interface InterimBufferRepository {
     /**
      * Сохранить IPFIX-запись
      *
-     * @param record IPFIX-запись
+     * @param record IPFIX-запись (обязательный)
      * @return true, если сохранение прошло успешно, иначе false
      */
     boolean save(IPFIXDataRecord record);
 
     /**
-     * Удалить записи любых типов до указанной отметки времени, включительно
+     * Удалить записи указанного типа старее указанной отметки времени, включительно
      *
-     * @param before отметка времени
+     * @param type            тип записей (обязательный)
+     * @param beforeEventTime отметка времени (обязательный)
      * @return суммарное количество удаленных записей
      */
-    long delete(LocalDateTime before);
+    long delete(TemplateType type, LocalDateTime beforeEventTime);
 
     /**
      * Получить агрегированные данные об указанных посещенных доменах за указанный период
      *
-     * @param domainPatterns список строк, где каждая строка является регулярным выражением
-     * @param start          начальная отметка времени (>=)
-     * @param end            конечная отметка времени (<)
+     * @param domainPatterns список строк, где каждая строка является регулярным выражением (обязательный)
+     * @param start          начальная отметка времени (>=) (обязательный)
+     * @param end            конечная отметка времени (<) (обязательный)
      * @return список результатов об отслеженных доменах
      */
     List<TrackedResult> getTrackedDomainsStatistic(List<String> domainPatterns, LocalDateTime start, LocalDateTime end);
+
+    /**
+     * Получить минимальную отметку времени у записей данного типа, находящихся в буфере
+     *
+     * @param type тип записей (обязательный)
+     * @return отметка времени или null, если в буфере нет ни одной записи данного типа
+     */
+    LocalDateTime getMinEventTime(TemplateType type);
+
+    /**
+     * Получить максимальную отметку времени у записей данного типа, находящихся в буфере
+     *
+     * @param type тип записей (обязательный)
+     * @return отметка времени или null, если в буфере нет ни одной записи данного типа
+     */
+    LocalDateTime getMaxEventTime(TemplateType type);
 }

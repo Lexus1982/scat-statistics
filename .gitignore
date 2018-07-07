@@ -4,3 +4,5 @@ out
 log
 /collector/dependency-reduced-pom.xml
 /collector/target/
+/common/dependency-reduced-pom.xml
+/common/target

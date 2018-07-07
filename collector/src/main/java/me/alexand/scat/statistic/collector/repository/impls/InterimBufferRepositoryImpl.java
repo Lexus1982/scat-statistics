@@ -11,9 +11,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -102,19 +106,25 @@ public class InterimBufferRepositoryImpl implements InterimBufferRepository {
 
     @Override
     @Transactional("bufferTM")
-    public long delete(LocalDateTime before) {
-        Objects.requireNonNull(before);
-        long deletedRecords = 0;
+    public long delete(TemplateType type, LocalDateTime beforeEventTime) {
+        Objects.requireNonNull(type);
+        Objects.requireNonNull(beforeEventTime);
 
         try {
-            deletedRecords += jdbcTemplate.update(CS_REQ_DELETE, before);
-            deletedRecords += jdbcTemplate.update(CS_RESP_DELETE, before);
-            deletedRecords += jdbcTemplate.update(GENERIC_DELETE, before);
+            switch (type) {
+                case CS_REQ:
+                    return jdbcTemplate.update(CS_REQ_DELETE, beforeEventTime);
+                case CS_RESP:
+                    return jdbcTemplate.update(CS_RESP_DELETE, beforeEventTime);
+                case GENERIC:
+                    return jdbcTemplate.update(GENERIC_DELETE, beforeEventTime);
+            }
         } catch (DataAccessException e) {
             LOGGER.error(e.getMessage());
         }
 
-        return deletedRecords;
+
+        return 0;
     }
 
     @Override
@@ -172,6 +182,48 @@ public class InterimBufferRepositoryImpl implements InterimBufferRepository {
         return new ArrayList<>();
     }
 
+    @Override
+    @Transactional(value = "bufferTM", readOnly = true)
+    public LocalDateTime getMinEventTime(TemplateType type) {
+        Objects.requireNonNull(type);
+
+        try {
+            switch (type) {
+                case CS_REQ:
+                    return jdbcTemplate.query("SELECT min(event_time) FROM cs_req", new LocalDateTimeResultSetExtractor());
+                case CS_RESP:
+                    return jdbcTemplate.query("SELECT min(event_time) FROM cs_resp", new LocalDateTimeResultSetExtractor());
+                case GENERIC:
+                    return jdbcTemplate.query("SELECT min(flow_end_millisecond) FROM generic", new LocalDateTimeResultSetExtractor());
+            }
+        } catch (DataAccessException e) {
+            LOGGER.error(e.getMessage());
+        }
+
+        return null;
+    }
+
+    @Override
+    @Transactional(value = "bufferTM", readOnly = true)
+    public LocalDateTime getMaxEventTime(TemplateType type) {
+        Objects.requireNonNull(type);
+
+        try {
+            switch (type) {
+                case CS_REQ:
+                    return jdbcTemplate.query("SELECT max(event_time) FROM cs_req", new LocalDateTimeResultSetExtractor());
+                case CS_RESP:
+                    return jdbcTemplate.query("SELECT max(event_time) FROM cs_resp", new LocalDateTimeResultSetExtractor());
+                case GENERIC:
+                    return jdbcTemplate.query("SELECT max(flow_start_millisecond) FROM generic", new LocalDateTimeResultSetExtractor());
+            }
+        } catch (DataAccessException e) {
+            LOGGER.error(e.getMessage());
+        }
+
+        return null;
+    }
+
     private int insertRecord(String query, IPFIXDataRecord record) {
         return jdbcTemplate.update(query, preparedStatement -> {
             List<IPFIXFieldValue> fieldValues = record.getFieldValues();
@@ -181,5 +233,14 @@ public class InterimBufferRepositoryImpl implements InterimBufferRepository {
                 preparedStatement.setObject(j + 1, fieldValues.get(j).getValue(), sqlType);
             }
         });
+    }
+
+    private class LocalDateTimeResultSetExtractor implements ResultSetExtractor<LocalDateTime> {
+        @Override
+        public LocalDateTime extractData(ResultSet rs) throws SQLException, DataAccessException {
+            rs.next();
+            Timestamp timestamp = rs.getTimestamp(1);
+            return timestamp != null ? timestamp.toLocalDateTime() : null;
+        }
     }
 }

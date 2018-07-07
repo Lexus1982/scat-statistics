@@ -48,15 +48,36 @@
         <immediateFlush>true</immediateFlush>
     </appender>
 
-    <logger name="me.alexand.IPFIXCollector" level="debug">
+    <appender name="cleaner" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log.dir:-.}/cleaner.log</file>
+
+        <encoder>
+            <charset>UTF-8</charset>
+            <pattern>%date %-5level %logger{0}: <!--[%file:%line]--> %msg%n</pattern>
+        </encoder>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <fileNamePattern>${log.dir:-.}/cleaner%i.log.gz</fileNamePattern>
+            <minIndex>1</minIndex>
+            <maxIndex>5</maxIndex>
+        </rollingPolicy>
+
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <maxFileSize>1MB</maxFileSize>
+        </triggeringPolicy>
+
+        <immediateFlush>true</immediateFlush>
+    </appender>
+
+    <logger name="me.alexand.IPFIXCollector" level="debug" additivity="false">
         <appender-ref ref="common"/>
     </logger>
 
-    <logger name="me.alexand.IPFIXCollector.service.StatCollector" level="info">
-        <appender-ref ref="stats"/>
+    <logger name="me.alexand.scat.statistic.collector.service.impls.InterimBufferCleaner" level="debug">
+        <appender-ref ref="cleaner"/>
     </logger>
 
-    <root level="info">
+    <root level="info" additivity="false">
         <appender-ref ref="common"/>
         <appender-ref ref="console"/>
     </root>
