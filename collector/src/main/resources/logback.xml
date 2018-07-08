@@ -3,7 +3,7 @@
     <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <charset>UTF-8</charset>
-            <pattern>%-5level %logger{0} - %msg%n</pattern>
+            <pattern>%-5level %logger{0}: %msg%n</pattern>
         </encoder>
     </appender>
 
@@ -27,27 +27,6 @@
 
     </appender>
 
-    <appender name="stats" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${log.dir:-.}/stats.log</file>
-
-        <encoder>
-            <charset>UTF-8</charset>
-            <pattern>%date %-5level %logger{0}: <!--[%file:%line]--> %msg%n</pattern>
-        </encoder>
-
-        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-            <fileNamePattern>${log.dir:-.}/stats%i.log.gz</fileNamePattern>
-            <minIndex>1</minIndex>
-            <maxIndex>5</maxIndex>
-        </rollingPolicy>
-
-        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
-            <maxFileSize>1MB</maxFileSize>
-        </triggeringPolicy>
-
-        <immediateFlush>true</immediateFlush>
-    </appender>
-
     <appender name="cleaner" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${log.dir:-.}/cleaner.log</file>
 
@@ -69,15 +48,41 @@
         <immediateFlush>true</immediateFlush>
     </appender>
 
-    <logger name="me.alexand.IPFIXCollector" level="debug" additivity="false">
+    <appender name="sampling" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log.dir:-.}/sampling.log</file>
+
+        <encoder>
+            <charset>UTF-8</charset>
+            <pattern>%date %-5level %logger{0}: <!--[%file:%line]--> %msg%n</pattern>
+        </encoder>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <fileNamePattern>${log.dir:-.}/sampling%i.log.gz</fileNamePattern>
+            <minIndex>1</minIndex>
+            <maxIndex>5</maxIndex>
+        </rollingPolicy>
+
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <maxFileSize>1MB</maxFileSize>
+        </triggeringPolicy>
+
+        <immediateFlush>true</immediateFlush>
+    </appender>
+
+    <logger name="me.alexand.scat.statistic.collector" level="debug" additivity="false">
         <appender-ref ref="common"/>
+        <appender-ref ref="console"/>
     </logger>
 
-    <logger name="me.alexand.scat.statistic.collector.service.impls.InterimBufferCleaner" level="debug">
+    <logger name="me.alexand.scat.statistic.collector.service.InterimBufferCleaner" level="debug" additivity="false">
         <appender-ref ref="cleaner"/>
     </logger>
 
-    <root level="info" additivity="false">
+    <logger name="me.alexand.scat.statistic.collector.service.Sampling" level="debug" additivity="false">
+        <appender-ref ref="sampling"/>
+    </logger>
+
+    <root level="info">
         <appender-ref ref="common"/>
         <appender-ref ref="console"/>
     </root>

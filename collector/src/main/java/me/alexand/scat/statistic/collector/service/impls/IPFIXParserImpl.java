@@ -33,6 +33,8 @@ import static me.alexand.scat.statistic.collector.utils.BytesConvertUtils.*;
 public class IPFIXParserImpl implements IPFIXParser {
     private static final int MESSAGE_HEADER_LENGTH = 16;
     private static final int IPFIX_MESSAGE_VERSION = 0x0a;
+    private static final ZoneOffset ZONE_OFFSET = ZoneOffset.ofHours(3);
+    private static final ZoneId ZONE_ID = ZoneId.systemDefault();
 
     private final DataTemplateService dataTemplateService;
     private final InfoModelRepository infoModelRepository;
@@ -283,13 +285,13 @@ public class IPFIXParserImpl implements IPFIXParser {
                 switch (entity.getType()) {
                     case DATE_TIME_SECONDS:
                         long epochSeconds = fourBytesToLong(copyOfRange(payload, offset, offset + fieldLength));
-                        value = LocalDateTime.ofEpochSecond(epochSeconds, 0, ZoneOffset.ofHours(3));
+                        value = LocalDateTime.ofEpochSecond(epochSeconds, 0, ZONE_OFFSET);
                         offset += fieldLength;
                         currentRecordLength += fieldLength;
                         break;
                     case DATE_TIME_MILLISECONDS:
                         BigInteger epochMilliseconds = eightBytesToBigInteger(copyOfRange(payload, offset, offset + fieldLength));
-                        value = LocalDateTime.ofInstant(Instant.ofEpochMilli(epochMilliseconds.longValue()), ZoneId.systemDefault());
+                        value = LocalDateTime.ofInstant(Instant.ofEpochMilli(epochMilliseconds.longValue()), ZONE_ID);
                         offset += fieldLength;
                         currentRecordLength += fieldLength;
                         break;

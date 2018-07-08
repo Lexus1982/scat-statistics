@@ -6,3 +6,4 @@ log
 /collector/target/
 /common/dependency-reduced-pom.xml
 /common/target
+*.log

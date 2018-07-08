@@ -28,10 +28,10 @@ import static java.util.Arrays.copyOf;
 @Repository
 public class UDPPacketsReceiverImpl implements PacketsReceiver, Runnable {
     private static final Logger LOGGER = LoggerFactory.getLogger(UDPPacketsReceiverImpl.class);
-    private static final int MAX_UDP_PACKET_SIZE = 65535;
+    private static final int MAX_UDP_PACKET_SIZE = 33_554_432;
 
     private DatagramSocket socket;
-    private final byte[] buffer = new byte[MAX_UDP_PACKET_SIZE];
+    private final byte[] buffer = new byte[65535];
     private final BlockingQueue<RawDataPacket> packetsBuffer;
     private final Thread thread;
     private final StatCollector statCollector;
@@ -60,6 +60,7 @@ public class UDPPacketsReceiverImpl implements PacketsReceiver, Runnable {
         }
 
         thread = new Thread(this);
+        thread.setPriority(Thread.MAX_PRIORITY);
         thread.start();
     }
 
@@ -73,7 +74,6 @@ public class UDPPacketsReceiverImpl implements PacketsReceiver, Runnable {
         try {
             while (!thread.isInterrupted()) {
                 RawDataPacket packet = receive();
-                statCollector.registerReceivedPacket();
 
                 if (!packetsBuffer.offer(packet)) {
                     statCollector.registerInputBufferOverflow();
@@ -91,6 +91,7 @@ public class UDPPacketsReceiverImpl implements PacketsReceiver, Runnable {
     private RawDataPacket receive() throws IOException {
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
         socket.receive(packet);
+        statCollector.registerReceivedPacket();
         return RawDataPacket.builder()
                 .address(packet.getAddress())
                 .port(packet.getPort())

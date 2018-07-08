@@ -159,8 +159,6 @@ public class InterimBufferRepositoryImpl implements InterimBufferRepository {
                 .append("WHERE cs.event_time >= ? AND cs.event_time < ? ")
                 .append("GROUP BY td.regex_pattern, cs.ip_src, cs.login");
 
-        LOGGER.debug("Query: {}", querySB);
-
         try {
             return jdbcTemplate.query(querySB.toString(),
                     ps -> {
