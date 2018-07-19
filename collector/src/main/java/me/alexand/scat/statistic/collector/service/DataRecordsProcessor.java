@@ -1,9 +1,6 @@
 package me.alexand.scat.statistic.collector.service;
 
-import me.alexand.scat.statistic.collector.model.IPFIXDataRecord;
 import me.alexand.scat.statistic.collector.model.IPFIXMessage;
-import me.alexand.scat.statistic.collector.model.IPFIXSet;
-import me.alexand.scat.statistic.collector.model.RawDataPacket;
 import me.alexand.scat.statistic.collector.network.PacketsReceiver;
 import me.alexand.scat.statistic.collector.repository.InterimBufferRepository;
 import me.alexand.scat.statistic.collector.utils.exceptions.*;
@@ -49,39 +46,43 @@ public class DataRecordsProcessor implements Runnable {
     public void run() {
         Thread currentThread = Thread.currentThread();
         LOGGER.info("...start new processor with id = {}", processorId);
-        statCollector.registerProcessorThread();
+        statCollector.registerProcessorThread(processorId);
 
         while (!currentThread.isInterrupted()) {
-            RawDataPacket rawDataPacket;
+            byte[] rawPacket;
 
             try {
-                rawDataPacket = receiver.getNextPacket();
+                rawPacket = receiver.getNextPacket();
+                statCollector.registerReceivedPacket(processorId);
             } catch (InterruptedException e) {
                 break;
             }
 
             try {
-                IPFIXMessage message = parser.parse(rawDataPacket.getPdu());
-                statCollector.registerProcessedPacket();
+                long t0 = System.nanoTime();
+                IPFIXMessage message = parser.parse(rawPacket);
+                long t1 = System.nanoTime();
 
-                for (IPFIXSet set : message.getSets()) {
-                    int setID = set.getSetID();
+                statCollector.registerProcessedPacket(processorId, t1 - t0);
 
-                    if (setID >= 256 && setID <= 65535) {
-                        set.getRecords().forEach(record -> {
-                            boolean savingStatus = interimBufferRepository.save((IPFIXDataRecord) record);
-                            if (savingStatus) {
-                                statCollector.registerExportedRecords(1);
-                            }
-                        });
-                    }
-                }
+//                for (IPFIXSet set : message.getSets()) {
+//                    int setID = set.getSetID();
+//
+//                    if (setID >= 256 && setID <= 65535) {
+//                        set.getRecords().forEach(record -> {
+//                            boolean savingStatus = interimBufferRepository.save((IPFIXDataRecord) record);
+////                            if (savingStatus) {
+////                                statCollector.registerExportedRecords(1);
+////                            }
+//                        });
+//                    }
+//                }
             } catch (MalformedMessageException |
                     UnknownProtocolException |
                     UnknownDataRecordFormatException |
                     UnknownInfoModelException e) {
             } catch (IPFIXParseException e) {
-                statCollector.registerFailedPacket();
+                //statCollector.registerFailedPacket();
             }
         }
 

@@ -4,7 +4,6 @@ import me.alexand.scat.statistic.collector.model.*;
 import me.alexand.scat.statistic.collector.repository.InfoModelRepository;
 import me.alexand.scat.statistic.collector.service.DataTemplateService;
 import me.alexand.scat.statistic.collector.service.IPFIXParser;
-import me.alexand.scat.statistic.collector.service.StatCollector;
 import me.alexand.scat.statistic.collector.utils.exceptions.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -38,18 +37,14 @@ public class IPFIXParserImpl implements IPFIXParser {
 
     private final DataTemplateService dataTemplateService;
     private final InfoModelRepository infoModelRepository;
-    //TODO выпилить регистратор статистики, ее собирать в процессоре
-    private final StatCollector statCollector;
 
     private final Map<Long, IPFIXTemplateRecord> templates = new ConcurrentHashMap<>();
 
     @Autowired
     public IPFIXParserImpl(DataTemplateService dataTemplateService,
-                           InfoModelRepository infoModelRepository,
-                           StatCollector statCollector) {
+                           InfoModelRepository infoModelRepository) {
         this.dataTemplateService = dataTemplateService;
         this.infoModelRepository = infoModelRepository;
-        this.statCollector = statCollector;
     }
 
     @Override
@@ -57,17 +52,15 @@ public class IPFIXParserImpl implements IPFIXParser {
         Objects.requireNonNull(payload);
 
         if (payload.length < MESSAGE_HEADER_LENGTH) {
-            statCollector.registerMalformedPacket();
             throw new MalformedMessageException(String.format("invalid IPFIX message length: %d bytes", payload.length));
         }
 
-        byte[] headerPDU = copyOf(payload, MESSAGE_HEADER_LENGTH);
-        byte[] setsPDU = copyOfRange(payload, MESSAGE_HEADER_LENGTH, payload.length);
+        byte[] headerPDU = copyOf(payload, MESSAGE_HEADER_LENGTH);//TODO копировать или нет?
+        byte[] setsPDU = copyOfRange(payload, MESSAGE_HEADER_LENGTH, payload.length);//TODO копировать или нет?
 
         IPFIXHeader header = parseHeader(headerPDU);
 
         if (header.getLength() != payload.length) {
-            statCollector.registerMalformedPacket();
             throw new MalformedMessageException(String.format("invalid IPFIX message length: %d bytes", payload.length));
         }
 
@@ -86,20 +79,19 @@ public class IPFIXParserImpl implements IPFIXParser {
             offset += 2;
 
             if (version != IPFIX_MESSAGE_VERSION) {
-                statCollector.registerUnknownProtocolPacket();
                 throw new UnknownProtocolException(String.format("version must be 10, but actual is %d", version));
             }
 
-            int length = twoBytesToInt(copyOfRange(payload, offset, offset + 2));
+            int length = twoBytesToInt(copyOfRange(payload, offset, offset + 2));//TODO копировать или нет?
             offset += 2;
 
-            long exportTime = fourBytesToLong(copyOfRange(payload, offset, offset + 4));
+            long exportTime = fourBytesToLong(copyOfRange(payload, offset, offset + 4));//TODO копировать или нет?
             offset += 4;
 
-            long sequenceNumber = fourBytesToLong(copyOfRange(payload, offset, offset + 4));
+            long sequenceNumber = fourBytesToLong(copyOfRange(payload, offset, offset + 4));//TODO копировать или нет?
             offset += 4;
 
-            long observationDomainID = fourBytesToLong(copyOfRange(payload, offset, offset + 4));
+            long observationDomainID = fourBytesToLong(copyOfRange(payload, offset, offset + 4));//TODO копировать или нет?
 
             return IPFIXHeader.builder()
                     .version(version)
@@ -110,7 +102,6 @@ public class IPFIXParserImpl implements IPFIXParser {
                     .build();
 
         } catch (ArrayIndexOutOfBoundsException e) {
-            statCollector.registerMalformedPacket();
             throw new MalformedMessageException(e);
         }
     }
@@ -145,7 +136,7 @@ public class IPFIXParserImpl implements IPFIXParser {
                         .build());
             }
         } catch (ArrayIndexOutOfBoundsException e) {
-            statCollector.registerMalformedPacket();
+            //statCollector.registerMalformedPacket();
             throw new MalformedMessageException(e);
         }
 
@@ -235,10 +226,10 @@ public class IPFIXParserImpl implements IPFIXParser {
                 records.add(record);
             }
         } catch (ArrayIndexOutOfBoundsException e) {
-            statCollector.registerMalformedPacket();
+            //statCollector.registerMalformedPacket();
             throw new MalformedMessageException(e);
         } catch (UnknownInfoModelException e) {
-            statCollector.registerUnknownInfoModel();
+            //statCollector.registerUnknownInfoModel();
             throw e;
         }
 
@@ -255,7 +246,7 @@ public class IPFIXParserImpl implements IPFIXParser {
         IPFIXTemplateRecord templateRecord = getTemplateRecord(observationDomainID, setID);
 
         if (templateRecord == null || templateRecord.getExportTime() > exportTime) {
-            statCollector.registerUnknownDataFormatPacket();
+            //statCollector.registerUnknownDataFormatPacket();
             throw new UnknownDataRecordFormatException(
                     String.format("Can't find template for ObservationDomainID: %d and Data Record ID: %d",
                             observationDomainID,
@@ -353,7 +344,7 @@ public class IPFIXParserImpl implements IPFIXParser {
                     .fieldValues(fieldValues)
                     .build());
 
-            statCollector.registerDataRecord();
+            //statCollector.registerDataRecord();
 
             minDataRecordLength = Math.min(minDataRecordLength, currentRecordLength);
         }
@@ -372,7 +363,7 @@ public class IPFIXParserImpl implements IPFIXParser {
 
             return oldRecord;
         });
-        statCollector.registerTemplateRecord();
+        //statCollector.registerTemplateRecord();
     }
 
     private IPFIXTemplateRecord getTemplateRecord(long observationDomainID, int templateID) {

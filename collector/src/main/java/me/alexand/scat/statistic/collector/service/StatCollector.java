@@ -2,15 +2,20 @@ package me.alexand.scat.statistic.collector.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * @author asidorov84@gmail.com
@@ -19,164 +24,181 @@ import java.util.concurrent.atomic.AtomicLong;
 @Service
 public class StatCollector {
     private static final Logger LOGGER = LoggerFactory.getLogger(StatCollector.class);
-    private final Map<CounterName, AtomicLong> counters = new ConcurrentHashMap<>();
-    private final LocalDateTime applicationStart = LocalDateTime.now();
 
-    private LocalDateTime lastReport;
+    @Value("${processors.count}")
+    private int processorsCount;
+
+    private final AtomicInteger activeProcessorsCounter = new AtomicInteger(0);
+    private final AtomicInteger inputBufferOverflowCounter = new AtomicInteger(0);
+    private final Map<Integer, Long> receivedPacketsCounter = new ConcurrentHashMap<>(processorsCount);
+    private final Map<Integer, Long> processedPacketsCounter = new ConcurrentHashMap<>(processorsCount);
+    private final Map<Integer, Long> processedPacketsTotalTimeCounter = new ConcurrentHashMap<>(processorsCount);
+
+    private final LocalDateTime applicationStart = LocalDateTime.now();
+    private LocalDateTime lastReportDateTime;
 
     public StatCollector() {
-        for (CounterName counterName : CounterName.values()) {
-            counters.put(counterName, new AtomicLong());
-        }
-
-        lastReport = applicationStart;
+        lastReportDateTime = applicationStart;
     }
 
-    public void registerReceivedPacket() {
-        counters.get(CounterName.RECEIVED_PACKETS).incrementAndGet();
-    }
-
-    public void registerTemplateRecord() {
-        counters.get(CounterName.TEMPLATE_RECORDS).incrementAndGet();
-    }
-
-    public void registerInputBufferOverflow() {
-        counters.get(CounterName.INPUT_BUFFER_OVERFLOWS).incrementAndGet();
-    }
-
-    public void registerProcessorThread() {
-        counters.get(CounterName.PROCESSOR_THREAD).incrementAndGet();
+    public void registerProcessorThread(int processorId) {
+        activeProcessorsCounter.incrementAndGet();
+        receivedPacketsCounter.put(processorId, 0L);
+        processedPacketsCounter.put(processorId, 0L);
+        processedPacketsTotalTimeCounter.put(processorId, 0L);
     }
 
     public void unregisterProcessorThread() {
-        counters.get(CounterName.PROCESSOR_THREAD).decrementAndGet();
+        activeProcessorsCounter.decrementAndGet();
     }
 
-    public void registerProcessedPacket() {
-        counters.get(CounterName.PROCESSED_PACKETS).incrementAndGet();
+    public void registerInputBufferOverflow() {
+        inputBufferOverflowCounter.incrementAndGet();
     }
 
-    public void registerDataRecord() {
-        counters.get(CounterName.DATA_RECORDS).incrementAndGet();
+    public void registerReceivedPacket(int processorId) {
+        receivedPacketsCounter.merge(processorId, 1L, (oldValue, newValue) -> oldValue + newValue);
     }
 
-    public void registerUnknownDataFormatPacket() {
-        counters.get(CounterName.UNKNOWN_FORMAT_DATA_RECORDS).incrementAndGet();
-        counters.get(CounterName.FAILED_PACKETS).incrementAndGet();
+    public void registerProcessedPacket(int processorId, long time) {
+        processedPacketsCounter.merge(processorId, 1L, (oldValue, newValue) -> oldValue + newValue);
+        processedPacketsTotalTimeCounter.merge(processorId, time, (oldValue, newValue) -> oldValue + newValue);
     }
 
-
-    public void registerUnknownInfoModel() {
-        counters.get(CounterName.UNKNOWN_INFO_MODEL).incrementAndGet();
-        counters.get(CounterName.FAILED_PACKETS).incrementAndGet();
-    }
-
-
-    public void registerMalformedPacket() {
-        counters.get(CounterName.MALFORMED_PACKETS).incrementAndGet();
-        counters.get(CounterName.FAILED_PACKETS).incrementAndGet();
-    }
-
-    public void registerUnknownProtocolPacket() {
-        counters.get(CounterName.UNKNOWN_PROTOCOL_PACKETS).incrementAndGet();
-        counters.get(CounterName.FAILED_PACKETS).incrementAndGet();
-    }
-
-    public void registerFailedPacket() {
-        counters.get(CounterName.FAILED_PACKETS).incrementAndGet();
-    }
-
-    public void registerOptionalTemplateRecord() {
-        counters.get(CounterName.OPTIONAL_TEMPLATE_RECORDS).incrementAndGet();
-    }
-
-    public void registerExportedRecords(int insertedCount) {
-        counters.get(CounterName.EXPORTED_RECORDS).updateAndGet(operand -> operand + insertedCount);
-    }
-
-    public void registerDeletedRecordsCount(long deletedCount) {
-        counters.get(CounterName.DELETED_RECORDS).updateAndGet(operand -> operand + deletedCount);
-    }
-
-    @Scheduled(fixedDelay = 10_000)
+    @Scheduled(fixedDelay = 60_000, initialDelay = 5_000)
     public void report() {
-        long secondsSinceLastReport = ChronoUnit.SECONDS.between(lastReport, LocalDateTime.now());
+        LocalDateTime currentDateTime = LocalDateTime.now();
+        long secondsSinceLastReport = ChronoUnit.SECONDS.between(lastReportDateTime, currentDateTime);
+        lastReportDateTime = currentDateTime;
 
-        if (secondsSinceLastReport == 0) return;
+        List<Map.Entry<Integer, Long>> receivedPacketsCountersForNow = new ArrayList<>(receivedPacketsCounter.entrySet());
+        resetPacketsCounters(receivedPacketsCounter);
 
-        lastReport = LocalDateTime.now();
-        Duration uptime = Duration.between(applicationStart, LocalDateTime.now());
+        List<Map.Entry<Integer, Long>> processedPacketsCountersForNow = new ArrayList<>(processedPacketsCounter.entrySet());
+        resetPacketsCounters(processedPacketsCounter);
 
-        StringBuilder sb = new StringBuilder();
+        List<Map.Entry<Integer, Long>> processedPacketsTotalTimeCountersForNow = new ArrayList<>(processedPacketsTotalTimeCounter.entrySet());
+        resetPacketsCounters(processedPacketsTotalTimeCounter);
 
-        sb.append("\n\n\tuptime: ")
-                .append(uptime.toMinutes()).append(" minutes\n");
+        StringBuilder sb = new StringBuilder("\n\nStart periodical collector report....\n");
 
-        sb.append("\tparser threads: ")
-                .append(counters.get(CounterName.PROCESSOR_THREAD).get())
+        sb.append("\n\tuptime: ")
+                .append(getUptime(currentDateTime))
+                .append(" minutes\n");
+
+        sb.append("\tactive parser threads: ")
+                .append(activeProcessorsCounter.get())
+                .append("\n\n");
+
+        //TODO вывести счетчик переполнения приемного буфера
+        sb.append("\tbuffer overflows: ")
+                .append(inputBufferOverflowCounter.get())
+                .append("\n\n");
+
+
+        sb.append("\tpackets received rates per processor: ")
+                .append(getReceivedPacketsRatesPerProcessor(receivedPacketsCountersForNow, secondsSinceLastReport))
                 .append("\n");
 
-        long receivedPackets = counters.get(CounterName.RECEIVED_PACKETS).getAndSet(0);
+        sb.append("\ttotal packets received rates: ")
+                .append(getTotalReceivedPacketsRates(receivedPacketsCountersForNow, secondsSinceLastReport))
+                .append(" pps\n\n");
 
-        sb.append("\n\tpackets received: ")
-                .append(receivedPackets)
-                .append(", rate: ")
-                .append(receivedPackets / secondsSinceLastReport)
-                .append(" packets/sec").append("\n");
-
-        sb.append("\tinput buffer overflows: ")
-                .append(counters.get(CounterName.INPUT_BUFFER_OVERFLOWS).get())
+        sb.append("\tpackets processed rates per processor: ")
+                .append(getProcessedPacketsRatesPerProcessor(processedPacketsCountersForNow, secondsSinceLastReport))
                 .append("\n");
 
-        long processedPackets = counters.get(CounterName.PROCESSED_PACKETS).getAndSet(0);
+        sb.append("\ttotal packets processed rates: ")
+                .append(getTotalProcessedPacketsRates(processedPacketsCountersForNow, secondsSinceLastReport))
+                .append(" pps\n\n");
 
-        sb.append("\tpackets processed: ")
-                .append(processedPackets)
-                .append(", rate: ")
-                .append(processedPackets / secondsSinceLastReport)
-                .append(" packets/sec").append("\n");
+        sb.append("\tpackets average parse time: ")
+                .append(getProcessedPacketsAverageParseTime(processedPacketsTotalTimeCountersForNow,
+                        processedPacketsCountersForNow))
+                .append("\n");
 
-        sb.append("\tfailed packets (malformed/unknown info model/unknown protocol/unknown data record format/total): ")
-                .append(counters.get(CounterName.MALFORMED_PACKETS).get()).append("/")
-                .append(counters.get(CounterName.UNKNOWN_INFO_MODEL).get()).append("/")
-                .append(counters.get(CounterName.UNKNOWN_PROTOCOL_PACKETS).get()).append("/")
-                .append(counters.get(CounterName.UNKNOWN_FORMAT_DATA_RECORDS).get()).append("/")
-                .append(counters.get(CounterName.FAILED_PACKETS).get()).append("\n");
+//        sb.append("\tfailed packets (malformed/unknown info model/unknown protocol/unknown data record format/total): ")
+//                .append(counters.get(CounterName.MALFORMED_PACKETS).get()).append("/")
+//                .append(counters.get(CounterName.UNKNOWN_INFO_MODEL).get()).append("/")
+//                .append(counters.get(CounterName.UNKNOWN_PROTOCOL_PACKETS).get()).append("/")
+//                .append(counters.get(CounterName.UNKNOWN_FORMAT_DATA_RECORDS).get()).append("/")
+//                .append(counters.get(CounterName.FAILED_PACKETS).get()).append("\n");
+//
+//        long dataRecords = counters.get(CounterName.DATA_RECORDS).getAndSet(0);
+//
+//        sb.append("\trecords types (template/optional template/data): ")
+//                .append(counters.get(CounterName.TEMPLATE_RECORDS).getAndSet(0)).append("/")
+//                .append(counters.get(CounterName.OPTIONAL_TEMPLATE_RECORDS).getAndSet(0)).append("/")
+//                .append(dataRecords).append("\n");
+//
+//        sb.append("\tdata records rate: ")
+//                .append(dataRecords / secondsSinceLastReport)
+//                .append(" records/sec").append("\n");
+//
+//        sb.append("\n\texported records to buffer: ")
+//                .append(counters.get(CounterName.EXPORTED_RECORDS).get()).append("\n");
+//
+//        sb.append("\n\tdeleted records from buffer: ")
+//                .append(counters.get(CounterName.DELETED_RECORDS).get()).append("\n");
 
-        long dataRecords = counters.get(CounterName.DATA_RECORDS).getAndSet(0);
-
-        sb.append("\trecords types (template/optional template/data): ")
-                .append(counters.get(CounterName.TEMPLATE_RECORDS).getAndSet(0)).append("/")
-                .append(counters.get(CounterName.OPTIONAL_TEMPLATE_RECORDS).getAndSet(0)).append("/")
-                .append(dataRecords).append("\n");
-
-        sb.append("\tdata records rate: ")
-                .append(dataRecords / secondsSinceLastReport)
-                .append(" records/sec").append("\n");
-
-        sb.append("\n\texported records to buffer: ")
-                .append(counters.get(CounterName.EXPORTED_RECORDS).get()).append("\n");
-
-        sb.append("\n\tdeleted records from buffer: ")
-                .append(counters.get(CounterName.DELETED_RECORDS).get()).append("\n");
+        sb.append("\n...end of periodical collector report\n");
 
         LOGGER.info(sb.toString());
     }
 
-    private enum CounterName {
-        PROCESSOR_THREAD,
-        RECEIVED_PACKETS,
-        INPUT_BUFFER_OVERFLOWS,
-        PROCESSED_PACKETS,
-        FAILED_PACKETS,
-        MALFORMED_PACKETS,
-        UNKNOWN_PROTOCOL_PACKETS,
-        UNKNOWN_INFO_MODEL,
-        UNKNOWN_FORMAT_DATA_RECORDS,
-        TEMPLATE_RECORDS,
-        OPTIONAL_TEMPLATE_RECORDS,
-        DATA_RECORDS,
-        DELETED_RECORDS,
-        EXPORTED_RECORDS
+    private void resetPacketsCounters(Map<?, Long> packetsCounter) {
+        packetsCounter.entrySet().forEach(e -> e.setValue(Long.valueOf(0L)));
+    }
+
+    private String getUptime(LocalDateTime currentDateTime) {
+        return String.valueOf(Duration.between(applicationStart, currentDateTime).toMinutes());
+    }
+
+    private String getReceivedPacketsRatesPerProcessor(List<Map.Entry<Integer, Long>> receivedPacketsCountersForNow,
+                                                       final long secondsSinceLastReport) {
+        return receivedPacketsCountersForNow.stream()
+                .map(e -> String.format("% d: %d pps", e.getKey(), e.getValue() / secondsSinceLastReport))
+                .collect(toList())
+                .toString();
+    }
+
+    private long getTotalReceivedPacketsRates(List<Map.Entry<Integer, Long>> receivedPacketsCountersForNow,
+                                              final long secondsSinceLastReport) {
+        return receivedPacketsCountersForNow.stream()
+                .mapToLong(Map.Entry::getValue)
+                .sum() / secondsSinceLastReport;
+    }
+
+    private String getProcessedPacketsRatesPerProcessor(List<Map.Entry<Integer, Long>> processedPacketsCountersForNow,
+                                                        final long secondsSinceLastReport) {
+        return processedPacketsCountersForNow.stream()
+                .map(e -> String.format("% d: %d pps", e.getKey(), e.getValue() / secondsSinceLastReport))
+                .collect(toList())
+                .toString();
+    }
+
+    private long getTotalProcessedPacketsRates(List<Map.Entry<Integer, Long>> processedPacketsCountersForNow,
+                                               final long secondsSinceLastReport) {
+        return processedPacketsCountersForNow.stream()
+                .mapToLong(Map.Entry::getValue)
+                .sum() / secondsSinceLastReport;
+    }
+
+    private String getProcessedPacketsAverageParseTime(List<Map.Entry<Integer, Long>> processedPacketsTotalTimeCountersForNow,
+                                                       List<Map.Entry<Integer, Long>> processedPacketsCountersForNow) {
+        return processedPacketsTotalTimeCountersForNow.stream()
+                .map(e -> {
+                    Long v = e.getValue();
+
+                    long processedPackets = processedPacketsCountersForNow.stream()
+                            .filter(e1 -> e1.getKey().equals(e.getKey()))
+                            .mapToLong(Map.Entry::getValue)
+                            .findFirst().orElse(0);
+
+                    long parseTime = processedPackets != 0 ? v / processedPackets : 0;
+                    return String.format("%d: %d ns", e.getKey(), parseTime);
+                })
+                .collect(toList())
+                .toString();
     }
 }
