@@ -21,13 +21,13 @@
 
 package me.alexand.scat.statistic.collector.service;
 
+import me.alexand.scat.statistic.collector.utils.DateTimeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -105,7 +105,7 @@ public class StatCollector {
 
         sb.append("\n\tuptime: ")
                 .append(getUptime(currentDateTime))
-                .append(" minutes\n");
+                .append("\n");
 
         sb.append("\tactive parser threads: ")
                 .append(activeProcessorsCounter.get())
@@ -172,7 +172,7 @@ public class StatCollector {
     }
 
     private String getUptime(LocalDateTime currentDateTime) {
-        return String.valueOf(Duration.between(applicationStart, currentDateTime).toMinutes());
+        return DateTimeUtils.getFormattedDifferenceBetweenLocalDateTime(applicationStart, currentDateTime);
     }
 
     private String getReceivedPacketsRatesPerProcessor(List<Map.Entry<Integer, Long>> receivedPacketsCountersForNow,
