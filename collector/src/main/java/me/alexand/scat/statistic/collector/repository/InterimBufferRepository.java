@@ -63,4 +63,12 @@ public interface InterimBufferRepository {
      * @return отметка времени или null, если в буфере нет ни одной записи данного типа
      */
     LocalDateTime getMaxEventTime(TemplateType type);
+
+    /**
+     * Сохранить список IPFIX-записей в виде одного BATCH INSERT
+     *
+     * @param records список IPFIX-записей
+     * @return количество успешно сохраненных IPFIX-записей
+     */
+    int save(TemplateType type, List<IPFIXDataRecord> records);
 }

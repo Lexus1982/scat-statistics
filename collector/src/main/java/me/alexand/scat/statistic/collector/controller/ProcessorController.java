@@ -21,8 +21,8 @@
 
 package me.alexand.scat.statistic.collector.controller;
 
-import me.alexand.scat.statistic.collector.service.DataRecordsProcessorFactory;
 import me.alexand.scat.statistic.collector.service.DataTemplateService;
+import me.alexand.scat.statistic.collector.service.IPFIXMessageProcessorFactory;
 import me.alexand.scat.statistic.collector.utils.ThreadFactoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +53,7 @@ public final class ProcessorController {
 
     @Autowired
     public ProcessorController(@Value("${processors.count}") final int processorsCount,
-                               final DataRecordsProcessorFactory dataRecordsProcessorFactory,
+                               final IPFIXMessageProcessorFactory IPFIXMessageProcessorFactory,
                                final DataTemplateService dataTemplateService) {
         if (processorsCount <= 0) {
             throw new IllegalArgumentException(String.format("illegal processors count: %d", processorsCount));
@@ -72,7 +72,7 @@ public final class ProcessorController {
 
         LOGGER.info("Starting processors");
         for (int i = 0; i < processorsCount; i++) {
-            processorsPool.submit(dataRecordsProcessorFactory.getProcessor());
+            processorsPool.submit(IPFIXMessageProcessorFactory.getProcessor());
         }
     }
 

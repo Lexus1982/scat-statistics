@@ -10,19 +10,24 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+import static me.alexand.scat.statistic.collector.model.TemplateType.UNKNOWN;
 
 /**
  * SQL Databases реализация репозитория для IPFIX-записей
@@ -85,6 +90,52 @@ public class InterimBufferRepositoryImpl implements InterimBufferRepository {
         }
 
         return insertedRecords == 1;
+    }
+
+    @Override
+    @Transactional("bufferTM")
+    public int save(TemplateType type, List<IPFIXDataRecord> records) {
+        //TODO
+        if (type == UNKNOWN) return 0;
+
+        String sql = null;
+
+        switch (type) {
+            case CS_REQ:
+                sql = CS_REQ_INSERT;
+                break;
+            case CS_RESP:
+                sql = CS_RESP_INSERT;
+                break;
+            case GENERIC:
+                sql = GENERIC_INSERT;
+                break;
+        }
+
+        try {
+            int[] rows = jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
+                @Override
+                public void setValues(PreparedStatement ps, int i) throws SQLException {
+                    List<IPFIXFieldValue> fieldValues = records.get(i).getFieldValues();
+
+                    for (int j = 0; j < fieldValues.size(); j++) {
+                        int sqlType = fieldValues.get(j).getType().getSqlType();
+                        ps.setObject(j + 1, fieldValues.get(j).getValue(), sqlType);
+                    }
+                }
+
+                @Override
+                public int getBatchSize() {
+                    return records.size();
+                }
+            });
+
+            return Arrays.stream(rows).sum();
+        } catch (DataAccessException e) {
+            LOGGER.error(e.getMessage());
+        }
+
+        return 0;
     }
 
     @Override

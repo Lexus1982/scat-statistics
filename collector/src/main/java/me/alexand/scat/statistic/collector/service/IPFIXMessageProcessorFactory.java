@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
  */
 
 @Component
-public abstract class DataRecordsProcessorFactory {
+public abstract class IPFIXMessageProcessorFactory {
     @Lookup
-    public abstract DataRecordsProcessor getProcessor();
+    public abstract IPFIXMessageProcessor getProcessor();
 }
