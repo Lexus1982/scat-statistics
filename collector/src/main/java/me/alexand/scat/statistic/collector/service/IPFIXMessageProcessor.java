@@ -1,3 +1,24 @@
+/*
+ * Copyright 2018 Alexander Sidorov (asidorov84@gmail.com)
+ *
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package me.alexand.scat.statistic.collector.service;
 
 import me.alexand.scat.statistic.collector.model.IPFIXDataRecord;
@@ -8,6 +29,7 @@ import me.alexand.scat.statistic.collector.network.PacketsReceiver;
 import me.alexand.scat.statistic.collector.utils.exceptions.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -29,33 +51,38 @@ import java.util.Map;
 public class IPFIXMessageProcessor implements Runnable {
     private static final Logger LOGGER = LoggerFactory.getLogger(IPFIXMessageProcessor.class);
 
-    private static final int BATCH_SIZE = 5000;
-
     private static volatile int processorsCounter = 0;
     private int processorId;
 
-    private final Map<TemplateType, List<IPFIXDataRecord>> recordsCache = new HashMap<>();
-    private final IPFIXParser parser;
-    private final PacketsReceiver receiver;
-    private final InterimBufferRecorder interimBufferRecorder;
+    private final int batchSize;
+    private final Map<TemplateType, List<IPFIXDataRecord>> interimStorage = new HashMap<>();
 
     private final StatCollector statCollector;
+    private final PacketsReceiver receiver;
+    private final IPFIXParser parser;
+    private final TransitionalBufferRecorder transitionalBufferRecorder;
 
-    public IPFIXMessageProcessor(IPFIXParser parser,
+    public IPFIXMessageProcessor(@Value("${processor.records.batch.size}") int batchSize,
+                                 IPFIXParser parser,
                                  PacketsReceiver receiver,
-                                 InterimBufferRecorder interimBufferRecorder,
+                                 TransitionalBufferRecorder transitionalBufferRecorder,
                                  StatCollector statCollector) {
+        if (batchSize <= 0) {
+            throw new IllegalArgumentException(String.format("batch size of records is illegal: %s", batchSize));
+        }
+        this.batchSize = batchSize;
+        
         synchronized (IPFIXMessageProcessor.class) {
             processorId = ++processorsCounter;
         }
 
         this.parser = parser;
         this.receiver = receiver;
-        this.interimBufferRecorder = interimBufferRecorder;
+        this.transitionalBufferRecorder = transitionalBufferRecorder;
         this.statCollector = statCollector;
 
         for (TemplateType type : TemplateType.values()) {
-            recordsCache.put(type, new ArrayList<>(BATCH_SIZE));
+            interimStorage.put(type, new ArrayList<>(batchSize));
         }
     }
 
@@ -90,12 +117,12 @@ public class IPFIXMessageProcessor implements Runnable {
                             if (record instanceof IPFIXDataRecord) {
                                 IPFIXDataRecord dataRecord = (IPFIXDataRecord) record;
                                 TemplateType dataRecordType = dataRecord.getType();
-                                List<IPFIXDataRecord> batchList = recordsCache.get(dataRecordType);
+                                List<IPFIXDataRecord> batchList = interimStorage.get(dataRecordType);
                                 batchList.add(dataRecord);
 
-                                if (batchList.size() == BATCH_SIZE) {
-                                    interimBufferRecorder.transfer(dataRecordType, batchList);
-                                    recordsCache.put(dataRecordType, new ArrayList<>(BATCH_SIZE));
+                                if (batchList.size() == batchSize) {
+                                    transitionalBufferRecorder.transfer(dataRecordType, batchList);
+                                    interimStorage.put(dataRecordType, new ArrayList<>(batchSize));
                                 }
                             }
                         });

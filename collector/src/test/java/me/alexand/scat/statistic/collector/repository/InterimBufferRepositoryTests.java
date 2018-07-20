@@ -55,7 +55,7 @@ public class InterimBufferRepositoryTests {
     private static final long EXPECTED_DELETED_RECORDS_COUNT = 6;
 
     @Autowired
-    private InterimBufferRepository repository;
+    private TransitionalBufferRepository repository;
 
     @Test
     public void testGetCountCSReq() {

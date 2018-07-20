@@ -60,7 +60,7 @@
     <bean id="dataTemplateRepository"
           class="me.alexand.scat.statistic.collector.repository.impls.InMemoryDataTemplateRepositoryImpl"/>
     <bean id="dataRecordsRepository"
-          class="me.alexand.scat.statistic.collector.repository.impls.InterimBufferRepositoryImpl">
+          class="me.alexand.scat.statistic.collector.repository.impls.TransitionalBufferRepositoryImpl">
         <constructor-arg ref="hsqlJdbcTemplate"/>
     </bean>
 

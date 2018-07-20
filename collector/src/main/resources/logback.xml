@@ -74,7 +74,7 @@
         <appender-ref ref="console"/>
     </logger>
 
-    <logger name="me.alexand.scat.statistic.collector.service.InterimBufferCleaner" level="debug" additivity="false">
+    <logger name="me.alexand.scat.statistic.collector.service.TransitionalBufferCleaner" level="debug" additivity="false">
         <appender-ref ref="cleaner"/>
     </logger>
 

@@ -1,7 +1,28 @@
+/*
+ * Copyright 2018 Alexander Sidorov (asidorov84@gmail.com)
+ *
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package me.alexand.scat.statistic.collector.service;
 
 import me.alexand.scat.statistic.collector.model.TemplateType;
-import me.alexand.scat.statistic.collector.repository.InterimBufferRepository;
+import me.alexand.scat.statistic.collector.repository.TransitionalBufferRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,14 +43,14 @@ import static me.alexand.scat.statistic.collector.utils.DateTimeUtils.getFormatt
  */
 
 @Service
-public class InterimBufferCleaner {
-    private static final Logger LOGGER = LoggerFactory.getLogger(InterimBufferCleaner.class);
+public class TransitionalBufferCleaner {
+    private static final Logger LOGGER = LoggerFactory.getLogger(TransitionalBufferCleaner.class);
 
-    private InterimBufferRepository interimBufferRepository;
+    private TransitionalBufferRepository transitionalBufferRepository;
 
     @Autowired
-    public InterimBufferCleaner(InterimBufferRepository interimBufferRepository) {
-        this.interimBufferRepository = interimBufferRepository;
+    public TransitionalBufferCleaner(TransitionalBufferRepository transitionalBufferRepository) {
+        this.transitionalBufferRepository = transitionalBufferRepository;
 
     }
 
@@ -45,15 +66,15 @@ public class InterimBufferCleaner {
         for (TemplateType type : TemplateType.values()) {
             if (type.equals(UNKNOWN)) continue;
 
-            long recordsDeleted = interimBufferRepository.delete(type, beforeEventTime);
+            long recordsDeleted = transitionalBufferRepository.delete(type, beforeEventTime);
             totalRecordsDeleted += recordsDeleted;
 
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("\t-------------------------------------------------------");
                 LOGGER.debug("\tdeleted records from {}: {}", type, recordsDeleted);
-                LOGGER.debug("\trecords in {} is now: {}", type, interimBufferRepository.getCount(type));
-                LOGGER.debug("\tminimum event time in {}: {}", type, getFormattedDateTime(interimBufferRepository.getMinEventTime(type)));
-                LOGGER.debug("\tmaximum event time in {}: {}", type, getFormattedDateTime(interimBufferRepository.getMaxEventTime(type)));
+                LOGGER.debug("\trecords in {} is now: {}", type, transitionalBufferRepository.getCount(type));
+                LOGGER.debug("\tminimum event time in {}: {}", type, getFormattedDateTime(transitionalBufferRepository.getMinEventTime(type)));
+                LOGGER.debug("\tmaximum event time in {}: {}", type, getFormattedDateTime(transitionalBufferRepository.getMaxEventTime(type)));
             }
         }
 

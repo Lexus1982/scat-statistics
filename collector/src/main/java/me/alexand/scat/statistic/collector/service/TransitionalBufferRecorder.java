@@ -1,8 +1,29 @@
+/*
+ * Copyright 2018 Alexander Sidorov (asidorov84@gmail.com)
+ *
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package me.alexand.scat.statistic.collector.service;
 
 import me.alexand.scat.statistic.collector.model.IPFIXDataRecord;
 import me.alexand.scat.statistic.collector.model.TemplateType;
-import me.alexand.scat.statistic.collector.repository.InterimBufferRepository;
+import me.alexand.scat.statistic.collector.repository.TransitionalBufferRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,18 +40,18 @@ import java.util.concurrent.BlockingQueue;
  */
 
 @Component
-public class InterimBufferRecorder {
-    private static final Logger LOGGER = LoggerFactory.getLogger(InterimBufferRecorder.class);
+public class TransitionalBufferRecorder {
+    private static final Logger LOGGER = LoggerFactory.getLogger(TransitionalBufferRecorder.class);
     private static final int OUTPUT_BUFFER_SIZE = 100000;
 
     private final Map<TemplateType, Thread> recorderThreads = new HashMap<>();
     private final Map<TemplateType, BlockingQueue<List<IPFIXDataRecord>>> recordsBuffers = new HashMap<>();
-    private final InterimBufferRepository interimBufferRepository;
+    private final TransitionalBufferRepository transitionalBufferRepository;
 
     @Autowired
-    public InterimBufferRecorder(InterimBufferRepository interimBufferRepository) {
+    public TransitionalBufferRecorder(TransitionalBufferRepository transitionalBufferRepository) {
         LOGGER.info("initializing recorders...");
-        this.interimBufferRepository = interimBufferRepository;
+        this.transitionalBufferRepository = transitionalBufferRepository;
 
         for (TemplateType type : TemplateType.values()) {
             recordsBuffers.put(type, new ArrayBlockingQueue<>(OUTPUT_BUFFER_SIZE));
@@ -65,7 +86,7 @@ public class InterimBufferRecorder {
             try {
                 while (!recorderThreads.get(templateType).isInterrupted()) {
                     List<IPFIXDataRecord> records = buffer.take();
-                    interimBufferRepository.save(templateType, records);
+                    transitionalBufferRepository.save(templateType, records);
                 }
 
             } catch (InterruptedException e) {
