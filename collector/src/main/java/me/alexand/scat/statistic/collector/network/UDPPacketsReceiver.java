@@ -36,10 +36,12 @@ import java.util.concurrent.BlockingQueue;
 import static java.util.Arrays.copyOf;
 
 /**
- * Приемник UDP-пакетов
+ * Приемник пакетов c IPFIX-сообщениями.
  * <p>
- * В отдельном потоке получает UDP-пакеты на указанном сокете
- * и сохраняет во внутреннем буфере.
+ * Реализация на основе сетевого протокола UDP. В отдельном потоке UDP-пакеты непрерывно забираются из сокета
+ * и размещаются во внутреннем буфере приемника. Доступ к пакетам осуществляется через метод getNextPacket().
+ * Обязательными параметрами для создания экземпляра являются IP-адрес и порт, через которые будут прослушиваться
+ * пакеты, а также размер внутреннего буфера (в пакетах) и размер приемного буфера сокета для UDP (SO_RCVBUF)
  *
  * @author asidorov84@gmail.com
  */
@@ -47,10 +49,10 @@ import static java.util.Arrays.copyOf;
 @Component
 public class UDPPacketsReceiver implements PacketsReceiver {
     private static final Logger LOGGER = LoggerFactory.getLogger(UDPPacketsReceiver.class);
-    private static final int UDP_RECEIVE_BUFFER_SIZE = 100 * 1024 * 1024;
+    private static final int MAX_UDP_PACKET_SIZE = 65535;
 
     private final DatagramSocket socket;
-    private final byte[] buffer = new byte[65535];
+    private final byte[] buffer = new byte[MAX_UDP_PACKET_SIZE];
     private final DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 
     private final Thread receiverThread;
@@ -61,20 +63,34 @@ public class UDPPacketsReceiver implements PacketsReceiver {
     public UDPPacketsReceiver(@Value("${net.address}") String listenAddress,
                               @Value("${net.port}") int listenPort,
                               @Value("${packet.buffer.capacity}") int bufferCapacity,
+                              @Value("${socket.receive.buffer.size}") int socketReceiveBufferSize,
                               StatCollector statCollector) throws SocketException, UnknownHostException {
+        InetAddress address = InetAddress.getByName(listenAddress);
+
+        if (listenPort <= 1024 || listenPort >= 65535) {
+            throw new IllegalArgumentException("illegal port number");
+        }
+
+        if (bufferCapacity <= 0) {
+            throw new IllegalArgumentException("illegal size of buffer");
+        }
+
+        if (socketReceiveBufferSize <= 0) {
+            throw new IllegalArgumentException("illegal SO_RCVBUF size");
+        }
+
         this.statCollector = statCollector;
 
-        socket = new DatagramSocket(listenPort, InetAddress.getByName(listenAddress));
+        socket = new DatagramSocket(listenPort, address);
         LOGGER.info("Creating socket on {}:{}",
                 socket.getLocalAddress().getHostAddress(),
                 socket.getLocalPort());
 
-        socket.setReceiveBufferSize(UDP_RECEIVE_BUFFER_SIZE);
-        LOGGER.info("Set socket receive buffer size: {}", UDP_RECEIVE_BUFFER_SIZE);
-        LOGGER.info("Receive buffer size: {}", socket.getReceiveBufferSize());
+        socket.setReceiveBufferSize(socketReceiveBufferSize);
+        LOGGER.info("Receive buffer size on socket: {}", socket.getReceiveBufferSize());
 
         packetsBuffer = new ArrayBlockingQueue<>(bufferCapacity);
-        LOGGER.info("Initialize packets buffer with size: {}", bufferCapacity);
+        LOGGER.info("Initialize internal packets buffer with size: {}", bufferCapacity);
 
         receiverThread = new Thread(new Receiver(), "udp-receiver-thread");
         receiverThread.setPriority(Thread.MAX_PRIORITY);

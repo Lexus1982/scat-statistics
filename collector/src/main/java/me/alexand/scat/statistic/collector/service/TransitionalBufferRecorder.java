@@ -71,7 +71,6 @@ public class TransitionalBufferRecorder {
     }
 
     private class Recorder implements Runnable {
-
         private final TemplateType templateType;
 
         public Recorder(TemplateType templateType) {
