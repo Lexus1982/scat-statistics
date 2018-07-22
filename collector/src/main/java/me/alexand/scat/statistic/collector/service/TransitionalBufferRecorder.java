@@ -42,7 +42,7 @@ import java.util.concurrent.BlockingQueue;
 @Component
 public class TransitionalBufferRecorder {
     private static final Logger LOGGER = LoggerFactory.getLogger(TransitionalBufferRecorder.class);
-    private static final int OUTPUT_BUFFER_SIZE = 100000;
+    private static final int OUTPUT_BUFFER_SIZE = 100_000_000;
 
     private final Map<TemplateType, Thread> recorderThreads = new HashMap<>();
     private final Map<TemplateType, BlockingQueue<List<IPFIXDataRecord>>> recordsBuffers = new HashMap<>();

@@ -26,11 +26,7 @@ import me.alexand.scat.statistic.collector.model.TemplateType;
 import me.alexand.scat.statistic.collector.repository.DataTemplateRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.*;
 
 /**
  * @author asidorov84@gmail.com
@@ -38,7 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Repository
 public class InMemoryDataTemplateRepositoryImpl implements DataTemplateRepository {
-    private final Map<TemplateType, DataTemplate> repository = new ConcurrentHashMap<>();
+    private final Map<TemplateType, DataTemplate> repository = new HashMap<>();
 
     @Override
     public List<DataTemplate> getAll() {

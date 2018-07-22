@@ -26,5 +26,5 @@ package me.alexand.scat.statistic.collector.utils;
  */
 public interface Constants {
     int INTERIM_BUFFER_CLEANER_RUN_FREQUENCY = 15000;
-    int INTERIM_BUFFER_DEPTH = 15;
+    int INTERIM_BUFFER_DEPTH = 5;
 }

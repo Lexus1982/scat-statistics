@@ -26,11 +26,7 @@ import me.alexand.scat.statistic.collector.repository.InfoModelRepository;
 import me.alexand.scat.statistic.collector.utils.exceptions.UnknownInfoModelException;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -41,7 +37,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Repository
 public class InMemoryInfoModelRepositoryImpl implements InfoModelRepository {
-    private final Map<Integer, InfoModelEntity> repository = new ConcurrentHashMap<>();
+    private final Map<Integer, InfoModelEntity> repository = new HashMap<>();
     private final AtomicInteger counter = new AtomicInteger(1);
 
     @Override
