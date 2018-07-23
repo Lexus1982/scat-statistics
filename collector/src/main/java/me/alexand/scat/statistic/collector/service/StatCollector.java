@@ -21,6 +21,7 @@
 
 package me.alexand.scat.statistic.collector.service;
 
+import me.alexand.scat.statistic.collector.model.IPFIXHeader;
 import me.alexand.scat.statistic.collector.utils.DateTimeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,6 +56,7 @@ public class StatCollector {
     private final Map<Integer, Long> receivedPacketsCounter = new ConcurrentHashMap<>(processorsCount);
     private final Map<Integer, Long> processedPacketsCounter = new ConcurrentHashMap<>(processorsCount);
     private final Map<Integer, Long> processedPacketsTotalTimeCounter = new ConcurrentHashMap<>(processorsCount);
+    private final Map<Long, Long> processedRecordsCounter = new ConcurrentHashMap<>();
 
     private final LocalDateTime applicationStart = LocalDateTime.now();
     private LocalDateTime lastReportDateTime;
@@ -78,10 +80,6 @@ public class StatCollector {
         inputBufferOverflowCounter.incrementAndGet();
     }
 
-    public void registerSequenceMismatch() {
-        sequenceMismatchCounter.incrementAndGet();
-    }
-
     public void registerReceivedPacket(int processorId) {
         receivedPacketsCounter.merge(processorId, 1L, (oldValue, newValue) -> oldValue + newValue);
     }
@@ -89,6 +87,17 @@ public class StatCollector {
     public void registerProcessedPacket(int processorId, long time) {
         processedPacketsCounter.merge(processorId, 1L, (oldValue, newValue) -> oldValue + newValue);
         processedPacketsTotalTimeCounter.merge(processorId, time, (oldValue, newValue) -> oldValue + newValue);
+    }
+
+    public void registerRecords(IPFIXHeader header, long recordsCounter) {
+        long domainID = header.getObservationDomainID();
+        long sequenceNumber = header.getSequenceNumber();
+
+        processedRecordsCounter.merge(domainID, recordsCounter, (oldValue, newValue) -> oldValue + newValue);
+
+        if (sequenceNumber != processedRecordsCounter.get(domainID)) {
+            sequenceMismatchCounter.incrementAndGet();
+        }
     }
 
     @Scheduled(fixedDelay = 60_000, initialDelay = 5_000)

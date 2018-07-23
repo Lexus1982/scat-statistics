@@ -32,38 +32,46 @@ import static java.lang.System.arraycopy;
  */
 
 public interface BytesConvertUtils {
-    //TODO убрать лишние
-
-    static int oneByteToInt(byte[] buffer, int offset) {
-        return buffer[offset] & 0xff;
+    static int oneByteToInt(byte[] array, int offset) {
+        return ((int) array[offset]) & 0xFF;
     }
 
-    static int oneByteToInt(byte bytes) {
-        return bytes & 0xff;
+    static int oneByteToInt(byte value) {
+        return ((int) value) & 0xFF;
     }
 
-    static int twoBytesToInt(byte[] bytes) {
-        return ((bytes[0] & 0xff) << 8) | (bytes[1] & 0xff);
+    static int twoBytesToInt(byte[] array) {
+        return twoBytesToInt(array, 0);
     }
 
-    static long fourBytesToLong(byte[] bytes) {
+    static int twoBytesToInt(byte[] array, int offset) {
+        int result = 0;
+        result |= (((int) array[offset]) & 0xFF) << 8;
+        result |= ((int) array[offset + 1]) & 0xFF;
+        return result;
+    }
+
+    static long fourBytesToLong(byte[] array) {
+        return fourBytesToLong(array, 0);
+    }
+    
+    static long fourBytesToLong(byte[] array, int offset) {
         long result = 0;
-
-        for (int i = 0; i < 4; i++) {
-            result |= ((bytes[i] & 0xff) << 8 * (3 - i));
-        }
-
+        result |= (( (int) array[offset] ) & 0xFF) << 24;
+        result |= (( (int) array[offset + 1] ) & 0xFF) << 16;
+        result |= (( (int) array[offset + 2] ) & 0xFF) << 8;
+        result |= ( (int) array[offset + 3] ) & 0xFF;
         return result & 0xffffffffL;
+    }
+
+    static BigInteger eightBytesToBigInteger(byte[] array) {
+        return new BigInteger(1, array);
     }
 
     static BigInteger eightBytesToBigInteger(byte[] buffer, int offset) {
         byte[] bigIntegerBuf = new byte[8];
         arraycopy(buffer, offset, bigIntegerBuf, 0, 8);
         return new BigInteger(1, bigIntegerBuf);
-    }
-
-    static BigInteger eightBytesToBigInteger(byte[] bytes) {
-        return new BigInteger(1, bytes);
     }
 
     static boolean isHighBitSet(byte octet) {

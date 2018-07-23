@@ -41,6 +41,20 @@ public class BytesConvertUtilsTests {
     private static final long SIGNED_FOUR_BYTES_DATA = 0xFF_FF_FF_FFL;
 
     @Test
+    public void testConvertOneByteToInt() {
+        byte[] testBytesSet = {(byte) 0xff, (byte) 0x7f, (byte) 0x3f, (byte) 0x00};
+        int[] expectedValues = {255, 127, 63, 0};
+
+        for (int i = 0; i < testBytesSet.length; i++) {
+            assertEquals(expectedValues[i], oneByteToInt(testBytesSet[i]));
+        }
+
+        for (int i = 0; i < testBytesSet.length; i++) {
+            assertEquals(expectedValues[i], oneByteToInt(testBytesSet, i));
+        }
+    }
+
+    @Test
     public void testConvertTwoBytesToInt() {
         byte[] payload = ByteBuffer
                 .allocate(Short.BYTES)
@@ -48,6 +62,7 @@ public class BytesConvertUtilsTests {
                 .array();
 
         assertEquals(UNSIGNED_TWO_BYTES_DATA, twoBytesToInt(payload));
+        assertEquals(UNSIGNED_TWO_BYTES_DATA, twoBytesToInt(payload, 0));
 
         payload = ByteBuffer
                 .allocate(Short.BYTES)
@@ -55,6 +70,7 @@ public class BytesConvertUtilsTests {
                 .array();
 
         assertEquals(SIGNED_TWO_BYTES_DATA, twoBytesToInt(payload));
+        assertEquals(SIGNED_TWO_BYTES_DATA, twoBytesToInt(payload, 0));
     }
 
     @Test

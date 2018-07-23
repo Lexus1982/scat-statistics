@@ -1,25 +1,48 @@
+/*
+ * Copyright 2018 Alexander Sidorov (asidorov84@gmail.com)
+ *
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package me.alexand.scat.statistic.collector.network;
 
-import me.alexand.scat.statistic.collector.model.IPFIXHeader;
-import me.alexand.scat.statistic.collector.service.IPFIXParser;
 import me.alexand.scat.statistic.collector.service.StatCollector;
-import me.alexand.scat.statistic.collector.utils.exceptions.IPFIXParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PreDestroy;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
 import static java.lang.Thread.MAX_PRIORITY;
 import static java.util.Arrays.copyOf;
+import static me.alexand.scat.statistic.collector.utils.BytesConvertUtils.twoBytesToInt;
 import static me.alexand.scat.statistic.collector.utils.Constants.MESSAGE_HEADER_LENGTH;
 
 /**
@@ -31,24 +54,19 @@ public final class TCPPacketsReceiver implements PacketsReceiver {
     private static final Logger LOGGER = LoggerFactory.getLogger(TCPPacketsReceiver.class);
     private final BlockingQueue<byte[]> packetsBuffer;
 
-    private final ServerSocket serverSocket;
-    private final Thread listenerThread;
+    private final InetAddress address;
+    private final int port;
+    private final int socketReceiveBufferSize;
+    private final Thread connectionListenerThread;
+    private final List<Thread> sessionThreads = new ArrayList<>(10);
 
     private final StatCollector statCollector;
-    private final IPFIXParser parser;
 
-    public TCPPacketsReceiver(@Value("${net.address}") String listenAddress,
-                              @Value("${net.port}") int listenPort,
+    public TCPPacketsReceiver(@Value("${net.address}") String address,
+                              @Value("${net.port}") int port,
                               @Value("${packet.buffer.capacity}") int bufferCapacity,
                               @Value("${socket.receive.buffer.size}") int socketReceiveBufferSize,
-                              StatCollector statCollector,
-                              IPFIXParser parser) throws IOException {
-        InetAddress address = InetAddress.getByName(listenAddress);
-
-        if (listenPort <= 1024 || listenPort >= 65535) {
-            throw new IllegalArgumentException("illegal port number");
-        }
-
+                              StatCollector statCollector) throws UnknownHostException {
         if (bufferCapacity <= 0) {
             throw new IllegalArgumentException("illegal size of buffer");
         }
@@ -57,22 +75,16 @@ public final class TCPPacketsReceiver implements PacketsReceiver {
             throw new IllegalArgumentException("illegal SO_RCVBUF size");
         }
 
+        this.address = InetAddress.getByName(address);
+        this.port = port;
+        this.socketReceiveBufferSize = socketReceiveBufferSize;
         this.statCollector = statCollector;
-        this.parser = parser;
-
-        serverSocket = new ServerSocket(listenPort, 10, address);
-        serverSocket.setReceiveBufferSize(socketReceiveBufferSize);
-
-        LOGGER.info("Creating socket on {}:{}",
-                serverSocket.getInetAddress().getHostAddress(),
-                serverSocket.getLocalPort());
 
         packetsBuffer = new ArrayBlockingQueue<>(bufferCapacity);
         LOGGER.info("Initialize internal packets buffer with size: {}", bufferCapacity);
 
-        listenerThread = new Thread(new Listener(), "tcp-listener-thread");
-        listenerThread.setPriority(MAX_PRIORITY);
-        listenerThread.start();
+        connectionListenerThread = new Thread(new Server(), "connection-listener-thread");
+        connectionListenerThread.start();
     }
 
     @Override
@@ -80,45 +92,56 @@ public final class TCPPacketsReceiver implements PacketsReceiver {
         return packetsBuffer.take();
     }
 
-    //TODO нужен метод shutdown для остановки потоков и закрытия всех сокетов
+    @PreDestroy
+    private void shutdown() {
+        connectionListenerThread.interrupt();
+        sessionThreads.forEach(Thread::interrupt);
+    }
 
-    private class Listener implements Runnable {
+    private class Server implements Runnable {
         @Override
         public void run() {
             int sessionsCounter = 1;
-            LOGGER.info("Start listening for incoming connections...");
 
-            try {
-                while (!listenerThread.isInterrupted()) {
+            try (ServerSocket serverSocket = new ServerSocket(port, 10, address)) {
+                LOGGER.info("Created socket on {}:{}",
+                        serverSocket.getInetAddress().getHostAddress(),
+                        serverSocket.getLocalPort());
+                serverSocket.setReceiveBufferSize(socketReceiveBufferSize);
+
+                LOGGER.info("Started listening for incoming connections...");
+
+                while (!connectionListenerThread.isInterrupted()) {
                     Socket sessionSocket = serverSocket.accept();
 
                     LOGGER.info("Got connection from {}:{}",
                             sessionSocket.getInetAddress().getHostAddress(),
                             sessionSocket.getPort());
 
-                    LOGGER.info("Start new TCP-session with id = {}", sessionsCounter);
+                    LOGGER.info("Start new TCP session with id = {}", sessionsCounter);
                     LOGGER.info("Receive buffer size of socket: {}", sessionSocket.getReceiveBufferSize());
 
-                    TCPSession session = new TCPSession(sessionSocket, sessionsCounter);
-                    sessionsCounter++;
-
-                    new Thread(session, String.format("tcp-session-%d-thread", sessionsCounter)).start();
+                    Session session = new Session(sessionSocket, sessionsCounter);
+                    Thread sessionThread = new Thread(session, String.format("tcp-session-%d-thread", sessionsCounter++));
+                    sessionThread.setPriority(MAX_PRIORITY);
+                    sessionThread.start();
+                    sessionThreads.add(sessionThread);
                 }
             } catch (IOException e) {
                 LOGGER.error(e.getMessage());
             }
 
-            LOGGER.info("Stop listening for incoming connections...");
+            LOGGER.info("Stopped listening for incoming connections...");
         }
     }
 
-    private class TCPSession implements Runnable {
+    private class Session implements Runnable {
         private final Socket socket;
         private final int id;
-        private final byte[] buffer = new byte[65535];
-        private final byte[] rawHeader = new byte[MESSAGE_HEADER_LENGTH];
+        private final byte[] packetBuffer = new byte[65535];
+        private final byte[] header = new byte[MESSAGE_HEADER_LENGTH];
 
-        public TCPSession(Socket socket, int id) {
+        public Session(Socket socket, int id) {
             this.socket = socket;
             this.id = id;
         }
@@ -128,32 +151,33 @@ public final class TCPPacketsReceiver implements PacketsReceiver {
             LOGGER.debug("Start receiving packets within new session (id = {})...", id);
 
             try (DataInputStream dis = new DataInputStream(socket.getInputStream())) {
-                IPFIXHeader header = null;
 
                 while (!Thread.currentThread().isInterrupted()) {
-                    //читаем следующие 16 байт заголовка
-                    dis.readFully(rawHeader, 0, rawHeader.length);
-                    System.arraycopy(rawHeader, 0, buffer, 0, rawHeader.length);
+                    //Сообщения передаются в виде непрерывного набора байт. Чтобы отличить их между собой,
+                    //нужно сначала прочитать 16-ти байтовый заголовок очередного сообщения. В заголовке
+                    //3-й и 4-й байт означают длину всего сообщения (включая сам заголовок) в байтах.
 
-                    try {
-                        header = parser.parseHeader(rawHeader);
-                    } catch (IPFIXParseException e) {
-                        LOGGER.error(e.getMessage());
-                        break;
-                    }
+                    //читаем первые 16 байт заголовка
+                    dis.readFully(header, 0, header.length);
 
-                    int messageLength = header.getLength();
+                    //копируем заголовок в общий массив байт целого сообщения
+                    System.arraycopy(header, 0, packetBuffer, 0, header.length);
 
-                    //Читаем остаток сообщения
-                    dis.readFully(buffer, MESSAGE_HEADER_LENGTH, messageLength - MESSAGE_HEADER_LENGTH);
+                    int fullMessageLength = twoBytesToInt(header, 2);
 
-                    if (!packetsBuffer.offer(copyOf(buffer, messageLength))) {
+                    //Теперь, зная длину сообщения, читаем его тело
+                    dis.readFully(packetBuffer, MESSAGE_HEADER_LENGTH, fullMessageLength - MESSAGE_HEADER_LENGTH);
+
+                    if (!packetsBuffer.offer(copyOf(packetBuffer, fullMessageLength))) {
                         statCollector.registerInputBufferOverflow();
                     }
                 }
+                
+                socket.close();
             } catch (IOException e) {
                 LOGGER.error(e.getMessage());
             }
+            
             LOGGER.info("Stop receiving packets within new session (id = {})...", id);
         }
     }

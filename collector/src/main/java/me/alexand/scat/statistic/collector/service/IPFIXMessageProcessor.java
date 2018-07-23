@@ -111,11 +111,14 @@ public class IPFIXMessageProcessor implements Runnable {
                 long t1 = System.nanoTime();
 
                 statCollector.registerProcessedPacket(processorId, t1 - t0);
+                long recordsCounter = 0;
 
                 for (IPFIXSet set : message.getSets()) {
                     int setID = set.getSetID();
 
                     if (setID >= 256 && setID <= 65535) {
+                        recordsCounter += set.getRecords().size();
+                        
                         set.getRecords().forEach(record -> {
                             if (record instanceof IPFIXDataRecord) {
                                 IPFIXDataRecord dataRecord = (IPFIXDataRecord) record;
@@ -131,6 +134,8 @@ public class IPFIXMessageProcessor implements Runnable {
                         });
                     }
                 }
+                
+                statCollector.registerRecords(message.getHeader(), recordsCounter);
             } catch (MalformedMessageException |
                     UnknownProtocolException |
                     UnknownDataRecordFormatException |
