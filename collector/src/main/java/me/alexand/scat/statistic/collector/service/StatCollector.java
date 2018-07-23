@@ -51,6 +51,7 @@ public class StatCollector {
 
     private final AtomicInteger activeProcessorsCounter = new AtomicInteger(0);
     private final AtomicInteger inputBufferOverflowCounter = new AtomicInteger(0);
+    private final AtomicInteger sequenceMismatchCounter = new AtomicInteger(0);
     private final Map<Integer, Long> receivedPacketsCounter = new ConcurrentHashMap<>(processorsCount);
     private final Map<Integer, Long> processedPacketsCounter = new ConcurrentHashMap<>(processorsCount);
     private final Map<Integer, Long> processedPacketsTotalTimeCounter = new ConcurrentHashMap<>(processorsCount);
@@ -75,6 +76,10 @@ public class StatCollector {
 
     public void registerInputBufferOverflow() {
         inputBufferOverflowCounter.incrementAndGet();
+    }
+
+    public void registerSequenceMismatch() {
+        sequenceMismatchCounter.incrementAndGet();
     }
 
     public void registerReceivedPacket(int processorId) {
@@ -111,9 +116,12 @@ public class StatCollector {
                 .append(activeProcessorsCounter.get())
                 .append("\n\n");
 
-        //TODO вывести счетчик переполнения приемного буфера
         sb.append("\tbuffer overflows: ")
                 .append(inputBufferOverflowCounter.get())
+                .append("\n");
+
+        sb.append("\tsequence mismatches: ")
+                .append(sequenceMismatchCounter.get())
                 .append("\n\n");
 
 

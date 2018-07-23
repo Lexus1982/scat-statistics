@@ -29,6 +29,8 @@ import me.alexand.scat.statistic.collector.network.PacketsReceiver;
 import me.alexand.scat.statistic.collector.utils.exceptions.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -62,16 +64,17 @@ public class IPFIXMessageProcessor implements Runnable {
     private final IPFIXParser parser;
     private final TransitionalBufferRecorder transitionalBufferRecorder;
 
+    @Autowired
     public IPFIXMessageProcessor(@Value("${processor.records.batch.size}") int batchSize,
                                  IPFIXParser parser,
-                                 PacketsReceiver receiver,
+                                 @Qualifier("TCPPacketsReceiver") PacketsReceiver receiver,
                                  TransitionalBufferRecorder transitionalBufferRecorder,
                                  StatCollector statCollector) {
         if (batchSize <= 0) {
             throw new IllegalArgumentException(String.format("batch size of records is illegal: %s", batchSize));
         }
         this.batchSize = batchSize;
-        
+
         synchronized (IPFIXMessageProcessor.class) {
             processorId = ++processorsCounter;
         }

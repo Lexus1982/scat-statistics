@@ -25,6 +25,7 @@ import me.alexand.scat.statistic.collector.service.StatCollector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PreDestroy;
@@ -47,7 +48,8 @@ import static java.util.Arrays.copyOf;
  */
 
 @Component
-public class UDPPacketsReceiver implements PacketsReceiver {
+@Lazy
+public final class UDPPacketsReceiver implements PacketsReceiver {
     private static final Logger LOGGER = LoggerFactory.getLogger(UDPPacketsReceiver.class);
     private static final int MAX_UDP_PACKET_SIZE = 65535;
 

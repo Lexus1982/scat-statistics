@@ -91,7 +91,8 @@ public class IPFIXParserImpl implements IPFIXParser {
                 .build();
     }
 
-    private IPFIXHeader parseHeader(byte[] payload) throws IPFIXParseException {
+    @Override
+    public IPFIXHeader parseHeader(byte[] payload) throws IPFIXParseException {
         Objects.requireNonNull(payload);
 
         try {
