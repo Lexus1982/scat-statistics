@@ -56,6 +56,7 @@ public class StatCollector {
     private final Map<Integer, Long> receivedPacketsCounter = new ConcurrentHashMap<>(processorsCount);
     private final Map<Integer, Long> processedPacketsCounter = new ConcurrentHashMap<>(processorsCount);
     private final Map<Integer, Long> processedPacketsTotalTimeCounter = new ConcurrentHashMap<>(processorsCount);
+    private final Map<Long, Long> exportedRecordsCounter = new ConcurrentHashMap<>();
     private final Map<Long, Long> processedRecordsCounter = new ConcurrentHashMap<>();
 
     private final LocalDateTime applicationStart = LocalDateTime.now();
@@ -82,6 +83,10 @@ public class StatCollector {
 
     public void registerReceivedPacket(int processorId) {
         receivedPacketsCounter.merge(processorId, 1L, (oldValue, newValue) -> oldValue + newValue);
+    }
+
+    public void registerExportedRecords(long domainID, long exportedRecordsNumber) {
+        exportedRecordsCounter.merge(domainID, exportedRecordsNumber, (oldValue, newValue) -> oldValue + newValue);
     }
 
     public void registerProcessedPacket(int processorId, long time) {
@@ -129,8 +134,8 @@ public class StatCollector {
                 .append(inputBufferOverflowCounter.get())
                 .append("\n");
 
-        sb.append("\tsequence mismatches: ")
-                .append(sequenceMismatchCounter.get())
+        sb.append("\texported records per domain: ")
+                .append(exportedRecordsCounter.entrySet())
                 .append("\n\n");
 
 

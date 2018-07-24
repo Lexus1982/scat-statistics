@@ -42,6 +42,7 @@ import java.util.concurrent.BlockingQueue;
 
 import static java.lang.Thread.MAX_PRIORITY;
 import static java.util.Arrays.copyOf;
+import static me.alexand.scat.statistic.collector.utils.BytesConvertUtils.fourBytesToLong;
 import static me.alexand.scat.statistic.collector.utils.BytesConvertUtils.twoBytesToInt;
 import static me.alexand.scat.statistic.collector.utils.Constants.MESSAGE_HEADER_LENGTH;
 
@@ -141,6 +142,9 @@ public final class TCPPacketsReceiver implements PacketsReceiver {
         private final byte[] packetBuffer = new byte[65535];
         private final byte[] header = new byte[MESSAGE_HEADER_LENGTH];
 
+        private long prevSequenceNumber = 0;
+        private boolean isFirstPacket = true;
+
         public Session(Socket socket, int id) {
             this.socket = socket;
             this.id = id;
@@ -164,6 +168,17 @@ public final class TCPPacketsReceiver implements PacketsReceiver {
                     System.arraycopy(header, 0, packetBuffer, 0, header.length);
 
                     int fullMessageLength = twoBytesToInt(header, 2);
+                    long sequenceNumber = fourBytesToLong(header, 8);
+                    long domainID = fourBytesToLong(header, 12);
+
+                    if (isFirstPacket) {
+                        prevSequenceNumber = sequenceNumber;
+                        isFirstPacket = false;
+                    } else {
+                        long exportedRecordsNumber = sequenceNumber - prevSequenceNumber;
+                        prevSequenceNumber = sequenceNumber;
+                        statCollector.registerExportedRecords(domainID, exportedRecordsNumber);
+                    }
 
                     //Теперь, зная длину сообщения, читаем его тело
                     dis.readFully(packetBuffer, MESSAGE_HEADER_LENGTH, fullMessageLength - MESSAGE_HEADER_LENGTH);
