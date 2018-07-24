@@ -85,8 +85,8 @@ public class StatCollector {
         receivedPacketsCounter.merge(processorId, 1L, (oldValue, newValue) -> oldValue + newValue);
     }
 
-    public void registerExportedRecords(long domainID, long exportedRecordsNumber) {
-        exportedRecordsCounter.merge(domainID, exportedRecordsNumber, (oldValue, newValue) -> oldValue + newValue);
+    public void registerExportedRecords(long domainID, long totalExportedRecordsNumber) {
+        exportedRecordsCounter.put(domainID, totalExportedRecordsNumber);
     }
 
     public void registerProcessedPacket(int processorId, long time) {

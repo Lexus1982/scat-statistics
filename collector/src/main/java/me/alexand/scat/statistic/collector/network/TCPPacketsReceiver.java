@@ -34,7 +34,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.UnknownHostException;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -47,6 +47,18 @@ import static me.alexand.scat.statistic.collector.utils.BytesConvertUtils.twoByt
 import static me.alexand.scat.statistic.collector.utils.Constants.MESSAGE_HEADER_LENGTH;
 
 /**
+ * TCP-приемник пакетов c IPFIX-сообщениями.
+ * <p>
+ * Реализация на основе сетевого протокола TCP. Создается отдельный поток, задачей которого является прослушивание
+ * сокета и, при установлении каждого нового подключения, создание новой сессии (так же в отдельном потоке). В рамках
+ * сессии создается DataInputStream из которого данные поступают в виде непрерывного потока байт. Чтобы отличить
+ * пакеты (IPFIX-сообщения) друг от друга, сначала считывается 16-байтный заголовок сообщения и вычисляется его длина.
+ * Затем уже считывается тело сообщения, и вместе с заголовком помещается во внутренний буфер. Доступ к пакетам
+ * осуществляется через метод getNextPacket().
+ * <p>
+ * Обязательными параметрами для создания экземпляра являются IP-адрес и порт для создания сокета, а также размер
+ * внутреннего буфера (в пакетах) и размер приемного буфера сокета для TCP (SO_RCVBUF)
+ * 
  * @author asidorov84@gmail.com
  */
 @Component("TCPPacketsReceiver")
@@ -55,9 +67,7 @@ public final class TCPPacketsReceiver implements PacketsReceiver {
     private static final Logger LOGGER = LoggerFactory.getLogger(TCPPacketsReceiver.class);
     private final BlockingQueue<byte[]> packetsBuffer;
 
-    private final InetAddress address;
-    private final int port;
-    private final int socketReceiveBufferSize;
+    private final ServerSocket serverSocket;
     private final Thread connectionListenerThread;
     private final List<Thread> sessionThreads = new ArrayList<>(10);
 
@@ -67,7 +77,7 @@ public final class TCPPacketsReceiver implements PacketsReceiver {
                               @Value("${net.port}") int port,
                               @Value("${packet.buffer.capacity}") int bufferCapacity,
                               @Value("${socket.receive.buffer.size}") int socketReceiveBufferSize,
-                              StatCollector statCollector) throws UnknownHostException {
+                              StatCollector statCollector) throws IOException {
         if (bufferCapacity <= 0) {
             throw new IllegalArgumentException("illegal size of buffer");
         }
@@ -76,13 +86,17 @@ public final class TCPPacketsReceiver implements PacketsReceiver {
             throw new IllegalArgumentException("illegal SO_RCVBUF size");
         }
 
-        this.address = InetAddress.getByName(address);
-        this.port = port;
-        this.socketReceiveBufferSize = socketReceiveBufferSize;
         this.statCollector = statCollector;
 
         packetsBuffer = new ArrayBlockingQueue<>(bufferCapacity);
-        LOGGER.info("Initialize internal packets buffer with size: {}", bufferCapacity);
+        LOGGER.debug("Initialize internal packets buffer with size: {}", bufferCapacity);
+
+        serverSocket = new ServerSocket(port, 10, InetAddress.getByName(address));
+        serverSocket.setReceiveBufferSize(socketReceiveBufferSize);
+        
+        LOGGER.debug("Created server socket on {}:{}",
+                serverSocket.getInetAddress().getHostAddress(),
+                serverSocket.getLocalPort());
 
         connectionListenerThread = new Thread(new Server(), "connection-listener-thread");
         connectionListenerThread.start();
@@ -95,7 +109,12 @@ public final class TCPPacketsReceiver implements PacketsReceiver {
 
     @PreDestroy
     private void shutdown() {
-        connectionListenerThread.interrupt();
+        try {
+            serverSocket.close();
+            LOGGER.debug("Server socket closed");
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage());
+        }
         sessionThreads.forEach(Thread::interrupt);
     }
 
@@ -104,12 +123,7 @@ public final class TCPPacketsReceiver implements PacketsReceiver {
         public void run() {
             int sessionsCounter = 1;
 
-            try (ServerSocket serverSocket = new ServerSocket(port, 10, address)) {
-                LOGGER.info("Created socket on {}:{}",
-                        serverSocket.getInetAddress().getHostAddress(),
-                        serverSocket.getLocalPort());
-                serverSocket.setReceiveBufferSize(socketReceiveBufferSize);
-
+            try {
                 LOGGER.info("Started listening for incoming connections...");
 
                 while (!connectionListenerThread.isInterrupted()) {
@@ -119,8 +133,8 @@ public final class TCPPacketsReceiver implements PacketsReceiver {
                             sessionSocket.getInetAddress().getHostAddress(),
                             sessionSocket.getPort());
 
-                    LOGGER.info("Start new TCP session with id = {}", sessionsCounter);
-                    LOGGER.info("Receive buffer size of socket: {}", sessionSocket.getReceiveBufferSize());
+                    LOGGER.debug("Start new TCP session with id = {}", sessionsCounter);
+                    LOGGER.debug("Receive buffer size of connection socket: {}", sessionSocket.getReceiveBufferSize());
 
                     Session session = new Session(sessionSocket, sessionsCounter);
                     Thread sessionThread = new Thread(session, String.format("tcp-session-%d-thread", sessionsCounter++));
@@ -128,7 +142,8 @@ public final class TCPPacketsReceiver implements PacketsReceiver {
                     sessionThread.start();
                     sessionThreads.add(sessionThread);
                 }
-            } catch (IOException e) {
+            } catch (SocketException e) {}
+            catch (IOException e) {
                 LOGGER.error(e.getMessage());
             }
 
@@ -142,7 +157,7 @@ public final class TCPPacketsReceiver implements PacketsReceiver {
         private final byte[] packetBuffer = new byte[65535];
         private final byte[] header = new byte[MESSAGE_HEADER_LENGTH];
 
-        private long prevSequenceNumber = 0;
+        private long sequenceNumberOffset;
         private boolean isFirstPacket = true;
 
         public Session(Socket socket, int id) {
@@ -168,16 +183,20 @@ public final class TCPPacketsReceiver implements PacketsReceiver {
                     System.arraycopy(header, 0, packetBuffer, 0, header.length);
 
                     int fullMessageLength = twoBytesToInt(header, 2);
+                    
+                    //Для каждого домена поле sequenceNumber означает количество переданных от СКАТа записей (кроме шаблонов)
+                    //Задача: нужно подсчитать, сколько было передано записей СКАТом с момента создании сессии
+                    //При получении первого пакета сохраняем количество уже переданных в sequenceNumberOffset (до создания данной сессии)
                     long sequenceNumber = fourBytesToLong(header, 8);
+                    
+                    //TODO Интересно, а domainID в рамках сессии меняется?
                     long domainID = fourBytesToLong(header, 12);
 
                     if (isFirstPacket) {
-                        prevSequenceNumber = sequenceNumber;
+                        sequenceNumberOffset = sequenceNumber;
                         isFirstPacket = false;
                     } else {
-                        long exportedRecordsNumber = sequenceNumber - prevSequenceNumber;
-                        prevSequenceNumber = sequenceNumber;
-                        statCollector.registerExportedRecords(domainID, exportedRecordsNumber);
+                        statCollector.registerExportedRecords(domainID, sequenceNumber - sequenceNumberOffset);
                     }
 
                     //Теперь, зная длину сообщения, читаем его тело
@@ -189,6 +208,7 @@ public final class TCPPacketsReceiver implements PacketsReceiver {
                 }
                 
                 socket.close();
+                LOGGER.debug("Socket of session (id = {}) closed", id);
             } catch (IOException e) {
                 LOGGER.error(e.getMessage());
             }
