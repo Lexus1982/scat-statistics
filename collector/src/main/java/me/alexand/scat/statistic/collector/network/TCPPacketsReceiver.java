@@ -159,6 +159,7 @@ public final class TCPPacketsReceiver implements PacketsReceiver {
 
         private long sequenceNumberOffset;
         private boolean isFirstPacket = true;
+        private long prevDomainID = -1;
 
         public Session(Socket socket, int id) {
             this.socket = socket;
@@ -182,15 +183,30 @@ public final class TCPPacketsReceiver implements PacketsReceiver {
                     //копируем заголовок в общий массив байт целого сообщения
                     System.arraycopy(header, 0, packetBuffer, 0, header.length);
 
+                    int version = twoBytesToInt(header, 0);
+                    
+                    if (version != 0x0A) {
+                        LOGGER.debug("Illegal version of message: {}", version);
+                        LOGGER.debug("Closing session (id = {})...", id);
+                        break;
+                    }
+                    
                     int fullMessageLength = twoBytesToInt(header, 2);
                     
                     //Для каждого домена поле sequenceNumber означает количество переданных от СКАТа записей (кроме шаблонов)
                     //Задача: нужно подсчитать, сколько было передано записей СКАТом с момента создании сессии
-                    //При получении первого пакета сохраняем количество уже переданных в sequenceNumberOffset (до создания данной сессии)
+                    //При получении первого пакета сохраняем количество уже переданных (до создания данной сессии) 
                     long sequenceNumber = fourBytesToLong(header, 8);
-                    
-                    //TODO Интересно, а domainID в рамках сессии меняется?
                     long domainID = fourBytesToLong(header, 12);
+
+                    //TODO Интересно, а domainID в рамках сессии меняется?
+                    if (isFirstPacket) {
+                        prevDomainID = domainID;
+                    } else {
+                        if (prevDomainID != domainID) {
+                            LOGGER.debug("DomainID not unique per TCP-session");
+                        }
+                    }
 
                     if (isFirstPacket) {
                         sequenceNumberOffset = sequenceNumber;

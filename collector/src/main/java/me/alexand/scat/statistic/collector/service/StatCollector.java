@@ -21,22 +21,22 @@
 
 package me.alexand.scat.statistic.collector.service;
 
-import me.alexand.scat.statistic.collector.model.IPFIXHeader;
 import me.alexand.scat.statistic.collector.utils.DateTimeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -47,15 +47,11 @@ import static java.util.stream.Collectors.toList;
 public class StatCollector {
     private static final Logger LOGGER = LoggerFactory.getLogger(StatCollector.class);
 
-    @Value("${processors.count}")
-    private int processorsCount;
-
     private final AtomicInteger activeProcessorsCounter = new AtomicInteger(0);
     private final AtomicInteger inputBufferOverflowCounter = new AtomicInteger(0);
-    private final AtomicInteger sequenceMismatchCounter = new AtomicInteger(0);
-    private final Map<Integer, Long> receivedPacketsCounter = new ConcurrentHashMap<>(processorsCount);
-    private final Map<Integer, Long> processedPacketsCounter = new ConcurrentHashMap<>(processorsCount);
-    private final Map<Integer, Long> processedPacketsTotalTimeCounter = new ConcurrentHashMap<>(processorsCount);
+    private final Map<Integer, Long> receivedPacketsCounter = new ConcurrentHashMap<>();
+    private final Map<Integer, Long> processedPacketsCounter = new ConcurrentHashMap<>();
+    private final Map<Integer, Long> processedPacketsTotalTimeCounter = new ConcurrentHashMap<>();
     private final Map<Long, Long> exportedRecordsCounter = new ConcurrentHashMap<>();
     private final Map<Long, Long> processedRecordsCounter = new ConcurrentHashMap<>();
 
@@ -94,15 +90,8 @@ public class StatCollector {
         processedPacketsTotalTimeCounter.merge(processorId, time, (oldValue, newValue) -> oldValue + newValue);
     }
 
-    public void registerRecords(IPFIXHeader header, long recordsCounter) {
-        long domainID = header.getObservationDomainID();
-        long sequenceNumber = header.getSequenceNumber();
-
-        processedRecordsCounter.merge(domainID, recordsCounter, (oldValue, newValue) -> oldValue + newValue);
-
-        if (sequenceNumber != processedRecordsCounter.get(domainID)) {
-            sequenceMismatchCounter.incrementAndGet();
-        }
+    public void registerProcessedRecords(long domainID, long records) {
+        processedRecordsCounter.merge(domainID, records, (oldValue, newValue) -> oldValue + newValue);
     }
 
     @Scheduled(fixedDelay = 60_000, initialDelay = 5_000)
@@ -132,12 +121,17 @@ public class StatCollector {
 
         sb.append("\tbuffer overflows: ")
                 .append(inputBufferOverflowCounter.get())
-                .append("\n");
+                .append("\n\n");
 
         sb.append("\texported records per domain: ")
                 .append(exportedRecordsCounter.entrySet())
+                .append("\n");
+        sb.append("\tprocessed records per domain: ")
+                .append(processedRecordsCounter.entrySet())
+                .append("\n");
+        sb.append("\tlost records per domain: ")
+                .append(getLostRecordsPerDomain())
                 .append("\n\n");
-
 
         sb.append("\tpackets received rates per processor: ")
                 .append(getReceivedPacketsRatesPerProcessor(receivedPacketsCountersForNow, secondsSinceLastReport))
@@ -160,33 +154,23 @@ public class StatCollector {
                         processedPacketsCountersForNow))
                 .append("\n");
 
-//        sb.append("\tfailed packets (malformed/unknown info model/unknown protocol/unknown data record format/total): ")
-//                .append(counters.get(CounterName.MALFORMED_PACKETS).get()).append("/")
-//                .append(counters.get(CounterName.UNKNOWN_INFO_MODEL).get()).append("/")
-//                .append(counters.get(CounterName.UNKNOWN_PROTOCOL_PACKETS).get()).append("/")
-//                .append(counters.get(CounterName.UNKNOWN_FORMAT_DATA_RECORDS).get()).append("/")
-//                .append(counters.get(CounterName.FAILED_PACKETS).get()).append("\n");
-//
-//        long dataRecords = counters.get(CounterName.DATA_RECORDS).getAndSet(0);
-//
-//        sb.append("\trecords types (template/optional template/data): ")
-//                .append(counters.get(CounterName.TEMPLATE_RECORDS).getAndSet(0)).append("/")
-//                .append(counters.get(CounterName.OPTIONAL_TEMPLATE_RECORDS).getAndSet(0)).append("/")
-//                .append(dataRecords).append("\n");
-//
-//        sb.append("\tdata records rate: ")
-//                .append(dataRecords / secondsSinceLastReport)
-//                .append(" records/sec").append("\n");
-//
-//        sb.append("\n\texported records to buffer: ")
-//                .append(counters.get(CounterName.EXPORTED_RECORDS).get()).append("\n");
-//
-//        sb.append("\n\tdeleted records from buffer: ")
-//                .append(counters.get(CounterName.DELETED_RECORDS).get()).append("\n");
-
         sb.append("\n...end of periodical collector report\n");
 
         LOGGER.info(sb.toString());
+    }
+
+    private String getLostRecordsPerDomain() {
+        List<Map.Entry<Long, Long>> exported = new ArrayList<>(exportedRecordsCounter.entrySet());
+        Map<Long, Long> processed = new HashMap<>(processedRecordsCounter);
+
+        return "[ " + exported.stream()
+                .map(e -> {
+                    Long domainID = e.getKey();
+                    Long exportedRecords = e.getValue();
+                    Long processedRecords = processed.get(domainID);
+                    return String.format("%d: %d", domainID, exportedRecords - processedRecords);
+                })
+                .collect(joining(", ")) + "]";
     }
 
     private void resetPacketsCounters(Map<?, Long> packetsCounter) {

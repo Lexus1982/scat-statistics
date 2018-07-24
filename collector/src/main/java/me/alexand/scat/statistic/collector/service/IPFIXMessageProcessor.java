@@ -135,7 +135,7 @@ public class IPFIXMessageProcessor implements Runnable {
                     }
                 }
                 
-                statCollector.registerRecords(message.getHeader(), recordsCounter);
+                statCollector.registerProcessedRecords(message.getHeader().getObservationDomainID(), recordsCounter);
             } catch (MalformedMessageException |
                     UnknownProtocolException |
                     UnknownDataRecordFormatException |
