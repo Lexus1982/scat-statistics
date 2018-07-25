@@ -37,7 +37,6 @@ public interface InfoModelEntities {
     Integer VAS_EXPERTS_ENTERPRISE_NUMBER = 43823;
 
     InfoModelEntity TIMESTAMP = InfoModelEntity.builder()
-            .id(1)
             .enterpriseNumber(VAS_EXPERTS_ENTERPRISE_NUMBER)
             .informationElementId(1001)
             .name("timestamp")
@@ -45,7 +44,6 @@ public interface InfoModelEntities {
             .build();
 
     InfoModelEntity LOGIN = InfoModelEntity.builder()
-            .id(2)
             .enterpriseNumber(VAS_EXPERTS_ENTERPRISE_NUMBER)
             .informationElementId(1002)
             .name("login")
@@ -53,7 +51,6 @@ public interface InfoModelEntities {
             .build();
 
     InfoModelEntity SOURCE_IP = InfoModelEntity.builder()
-            .id(3)
             .enterpriseNumber(VAS_EXPERTS_ENTERPRISE_NUMBER)
             .informationElementId(1003)
             .name("ipSrc")
@@ -61,7 +58,6 @@ public interface InfoModelEntities {
             .build();
 
     InfoModelEntity DESTINATION_IP = InfoModelEntity.builder()
-            .id(4)
             .enterpriseNumber(VAS_EXPERTS_ENTERPRISE_NUMBER)
             .informationElementId(1004)
             .name("ipDst")
@@ -69,7 +65,6 @@ public interface InfoModelEntities {
             .build();
 
     InfoModelEntity HOSTNAME = InfoModelEntity.builder()
-            .id(5)
             .enterpriseNumber(VAS_EXPERTS_ENTERPRISE_NUMBER)
             .informationElementId(1005)
             .name("domain")
@@ -77,7 +72,6 @@ public interface InfoModelEntities {
             .build();
 
     InfoModelEntity PATH = InfoModelEntity.builder()
-            .id(6)
             .enterpriseNumber(VAS_EXPERTS_ENTERPRISE_NUMBER)
             .informationElementId(1006)
             .name("path")
@@ -85,7 +79,6 @@ public interface InfoModelEntities {
             .build();
 
     InfoModelEntity REFER = InfoModelEntity.builder()
-            .id(7)
             .enterpriseNumber(VAS_EXPERTS_ENTERPRISE_NUMBER)
             .informationElementId(1007)
             .name("refer")
@@ -93,7 +86,6 @@ public interface InfoModelEntities {
             .build();
 
     InfoModelEntity USER_AGENT = InfoModelEntity.builder()
-            .id(8)
             .enterpriseNumber(VAS_EXPERTS_ENTERPRISE_NUMBER)
             .informationElementId(1008)
             .name("userAgent")
@@ -101,7 +93,6 @@ public interface InfoModelEntities {
             .build();
 
     InfoModelEntity COOKIE = InfoModelEntity.builder()
-            .id(9)
             .enterpriseNumber(VAS_EXPERTS_ENTERPRISE_NUMBER)
             .informationElementId(1009)
             .name("cookie")
@@ -109,7 +100,6 @@ public interface InfoModelEntities {
             .build();
 
     InfoModelEntity LOCKED = InfoModelEntity.builder()
-            .id(10)
             .enterpriseNumber(VAS_EXPERTS_ENTERPRISE_NUMBER)
             .informationElementId(1010)
             .name("locked")
@@ -117,7 +107,6 @@ public interface InfoModelEntities {
             .build();
 
     InfoModelEntity HOST_TYPE = InfoModelEntity.builder()
-            .id(11)
             .enterpriseNumber(VAS_EXPERTS_ENTERPRISE_NUMBER)
             .informationElementId(1011)
             .name("hostType")
@@ -125,7 +114,6 @@ public interface InfoModelEntities {
             .build();
 
     InfoModelEntity METHOD = InfoModelEntity.builder()
-            .id(12)
             .enterpriseNumber(VAS_EXPERTS_ENTERPRISE_NUMBER)
             .informationElementId(1012)
             .name("method")
@@ -133,7 +121,6 @@ public interface InfoModelEntities {
             .build();
 
     InfoModelEntity RESULT_CODE = InfoModelEntity.builder()
-            .id(13)
             .enterpriseNumber(VAS_EXPERTS_ENTERPRISE_NUMBER)
             .informationElementId(1020)
             .name("resultCode")
@@ -141,7 +128,6 @@ public interface InfoModelEntities {
             .build();
 
     InfoModelEntity CONTENT_LENGTH = InfoModelEntity.builder()
-            .id(14)
             .enterpriseNumber(VAS_EXPERTS_ENTERPRISE_NUMBER)
             .informationElementId(1021)
             .name("contentLength")
@@ -149,7 +135,6 @@ public interface InfoModelEntities {
             .build();
 
     InfoModelEntity CONTENT_TYPE = InfoModelEntity.builder()
-            .id(15)
             .enterpriseNumber(VAS_EXPERTS_ENTERPRISE_NUMBER)
             .informationElementId(1022)
             .name("contentType")
@@ -157,7 +142,6 @@ public interface InfoModelEntities {
             .build();
 
     InfoModelEntity SESSION_ID = InfoModelEntity.builder()
-            .id(16)
             .enterpriseNumber(VAS_EXPERTS_ENTERPRISE_NUMBER)
             .informationElementId(2000)
             .name("sessionID")
@@ -165,7 +149,6 @@ public interface InfoModelEntities {
             .build();
 
     InfoModelEntity HTTP_HOST = InfoModelEntity.builder()
-            .id(17)
             .enterpriseNumber(VAS_EXPERTS_ENTERPRISE_NUMBER)
             .informationElementId(2001)
             .name("httpHost")
@@ -173,7 +156,6 @@ public interface InfoModelEntities {
             .build();
 
     InfoModelEntity DPI_PROTOCOL = InfoModelEntity.builder()
-            .id(18)
             .enterpriseNumber(VAS_EXPERTS_ENTERPRISE_NUMBER)
             .informationElementId(2002)
             .name("dpiProtocol")
@@ -181,7 +163,6 @@ public interface InfoModelEntities {
             .build();
 
     InfoModelEntity LOGIN_2 = InfoModelEntity.builder()
-            .id(19)
             .enterpriseNumber(VAS_EXPERTS_ENTERPRISE_NUMBER)
             .informationElementId(2003)
             .name("login")
@@ -189,7 +170,6 @@ public interface InfoModelEntities {
             .build();
 
     InfoModelEntity OCTET_DELTA_COUNT = InfoModelEntity.builder()
-            .id(20)
             .enterpriseNumber(IANA_ENTERPRISE_NUMBER)
             .informationElementId(1)
             .name("octetDeltaCount")
@@ -197,7 +177,6 @@ public interface InfoModelEntities {
             .build();
 
     InfoModelEntity PACKET_DELTA_COUNT = InfoModelEntity.builder()
-            .id(21)
             .enterpriseNumber(IANA_ENTERPRISE_NUMBER)
             .informationElementId(2)
             .name("packetDeltaCount")
@@ -205,7 +184,6 @@ public interface InfoModelEntities {
             .build();
 
     InfoModelEntity PROTOCOL_IDENTIFIER = InfoModelEntity.builder()
-            .id(22)
             .enterpriseNumber(IANA_ENTERPRISE_NUMBER)
             .informationElementId(4)
             .name("protocolIdentifier")
@@ -213,7 +191,6 @@ public interface InfoModelEntities {
             .build();
 
     InfoModelEntity IP_CLASS_OF_SERVICE = InfoModelEntity.builder()
-            .id(23)
             .enterpriseNumber(IANA_ENTERPRISE_NUMBER)
             .informationElementId(5)
             .name("ipClassOfService")
@@ -221,7 +198,6 @@ public interface InfoModelEntities {
             .build();
 
     InfoModelEntity SOURCE_TRANSPORT_PORT = InfoModelEntity.builder()
-            .id(24)
             .enterpriseNumber(IANA_ENTERPRISE_NUMBER)
             .informationElementId(7)
             .name("sourceTransportPort")
@@ -229,7 +205,6 @@ public interface InfoModelEntities {
             .build();
 
     InfoModelEntity SOURCE_IPV4_ADDRESS = InfoModelEntity.builder()
-            .id(25)
             .enterpriseNumber(IANA_ENTERPRISE_NUMBER)
             .informationElementId(8)
             .name("sourceIpv4Address")
@@ -237,7 +212,6 @@ public interface InfoModelEntities {
             .build();
 
     InfoModelEntity DESTINATION_TRANSPORT_PORT = InfoModelEntity.builder()
-            .id(26)
             .enterpriseNumber(IANA_ENTERPRISE_NUMBER)
             .informationElementId(11)
             .name("destinationTransportPort")
@@ -245,7 +219,6 @@ public interface InfoModelEntities {
             .build();
 
     InfoModelEntity DESTINATION_IPV4_ADDRESS = InfoModelEntity.builder()
-            .id(27)
             .enterpriseNumber(IANA_ENTERPRISE_NUMBER)
             .informationElementId(12)
             .name("destinationIpv4Address")
@@ -253,7 +226,6 @@ public interface InfoModelEntities {
             .build();
 
     InfoModelEntity BGP_SOURCE_AS = InfoModelEntity.builder()
-            .id(28)
             .enterpriseNumber(IANA_ENTERPRISE_NUMBER)
             .informationElementId(16)
             .name("bgpSourceAsNumber")
@@ -261,7 +233,6 @@ public interface InfoModelEntities {
             .build();
 
     InfoModelEntity BGP_DESTINATION_AS = InfoModelEntity.builder()
-            .id(29)
             .enterpriseNumber(IANA_ENTERPRISE_NUMBER)
             .informationElementId(17)
             .name("bgpDestinationAsNumber")
@@ -269,7 +240,6 @@ public interface InfoModelEntities {
             .build();
 
     InfoModelEntity FLOW_START = InfoModelEntity.builder()
-            .id(30)
             .enterpriseNumber(IANA_ENTERPRISE_NUMBER)
             .informationElementId(152)
             .name("flowStartMillisecond")
@@ -277,7 +247,6 @@ public interface InfoModelEntities {
             .build();
 
     InfoModelEntity FLOW_END = InfoModelEntity.builder()
-            .id(31)
             .enterpriseNumber(IANA_ENTERPRISE_NUMBER)
             .informationElementId(153)
             .name("flowEndMillisecond")
@@ -285,7 +254,6 @@ public interface InfoModelEntities {
             .build();
 
     InfoModelEntity IN_SNMP = InfoModelEntity.builder()
-            .id(32)
             .enterpriseNumber(IANA_ENTERPRISE_NUMBER)
             .informationElementId(10)
             .name("inputSNMP")
@@ -293,7 +261,6 @@ public interface InfoModelEntities {
             .build();
 
     InfoModelEntity OUT_SNMP = InfoModelEntity.builder()
-            .id(33)
             .enterpriseNumber(IANA_ENTERPRISE_NUMBER)
             .informationElementId(14)
             .name("outputSNMP")
@@ -301,7 +268,6 @@ public interface InfoModelEntities {
             .build();
 
     InfoModelEntity IP_VERSION = InfoModelEntity.builder()
-            .id(34)
             .enterpriseNumber(IANA_ENTERPRISE_NUMBER)
             .informationElementId(60)
             .name("ipVersion")
@@ -309,7 +275,6 @@ public interface InfoModelEntities {
             .build();
 
     InfoModelEntity PORT_NAT_SRC_ADDR = InfoModelEntity.builder()
-            .id(35)
             .enterpriseNumber(IANA_ENTERPRISE_NUMBER)
             .informationElementId(225)
             .name("portNATSourceIPv4Address")
@@ -317,7 +282,6 @@ public interface InfoModelEntities {
             .build();
 
     InfoModelEntity PORT_NAT_SRC_PORT = InfoModelEntity.builder()
-            .id(36)
             .enterpriseNumber(IANA_ENTERPRISE_NUMBER)
             .informationElementId(227)
             .name("portNATSourceTransportPort")

@@ -56,7 +56,6 @@ public interface IPFIXMessageTestEntities {
             .build();
 
     IPFIXHeader IPFIX_HEADER_WITH_CS_REQ_TEMPLATE = IPFIXHeader.builder()
-            .version(10)
             .length(128)
             .exportTime(LocalDateTime.of(2017, 10, 16, 13, 52, 12).toEpochSecond(ZoneOffset.ofHours(3)))
             .sequenceNumber(47_108_922)
@@ -93,7 +92,6 @@ public interface IPFIXMessageTestEntities {
             .build();
 
     IPFIXHeader IPFIX_HEADER_WITH_CS_REQ_DATA = IPFIXHeader.builder()
-            .version(10)
             .length(565)
             .exportTime(LocalDateTime.of(2017, 10, 16, 13, 52, 18).toEpochSecond(ZoneOffset.ofHours(3)))
             .sequenceNumber(47_130_182)

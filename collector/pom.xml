@@ -28,6 +28,13 @@
             <version>0.9.0-SNAPSHOT</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>23.0</version>
+        </dependency>
+
         <!--Logging via slf4j & Logback-->
         <dependency>
             <groupId>org.slf4j</groupId>

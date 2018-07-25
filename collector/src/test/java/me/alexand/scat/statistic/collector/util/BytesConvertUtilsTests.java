@@ -27,9 +27,11 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 
 import static me.alexand.scat.statistic.collector.utils.BytesConvertUtils.*;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 /**
+ * Тесты конвертеров
+ *
  * @author asidorov84@gmail.com
  */
 
@@ -39,6 +41,8 @@ public class BytesConvertUtilsTests {
 
     private static final long UNSIGNED_FOUR_BYTES_DATA = 0x7F_FF_FF_FFL;
     private static final long SIGNED_FOUR_BYTES_DATA = 0xFF_FF_FF_FFL;
+
+    private static final String TEST_STRING = "Test string";
 
     @Test
     public void testConvertOneByteToInt() {
@@ -81,6 +85,7 @@ public class BytesConvertUtilsTests {
                 .array();
 
         assertEquals(UNSIGNED_FOUR_BYTES_DATA, fourBytesToLong(payload));
+        assertEquals(UNSIGNED_FOUR_BYTES_DATA, fourBytesToLong(payload, 0));
 
         payload = ByteBuffer
                 .allocate(Integer.BYTES)
@@ -88,6 +93,7 @@ public class BytesConvertUtilsTests {
                 .array();
 
         assertEquals(SIGNED_FOUR_BYTES_DATA, fourBytesToLong(payload));
+        assertEquals(SIGNED_FOUR_BYTES_DATA, fourBytesToLong(payload, 0));
     }
 
     @Test
@@ -96,7 +102,30 @@ public class BytesConvertUtilsTests {
                 (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff};
 
         assertEquals(new BigInteger("9223372036854775807"), eightBytesToBigInteger(bytes));
+        assertEquals(new BigInteger("9223372036854775807"), eightBytesToBigInteger(bytes, 0));
     }
 
-    //TODO сделать тесты оставшихся методов
+    @Test
+    public void testIsHighBitSet() {
+        assertTrue(isHighBitSet((byte) 0xff));
+        assertFalse(isHighBitSet((byte) 0x7f));
+    }
+
+    @Test
+    public void testConvertBytesToString() {
+        byte[] array = TEST_STRING.getBytes();
+        assertEquals(TEST_STRING, bytesToString(array));
+        assertEquals(TEST_STRING, bytesToString(array, 0, array.length));
+        assertEquals("", bytesToString(array, 2, 0));
+        assertEquals("", bytesToString(array, 2, -1));
+        assertEquals("string", bytesToString(array, 5, 6));
+        assertEquals("string", bytesToString(array, 5, 100));
+    }
+
+    @Test
+    public void testConvertFourBytesToIPv4() {
+        byte[] bytes = {0x1f, (byte) 0xaa, (byte) 0xa8, (byte) 0xab};
+        assertEquals("31.170.168.171", fourBytesToIPv4(bytes, 0));
+        assertEquals("31.170.168.171", fourBytesToIPv4(bytes));
+    }
 }

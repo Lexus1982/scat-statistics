@@ -22,8 +22,8 @@
 package me.alexand.scat.statistic.collector.service;
 
 import me.alexand.scat.statistic.collector.model.IPFIXMessage;
-import me.alexand.scat.statistic.collector.repository.DataTemplateRepository;
 import me.alexand.scat.statistic.collector.repository.InfoModelRepository;
+import me.alexand.scat.statistic.collector.repository.SCATDataTemplateRepository;
 import me.alexand.scat.statistic.collector.utils.BytesConvertUtils;
 import me.alexand.scat.statistic.collector.utils.exceptions.MalformedMessageException;
 import me.alexand.scat.statistic.collector.utils.exceptions.UnknownProtocolException;
@@ -44,7 +44,7 @@ import java.time.ZoneId;
 import static me.alexand.scat.statistic.collector.entities.IPFIXMessageTestEntities.IPFIX_MESSAGE_WITH_CS_REQ_DATA;
 import static me.alexand.scat.statistic.collector.entities.IPFIXMessageTestEntities.IPFIX_MESSAGE_WITH_CS_REQ_TEMPLATE;
 import static me.alexand.scat.statistic.collector.entities.RawPacketsEntities.*;
-import static me.alexand.scat.statistic.collector.utils.DataTemplateEntities.DATA_TEMPLATE_LIST;
+import static me.alexand.scat.statistic.collector.utils.SCATDataTemplateEntities.DATA_TEMPLATE_LIST;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -63,7 +63,7 @@ public class IPFIXParserTests {
     private IPFIXParser parser;
 
     @Autowired
-    private DataTemplateRepository dataTemplateRepository;
+    private SCATDataTemplateRepository SCATDataTemplateRepository;
 
     @Autowired
     private InfoModelRepository infoModelRepository;
@@ -71,9 +71,33 @@ public class IPFIXParserTests {
     @Before
     public void before() {
         DATA_TEMPLATE_LIST.forEach(dataTemplate -> {
-            dataTemplateRepository.save(dataTemplate);
+            SCATDataTemplateRepository.save(dataTemplate);
             dataTemplate.getSpecifiers().forEach(infoModelRepository::save);
         });
+    }
+
+    //+
+    @Test(expected = NullPointerException.class)
+    public void testParseWithNullPayload() throws Exception {
+        parser.parse(null);
+    }
+
+    //+
+    @Test(expected = MalformedMessageException.class)
+    public void testParsePacketWithInvalidLength() throws Exception {
+        parser.parse(PACKET_WITH_INVALID_LENGTH);
+    }
+
+    //+
+    @Test(expected = MalformedMessageException.class)
+    public void testParsePacketWithInvalidHeaderLength() throws Exception {
+        parser.parse(new byte[15]);
+    }
+
+    //+
+    @Test(expected = UnknownProtocolException.class)
+    public void testParseUnknownProtocolPayload() throws Exception {
+        parser.parse(new byte[16]);
     }
 
     @Test
@@ -90,7 +114,11 @@ public class IPFIXParserTests {
     public void testParseCSREQData() throws Exception {
         assertNotNull(parser.parse(RAW_CS_REQ_TEMPLATE));
 
+        long t0 = System.nanoTime();
         IPFIXMessage actual = parser.parse(RAW_CS_REQ_DATA_PAYLOAD);
+        long t1 = System.nanoTime();
+
+        LOGGER.info("{} ns", t1 - t0);
         assertNotNull(actual);
 
         LOGGER.info("\n\nexpected:\n\t {}\n\nactual:\n\t {}\n", IPFIX_MESSAGE_WITH_CS_REQ_DATA, actual);
@@ -107,7 +135,11 @@ public class IPFIXParserTests {
     public void testParseGenericData() throws Exception {
         parser.parse(RAW_GENERIC_TEMPLATE);
 
+        long t0 = System.nanoTime();
         IPFIXMessage actual = parser.parse(RAW_GENERIC_DATA);
+        long t1 = System.nanoTime();
+        LOGGER.info("{} ns", t1 - t0);
+
 
         byte[] raw_flow_start = {0x00, 0x00, 0x01, 0x62, 0x13, 0x27, 0x38, (byte) 0x85};
         byte[] raw_flow_end = {0x00, 0x00, 0x01, 0x63, 0x13, 0x27, 0x45, 0x47};
@@ -121,26 +153,5 @@ public class IPFIXParserTests {
         System.out.println("Flow start at: " + LocalDateTime.ofInstant(Instant.ofEpochMilli(flowStart.longValue()), ZoneId.systemDefault()));
         System.out.println("Flow end at: " + LocalDateTime.ofInstant(Instant.ofEpochMilli(flowEnd.longValue()), ZoneId.systemDefault()));
 
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void testParseWithNullPayload() throws Exception {
-        parser.parse(null);
-    }
-
-    @Test(expected = MalformedMessageException.class)
-    public void testParseInvalidLengthPayload() throws Exception {
-        parser.parse(INVALID_PAYLOAD);
-    }
-
-
-    @Test(expected = MalformedMessageException.class)
-    public void testParseWithShortPayload() throws Exception {
-        parser.parse(new byte[15]);
-    }
-
-    @Test(expected = UnknownProtocolException.class)
-    public void testParseUnknownProtocolPayload() throws Exception {
-        parser.parse(new byte[16]);
     }
 }

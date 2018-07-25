@@ -22,12 +22,13 @@
 package me.alexand.scat.statistic.collector.utils;
 
 import java.math.BigInteger;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 
 import static java.lang.System.arraycopy;
 
 /**
+ * Вспомогательные методы для конвертирования наборов байт,
+ * интерпретируемые как unsigned, в другие типы данных
+ *
  * @author asidorov84@gmail.com
  */
 
@@ -54,13 +55,13 @@ public interface BytesConvertUtils {
     static long fourBytesToLong(byte[] array) {
         return fourBytesToLong(array, 0);
     }
-    
+
     static long fourBytesToLong(byte[] array, int offset) {
         long result = 0;
-        result |= (( (int) array[offset] ) & 0xFF) << 24;
-        result |= (( (int) array[offset + 1] ) & 0xFF) << 16;
-        result |= (( (int) array[offset + 2] ) & 0xFF) << 8;
-        result |= ( (int) array[offset + 3] ) & 0xFF;
+        result |= (((int) array[offset]) & 0xFF) << 24;
+        result |= (((int) array[offset + 1]) & 0xFF) << 16;
+        result |= (((int) array[offset + 2]) & 0xFF) << 8;
+        result |= ((int) array[offset + 3]) & 0xFF;
         return result & 0xffffffffL;
     }
 
@@ -68,9 +69,9 @@ public interface BytesConvertUtils {
         return new BigInteger(1, array);
     }
 
-    static BigInteger eightBytesToBigInteger(byte[] buffer, int offset) {
+    static BigInteger eightBytesToBigInteger(byte[] array, int offset) {
         byte[] bigIntegerBuf = new byte[8];
-        arraycopy(buffer, offset, bigIntegerBuf, 0, 8);
+        arraycopy(array, offset, bigIntegerBuf, 0, 8);
         return new BigInteger(1, bigIntegerBuf);
     }
 
@@ -78,27 +79,33 @@ public interface BytesConvertUtils {
         return (octet & 0xff) >>> 7 == 1;
     }
 
-    static String bytesToString(byte[] buffer, int offset, int length) {
-        if (length == 0) {
+    static String bytesToString(byte[] array, int offset, int length) {
+        if (length <= 0) {
             return "";
         }
 
+        if (offset + length > array.length) {
+            length = array.length - offset;
+        }
+
         byte[] strBuffer = new byte[length];
-        arraycopy(buffer, offset, strBuffer, 0, length);
+        arraycopy(array, offset, strBuffer, 0, length);
         return new String(strBuffer);
     }
 
-    static String bytesToString(byte[] bytes) {
-        return new String(bytes);
+    static String bytesToString(byte[] array) {
+        return new String(array);
     }
 
-    static InetAddress fourBytesToIPv4(byte[] buffer, int offset) throws UnknownHostException {
-        byte[] rawOctets = new byte[4];
-        System.arraycopy(buffer, offset, rawOctets, 0, 4);
-        return InetAddress.getByAddress(rawOctets);
+    static String fourBytesToIPv4(byte[] array, int offset) {
+        return String.format("%d.%d.%d.%d",
+                oneByteToInt(array[offset]),
+                oneByteToInt(array[offset + 1]),
+                oneByteToInt(array[offset + 2]),
+                oneByteToInt(array[offset + 3]));
     }
 
-    static InetAddress fourBytesToIPv4(byte[] bytes) throws UnknownHostException {
-        return InetAddress.getByAddress(bytes);
+    static String fourBytesToIPv4(byte[] array) {
+        return fourBytesToIPv4(array, 0);
     }
 }

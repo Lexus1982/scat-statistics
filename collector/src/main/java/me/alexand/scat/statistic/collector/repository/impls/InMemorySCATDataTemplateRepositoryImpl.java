@@ -21,52 +21,38 @@
 
 package me.alexand.scat.statistic.collector.repository.impls;
 
-import me.alexand.scat.statistic.collector.model.DataTemplate;
+import me.alexand.scat.statistic.collector.model.SCATDataTemplate;
 import me.alexand.scat.statistic.collector.model.TemplateType;
-import me.alexand.scat.statistic.collector.repository.DataTemplateRepository;
+import me.alexand.scat.statistic.collector.repository.SCATDataTemplateRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author asidorov84@gmail.com
  */
 
 @Repository
-public class InMemoryDataTemplateRepositoryImpl implements DataTemplateRepository {
-    private final Map<TemplateType, DataTemplate> repository = new HashMap<>();
+public class InMemorySCATDataTemplateRepositoryImpl implements SCATDataTemplateRepository {
+    private final Map<TemplateType, SCATDataTemplate> repository = new ConcurrentHashMap<>();
+    private final Collection<SCATDataTemplate> allTemplates = new ArrayList<>();
 
     @Override
-    public List<DataTemplate> getAll() {
-        return new ArrayList<>(repository.values());
+    public Collection<SCATDataTemplate> getAll() {
+        return allTemplates;
     }
 
     @Override
-    public DataTemplate save(DataTemplate template) {
+    public void save(SCATDataTemplate template) {
         Objects.requireNonNull(template);
         repository.put(template.getType(), template);
-        return template;
-    }
-
-    @Override
-    public DataTemplate getByType(TemplateType type) {
-        Objects.requireNonNull(type);
-        return repository.get(type);
-    }
-
-    @Override
-    public boolean delete(TemplateType type) {
-        Objects.requireNonNull(type);
-        return repository.remove(type) != null;
-    }
-
-    @Override
-    public long getCount() {
-        return repository.size();
-    }
-
-    @Override
-    public void clear() {
-        repository.clear();
+        synchronized (allTemplates) {
+            allTemplates.clear();
+            allTemplates.addAll(repository.values());
+        }
     }
 }

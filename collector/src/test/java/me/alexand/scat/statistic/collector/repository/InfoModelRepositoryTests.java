@@ -21,98 +21,50 @@
 
 package me.alexand.scat.statistic.collector.repository;
 
-import me.alexand.scat.statistic.collector.model.IANAAbstractDataTypes;
 import me.alexand.scat.statistic.collector.model.InfoModelEntity;
-import me.alexand.scat.statistic.collector.utils.exceptions.UnknownInfoModelException;
+import me.alexand.scat.statistic.collector.repository.impls.InMemoryInfoModelRepositoryImpl;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static me.alexand.scat.statistic.collector.utils.InfoModelEntities.INFO_MODEL_DATA_LIST;
-import static me.alexand.scat.statistic.collector.utils.InfoModelEntities.SESSION_ID;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 /**
+ * Тесты хранилища информационных элементов
+ *
  * @author asidorov84@gmail.com
  */
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration("classpath:spring-test.xml")
 public class InfoModelRepositoryTests {
-
-    @Autowired
-    private InfoModelRepository repository;
+    private static final Logger LOGGER = LoggerFactory.getLogger(InfoModelRepositoryTests.class);
+    private final InfoModelRepository repository = new InMemoryInfoModelRepositoryImpl();
 
     @Before
     public void before() {
-        repository.clear();
         INFO_MODEL_DATA_LIST.forEach(repository::save);
     }
 
     @Test
-    public void testGetAll() {
-        List<InfoModelEntity> actual = repository.getAll();
-        assertEquals(INFO_MODEL_DATA_LIST, actual);
-    }
-
-    @Test
-    public void testGetById() {
-        for (InfoModelEntity expected : INFO_MODEL_DATA_LIST) {
-            InfoModelEntity actual = repository.getById(expected.getId());
-            assertEquals(expected, actual);
-        }
-    }
-
-    @Test
-    public void testGetByEnterpriseNumberAndInformationElementIdentifier() throws Exception {
-        for (InfoModelEntity expected : INFO_MODEL_DATA_LIST) {
+    public void testGetByEnterpriseNumberAndInformationElementIdentifier() {
+        INFO_MODEL_DATA_LIST.forEach(expected -> {
+            long t0 = System.nanoTime();
             InfoModelEntity actual = repository.getByEnterpriseNumberAndInformationElementIdentifier(
                     expected.getEnterpriseNumber(),
                     expected.getInformationElementId());
+            long t1 = System.nanoTime();
+            long ns = t1 - t0;
+            long ms = ns / 1_000_000;
+            LOGGER.info("Element acquisition time is {} ns ({} ms)", ns, ms);
             assertEquals(expected, actual);
-        }
-    }
 
-    @Test(expected = UnknownInfoModelException.class)
-    public void testGetByUnknownEnterpriseNumberAndInformationElementIdentifier() throws Exception {
-        repository.getByEnterpriseNumberAndInformationElementIdentifier(Long.MAX_VALUE, Integer.MAX_VALUE);
+        });
     }
 
     @Test
-    public void testDelete() {
-        assertTrue(repository.delete(SESSION_ID.getId()));
-        assertNull(repository.getById(SESSION_ID.getId()));
-    }
-
-    @Test
-    public void testSave() {
-        InfoModelEntity expected = InfoModelEntity.builder()
-                .enterpriseNumber(Long.MAX_VALUE)
-                .informationElementId(Integer.MAX_VALUE)
-                .type(IANAAbstractDataTypes.DATE_TIME_NANOSECONDS)
-                .name("Test")
-                .build();
-
-        InfoModelEntity actual = repository.save(expected);
-
-        assertNotNull(actual);
-        expected.setId(actual.getId());
-        assertEquals(expected, actual);
-    }
-
-    @Test
-    public void testGetCount() {
-        assertEquals(INFO_MODEL_DATA_LIST.size(), repository.getCount());
-    }
-
-    @Test
-    public void testClear() {
-        repository.clear();
-        assertEquals(0, repository.getAll().size());
+    public void testGetByUnknownEnterpriseNumberAndInformationElementIdentifier() {
+        assertNull(repository.getByEnterpriseNumberAndInformationElementIdentifier(Long.MAX_VALUE, Integer.MAX_VALUE));
     }
 }

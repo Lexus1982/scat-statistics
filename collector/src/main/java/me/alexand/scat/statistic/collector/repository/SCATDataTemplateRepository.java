@@ -21,24 +21,15 @@
 
 package me.alexand.scat.statistic.collector.repository;
 
-import me.alexand.scat.statistic.collector.model.DataTemplate;
-import me.alexand.scat.statistic.collector.model.TemplateType;
+import me.alexand.scat.statistic.collector.model.SCATDataTemplate;
 
-import java.util.List;
+import java.util.Collection;
 
 /**
  * @author asidorov84@gmail.com
  */
-public interface DataTemplateRepository {
-    List<DataTemplate> getAll();
+public interface SCATDataTemplateRepository {
+    Collection<SCATDataTemplate> getAll();
 
-    DataTemplate save(DataTemplate template);
-
-    DataTemplate getByType(TemplateType type);
-
-    boolean delete(TemplateType type);
-
-    long getCount();
-
-    void clear();
+    void save(SCATDataTemplate template);
 }

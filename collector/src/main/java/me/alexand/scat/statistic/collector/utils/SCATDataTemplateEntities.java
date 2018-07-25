@@ -21,7 +21,7 @@
 
 package me.alexand.scat.statistic.collector.utils;
 
-import me.alexand.scat.statistic.collector.model.DataTemplate;
+import me.alexand.scat.statistic.collector.model.SCATDataTemplate;
 
 import java.util.List;
 
@@ -32,9 +32,8 @@ import static me.alexand.scat.statistic.collector.utils.InfoModelEntities.*;
 /**
  * @author asidorov84@gmail.com
  */
-public interface DataTemplateEntities {
-
-    DataTemplate CS_REQ_TEMPLATE = DataTemplate.builder()
+public interface SCATDataTemplateEntities {
+    SCATDataTemplate CS_REQ_TEMPLATE = SCATDataTemplate.builder()
             .type(CS_REQ)
             .specifiers(asList(TIMESTAMP,
                     LOGIN,
@@ -51,7 +50,7 @@ public interface DataTemplateEntities {
                     METHOD))
             .build();
 
-    DataTemplate CS_RESP_TEMPLATE = DataTemplate.builder()
+    SCATDataTemplate CS_RESP_TEMPLATE = SCATDataTemplate.builder()
             .type(CS_RESP)
             .specifiers(asList(TIMESTAMP,
                     LOGIN,
@@ -63,7 +62,7 @@ public interface DataTemplateEntities {
                     SESSION_ID))
             .build();
 
-    DataTemplate GENERIC_TEMPLATE = DataTemplate.builder()
+    SCATDataTemplate GENERIC_TEMPLATE = SCATDataTemplate.builder()
             .type(GENERIC)
             .specifiers(asList(OCTET_DELTA_COUNT,
                     PACKET_DELTA_COUNT,
@@ -88,5 +87,5 @@ public interface DataTemplateEntities {
                     PORT_NAT_SRC_PORT))
             .build();
 
-    List<DataTemplate> DATA_TEMPLATE_LIST = asList(CS_REQ_TEMPLATE, CS_RESP_TEMPLATE, GENERIC_TEMPLATE);
+    List<SCATDataTemplate> DATA_TEMPLATE_LIST = asList(CS_REQ_TEMPLATE, CS_RESP_TEMPLATE, GENERIC_TEMPLATE);
 }

@@ -43,7 +43,10 @@ import java.util.Objects;
  */
 
 public class IPFIXHeader {
-    private final int version;
+    public static final int IPFIX_MESSAGE_HEADER_LENGTH = 16;
+    public static final int IPFIX_MESSAGE_VERSION = 0x0A;
+
+    private final int version = IPFIX_MESSAGE_VERSION;
     private final int length;
     private final long exportTime;
     private final long sequenceNumber;
@@ -54,7 +57,6 @@ public class IPFIXHeader {
     }
 
     private IPFIXHeader(IPFIXHeader.Builder builder) {
-        this.version = builder.version;
         this.length = builder.length;
         this.exportTime = builder.exportTime;
         this.sequenceNumber = builder.sequenceNumber;
@@ -86,8 +88,7 @@ public class IPFIXHeader {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         IPFIXHeader that = (IPFIXHeader) o;
-        return version == that.version &&
-                length == that.length &&
+        return length == that.length &&
                 exportTime == that.exportTime &&
                 sequenceNumber == that.sequenceNumber &&
                 observationDomainID == that.observationDomainID;
@@ -110,18 +111,12 @@ public class IPFIXHeader {
     }
 
     public static class Builder {
-        private int version;
         private int length;
         private long exportTime;
         private long sequenceNumber;
         private long observationDomainID;
 
         private Builder() {
-        }
-
-        public Builder version(int version) {
-            this.version = version;
-            return this;
         }
 
         public Builder length(int length) {

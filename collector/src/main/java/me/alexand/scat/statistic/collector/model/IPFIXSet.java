@@ -51,7 +51,7 @@ import java.util.Objects;
 public class IPFIXSet {
     private final int setID;
     private final int length;
-    private final List<AbstractIPFIXRecord> records;
+    private final List<? extends AbstractIPFIXRecord> records;
 
     public static IPFIXSet.Builder builder() {
         return new IPFIXSet.Builder();
@@ -71,7 +71,7 @@ public class IPFIXSet {
         return length;
     }
 
-    public List<AbstractIPFIXRecord> getRecords() {
+    public List<? extends AbstractIPFIXRecord> getRecords() {
         return records;
     }
 
@@ -102,7 +102,7 @@ public class IPFIXSet {
     public static class Builder {
         private int setID;
         private int length;
-        private List<AbstractIPFIXRecord> records = new ArrayList<>();
+        private List<? extends AbstractIPFIXRecord> records = new ArrayList<>();
 
         private Builder() {
         }
@@ -117,7 +117,7 @@ public class IPFIXSet {
             return this;
         }
 
-        public Builder records(List<AbstractIPFIXRecord> records) {
+        public Builder records(List<? extends AbstractIPFIXRecord> records) {
             this.records = records;
             return this;
         }

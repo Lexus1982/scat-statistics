@@ -57,8 +57,8 @@
 
     <bean id="infoModelRepository"
           class="me.alexand.scat.statistic.collector.repository.impls.InMemoryInfoModelRepositoryImpl"/>
-    <bean id="dataTemplateRepository"
-          class="me.alexand.scat.statistic.collector.repository.impls.InMemoryDataTemplateRepositoryImpl"/>
+    <bean id="SCATDataTemplateRepository"
+          class="me.alexand.scat.statistic.collector.repository.impls.InMemorySCATDataTemplateRepositoryImpl"/>
     <bean id="dataRecordsRepository"
           class="me.alexand.scat.statistic.collector.repository.impls.TransitionalBufferRepositoryImpl">
         <constructor-arg ref="hsqlJdbcTemplate"/>
@@ -76,5 +76,5 @@
 
     <bean id="dataTemplateService" class="me.alexand.scat.statistic.collector.service.impls.DataTemplateServiceImpl"/>
     <bean id="statCollector" class="me.alexand.scat.statistic.collector.service.StatCollector"/>
-    <bean id="ipfixParser" class="me.alexand.scat.statistic.collector.service.impls.IPFIXParserImpl"/>
+    <bean id="ipfixParser" class="me.alexand.scat.statistic.collector.service.IPFIXParser"/>
 </beans>
