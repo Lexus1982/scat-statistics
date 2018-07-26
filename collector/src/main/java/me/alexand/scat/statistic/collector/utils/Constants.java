@@ -25,8 +25,7 @@ package me.alexand.scat.statistic.collector.utils;
  * @author asidorov84@gmail.com
  */
 public interface Constants {
-    int MESSAGE_HEADER_LENGTH = 16;
-
+    int TCP_LISTEN_BACKLOG = 10;
     int INTERIM_BUFFER_CLEANER_RUN_FREQUENCY = 15000;
     int INTERIM_BUFFER_DEPTH = 5;
 }

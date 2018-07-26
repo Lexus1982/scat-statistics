@@ -24,6 +24,7 @@ package me.alexand.scat.statistic.collector.network;
 import me.alexand.scat.statistic.collector.service.StatCollector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
@@ -42,9 +43,11 @@ import java.util.concurrent.BlockingQueue;
 
 import static java.lang.Thread.MAX_PRIORITY;
 import static java.util.Arrays.copyOf;
+import static me.alexand.scat.statistic.collector.model.IPFIXHeader.IPFIX_MESSAGE_HEADER_LENGTH;
+import static me.alexand.scat.statistic.collector.model.IPFIXHeader.IPFIX_MESSAGE_VERSION;
 import static me.alexand.scat.statistic.collector.utils.BytesConvertUtils.fourBytesToLong;
 import static me.alexand.scat.statistic.collector.utils.BytesConvertUtils.twoBytesToInt;
-import static me.alexand.scat.statistic.collector.utils.Constants.MESSAGE_HEADER_LENGTH;
+import static me.alexand.scat.statistic.collector.utils.Constants.TCP_LISTEN_BACKLOG;
 
 /**
  * TCP-приемник пакетов c IPFIX-сообщениями.
@@ -61,7 +64,7 @@ import static me.alexand.scat.statistic.collector.utils.Constants.MESSAGE_HEADER
  *
  * @author asidorov84@gmail.com
  */
-@Component("TCPPacketsReceiver")
+@Component
 @Lazy
 public final class TCPPacketsReceiver implements PacketsReceiver {
     private static final Logger LOGGER = LoggerFactory.getLogger(TCPPacketsReceiver.class);
@@ -69,21 +72,23 @@ public final class TCPPacketsReceiver implements PacketsReceiver {
 
     private final ServerSocket serverSocket;
     private final Thread connectionListenerThread;
-    private final List<Thread> sessionThreads = new ArrayList<>(10);
+    private final List<Thread> sessionThreads = new ArrayList<>();
 
     private final StatCollector statCollector;
 
+    @Autowired
     public TCPPacketsReceiver(@Value("${net.address}") String address,
                               @Value("${net.port}") int port,
                               @Value("${packet.buffer.capacity}") int bufferCapacity,
                               @Value("${socket.receive.buffer.size}") int socketReceiveBufferSize,
                               StatCollector statCollector) throws IOException {
         if (bufferCapacity <= 0) {
-            throw new IllegalArgumentException("illegal size of buffer");
+            throw new IllegalArgumentException(String.format("Illegal value of buffer capacity: %d", bufferCapacity));
         }
 
         if (socketReceiveBufferSize <= 0) {
-            throw new IllegalArgumentException("illegal SO_RCVBUF size");
+            throw new IllegalArgumentException(String.format("Illegal value of socket receive buffer size: %d",
+                    socketReceiveBufferSize));
         }
 
         this.statCollector = statCollector;
@@ -91,7 +96,7 @@ public final class TCPPacketsReceiver implements PacketsReceiver {
         packetsBuffer = new ArrayBlockingQueue<>(bufferCapacity);
         LOGGER.debug("Initialize internal packets buffer with size: {}", bufferCapacity);
 
-        serverSocket = new ServerSocket(port, 10, InetAddress.getByName(address));
+        serverSocket = new ServerSocket(port, TCP_LISTEN_BACKLOG, InetAddress.getByName(address));
         serverSocket.setReceiveBufferSize(socketReceiveBufferSize);
 
         LOGGER.debug("Created server socket on {}:{}",
@@ -156,7 +161,7 @@ public final class TCPPacketsReceiver implements PacketsReceiver {
         private final Socket socket;
         private final int id;
         private final byte[] packetBuffer = new byte[65535];
-        private final byte[] header = new byte[MESSAGE_HEADER_LENGTH];
+        private final byte[] header = new byte[IPFIX_MESSAGE_HEADER_LENGTH];
 
         private long domainID;
         private long prevSequenceNumber;
@@ -169,24 +174,16 @@ public final class TCPPacketsReceiver implements PacketsReceiver {
 
         @Override
         public void run() {
-            LOGGER.debug("Start receiving packets within new session (id = {})...", id);
+            LOGGER.info("Start receiving packets within new session (id = {})...", id);
 
             try (DataInputStream dis = new DataInputStream(socket.getInputStream())) {
 
                 while (!Thread.currentThread().isInterrupted()) {
-                    //Сообщения передаются в виде непрерывного набора байт. Чтобы отличить их между собой,
-                    //нужно сначала прочитать 16-ти байтовый заголовок очередного сообщения. В заголовке
-                    //3-й и 4-й байт означают длину всего сообщения (включая сам заголовок) в байтах.
-
-                    //читаем первые 16 байт заголовка
-                    dis.readFully(header, 0, header.length);
-
-                    //копируем заголовок в общий массив байт целого сообщения
-                    System.arraycopy(header, 0, packetBuffer, 0, header.length);
+                    dis.readFully(header, 0, IPFIX_MESSAGE_HEADER_LENGTH);
+                    System.arraycopy(header, 0, packetBuffer, 0, IPFIX_MESSAGE_HEADER_LENGTH);
 
                     int version = twoBytesToInt(header, 0);
-
-                    if (version != 0x0A) {
+                    if (version != IPFIX_MESSAGE_VERSION) {
                         LOGGER.debug("Illegal version of message: {}", version);
                         LOGGER.debug("Closing session (id = {})...", id);
                         break;
@@ -202,7 +199,6 @@ public final class TCPPacketsReceiver implements PacketsReceiver {
                         isFirstPacket = false;
                     } else {
                         long exportedRecordsCounter;
-
                         //если текущее значение меньше чем предыдущее, значит было достигнуто максимальное значение
                         //для беззнакового 4-х байтового типа (2^32)
                         if (currentSequenceNumber < prevSequenceNumber) {
@@ -216,7 +212,7 @@ public final class TCPPacketsReceiver implements PacketsReceiver {
                     }
 
                     //Теперь, зная длину всего сообщения, читаем его тело
-                    dis.readFully(packetBuffer, MESSAGE_HEADER_LENGTH, fullMessageLength - MESSAGE_HEADER_LENGTH);
+                    dis.readFully(packetBuffer, IPFIX_MESSAGE_HEADER_LENGTH, fullMessageLength - IPFIX_MESSAGE_HEADER_LENGTH);
 
                     //И копируем его в буфер
                     if (!packetsBuffer.offer(copyOf(packetBuffer, fullMessageLength))) {
