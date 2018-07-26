@@ -27,8 +27,7 @@ package me.alexand.scat.statistic.collector.model;
 public enum TemplateType {
     GENERIC("generic"),
     CS_REQ("cs_req"),
-    CS_RESP("cs_resp"),
-    UNKNOWN("null");
+    CS_RESP("cs_resp");
 
     private String name;
 

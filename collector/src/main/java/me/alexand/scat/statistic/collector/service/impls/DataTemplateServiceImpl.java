@@ -29,6 +29,7 @@ import me.alexand.scat.statistic.collector.repository.InfoModelRepository;
 import me.alexand.scat.statistic.collector.repository.SCATDataTemplateRepository;
 import me.alexand.scat.statistic.collector.service.DataTemplateService;
 import me.alexand.scat.statistic.collector.utils.exceptions.UnknownInfoModelException;
+import me.alexand.scat.statistic.collector.utils.exceptions.UnknownTemplateTypeException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -36,7 +37,6 @@ import java.util.List;
 import java.util.Objects;
 
 import static java.util.stream.Collectors.toList;
-import static me.alexand.scat.statistic.collector.model.TemplateType.UNKNOWN;
 import static me.alexand.scat.statistic.collector.utils.SCATDataTemplateEntities.DATA_TEMPLATE_LIST;
 
 /**
@@ -66,7 +66,8 @@ public class DataTemplateServiceImpl implements DataTemplateService {
     }
 
     @Override
-    public TemplateType getTypeByIPFIXSpecifiers(List<IPFIXFieldSpecifier> fieldSpecifiers) throws UnknownInfoModelException {
+    public TemplateType getTypeByIPFIXSpecifiers(List<IPFIXFieldSpecifier> fieldSpecifiers)
+            throws UnknownInfoModelException, UnknownTemplateTypeException {
         List<InfoModelEntity> infoModelEntities;
 
         try {
@@ -92,6 +93,6 @@ public class DataTemplateServiceImpl implements DataTemplateService {
                 .filter(template -> Objects.equals(template.getSpecifiers(), infoModelEntities))
                 .map(SCATDataTemplate::getType)
                 .findFirst()
-                .orElse(UNKNOWN);
+                .orElseThrow(() -> new UnknownTemplateTypeException("Unknown template type"));
     }
 }

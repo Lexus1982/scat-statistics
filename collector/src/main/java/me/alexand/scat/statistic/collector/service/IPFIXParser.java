@@ -23,7 +23,10 @@ package me.alexand.scat.statistic.collector.service;
 
 import me.alexand.scat.statistic.collector.model.*;
 import me.alexand.scat.statistic.collector.repository.InfoModelRepository;
-import me.alexand.scat.statistic.collector.utils.exceptions.*;
+import me.alexand.scat.statistic.collector.utils.exceptions.IPFIXParseException;
+import me.alexand.scat.statistic.collector.utils.exceptions.MalformedMessageException;
+import me.alexand.scat.statistic.collector.utils.exceptions.UnknownDataRecordFormatException;
+import me.alexand.scat.statistic.collector.utils.exceptions.UnknownProtocolException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -277,8 +280,6 @@ public class IPFIXParser {
             }
         } catch (ArrayIndexOutOfBoundsException e) {
             throw new MalformedMessageException(e);
-        } catch (UnknownInfoModelException e) {
-            throw e;
         }
 
         return records;

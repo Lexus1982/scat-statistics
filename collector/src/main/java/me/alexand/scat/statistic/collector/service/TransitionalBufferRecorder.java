@@ -27,6 +27,7 @@ import me.alexand.scat.statistic.collector.repository.TransitionalBufferReposito
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -40,34 +41,35 @@ import java.util.concurrent.BlockingQueue;
  */
 
 @Component
-public class TransitionalBufferRecorder {
+public final class TransitionalBufferRecorder {
     private static final Logger LOGGER = LoggerFactory.getLogger(TransitionalBufferRecorder.class);
-    private static final int OUTPUT_BUFFER_SIZE = 100_000_000;
 
     private final Map<TemplateType, Thread> recorderThreads = new HashMap<>();
     private final Map<TemplateType, BlockingQueue<List<IPFIXDataRecord>>> recordsBuffers = new HashMap<>();
     private final TransitionalBufferRepository transitionalBufferRepository;
+    private final StatCollector statCollector;
 
     @Autowired
-    public TransitionalBufferRecorder(TransitionalBufferRepository transitionalBufferRepository) {
-        LOGGER.info("initializing recorders...");
+    public TransitionalBufferRecorder(@Value("${records.buffer.capacity}") int outputBufferSize,
+                                      TransitionalBufferRepository transitionalBufferRepository,
+                                      StatCollector statCollector) {
+        LOGGER.info("Initializing recorders...");
         this.transitionalBufferRepository = transitionalBufferRepository;
-
-        for (TemplateType type : TemplateType.values()) {
-            recordsBuffers.put(type, new ArrayBlockingQueue<>(OUTPUT_BUFFER_SIZE));
-        }
+        this.statCollector = statCollector;
 
         for (TemplateType templateType : TemplateType.values()) {
+            recordsBuffers.put(templateType, new ArrayBlockingQueue<>(outputBufferSize));
             String threadName = String.format("%s-recorder-thread", templateType.getName().toLowerCase());
             Thread recorderThread = new Thread(new Recorder(templateType), threadName);
             recorderThreads.put(templateType, recorderThread);
             recorderThread.start();
         }
-
     }
 
     public void transfer(TemplateType type, List<IPFIXDataRecord> records) {
-        recordsBuffers.get(type).offer(records);
+        if (!recordsBuffers.get(type).offer(records)) {
+            statCollector.registerRecorderBufferOverflow(type);
+        }
     }
 
     private class Recorder implements Runnable {

@@ -26,7 +26,7 @@ import me.alexand.scat.statistic.collector.model.IPFIXMessage;
 import me.alexand.scat.statistic.collector.model.IPFIXSet;
 import me.alexand.scat.statistic.collector.model.TemplateType;
 import me.alexand.scat.statistic.collector.network.PacketsReceiver;
-import me.alexand.scat.statistic.collector.utils.exceptions.*;
+import me.alexand.scat.statistic.collector.utils.exceptions.IPFIXParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +50,7 @@ import java.util.Map;
 
 @Component
 @Scope("prototype")
-public class IPFIXMessageProcessor implements Runnable {
+public final class IPFIXMessageProcessor implements Runnable {
     private static final Logger LOGGER = LoggerFactory.getLogger(IPFIXMessageProcessor.class);
 
     private static volatile int processorsCounter = 0;
@@ -136,13 +136,8 @@ public class IPFIXMessageProcessor implements Runnable {
                 }
 
                 statCollector.registerProcessedRecords(message.getHeader().getObservationDomainID(), processedRecordsNumber);
-            } catch (MalformedMessageException |
-                    UnknownProtocolException |
-                    UnknownDataRecordFormatException |
-                    UnknownInfoModelException e) {
-                //TODO
             } catch (IPFIXParseException e) {
-                //TODO
+                //TODO сделать учет ошибок разного типа и выводить их в периодическом отчете
             }
         }
 

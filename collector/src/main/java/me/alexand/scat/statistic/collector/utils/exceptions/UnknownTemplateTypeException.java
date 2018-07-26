@@ -19,21 +19,13 @@
  * under the License.
  */
 
-package me.alexand.scat.statistic.collector.service;
-
-import me.alexand.scat.statistic.collector.model.IPFIXFieldSpecifier;
-import me.alexand.scat.statistic.collector.model.TemplateType;
-import me.alexand.scat.statistic.collector.utils.exceptions.UnknownInfoModelException;
-import me.alexand.scat.statistic.collector.utils.exceptions.UnknownTemplateTypeException;
-
-import java.util.List;
+package me.alexand.scat.statistic.collector.utils.exceptions;
 
 /**
  * @author asidorov84@gmail.com
  */
-public interface DataTemplateService {
-    void loadFromXML(String filename);
-
-    TemplateType getTypeByIPFIXSpecifiers(List<IPFIXFieldSpecifier> specifiers)
-            throws UnknownInfoModelException, UnknownTemplateTypeException;
+public class UnknownTemplateTypeException extends IPFIXParseException {
+    public UnknownTemplateTypeException(String message) {
+        super(message);
+    }
 }

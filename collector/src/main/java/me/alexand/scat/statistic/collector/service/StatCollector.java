@@ -21,6 +21,7 @@
 
 package me.alexand.scat.statistic.collector.service;
 
+import me.alexand.scat.statistic.collector.model.TemplateType;
 import me.alexand.scat.statistic.collector.utils.DateTimeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +48,7 @@ public class StatCollector {
 
     private final AtomicInteger activeProcessorsCounter = new AtomicInteger(0);
     private final AtomicInteger inputBufferOverflowCounter = new AtomicInteger(0);
+    private final Map<TemplateType, Integer> recorderBuffersOverflowCounter;
     private final Map<Integer, Long> receivedPacketsCounter = new ConcurrentHashMap<>();
     private final Map<Integer, Long> processedPacketsCounter = new ConcurrentHashMap<>();
     private final Map<Integer, Long> processedPacketsTotalTimeCounter = new ConcurrentHashMap<>();
@@ -57,6 +59,11 @@ public class StatCollector {
 
     public StatCollector() {
         lastReportDateTime = applicationStart;
+        recorderBuffersOverflowCounter = new ConcurrentHashMap<>();
+        
+        for (TemplateType templateType : TemplateType.values()) {
+            recorderBuffersOverflowCounter.put(templateType, 0);
+        }
     }
 
     public void registerProcessorThread(int processorId) {
@@ -72,6 +79,10 @@ public class StatCollector {
 
     public void registerInputBufferOverflow() {
         inputBufferOverflowCounter.incrementAndGet();
+    }
+
+    public void registerRecorderBufferOverflow(TemplateType type) {
+        recorderBuffersOverflowCounter.merge(type, 1, (oldValue, newValue) -> (oldValue + newValue));
     }
 
     public void registerReceivedPacket(int processorId) {
@@ -116,8 +127,12 @@ public class StatCollector {
                 .append(activeProcessorsCounter.get())
                 .append("\n\n");
 
-        sb.append("\tbuffer overflows: ")
+        sb.append("\tinput buffer overflows: ")
                 .append(inputBufferOverflowCounter.get())
+                .append("\n");
+
+        sb.append("\trecorder buffers overflows: ")
+                .append(recorderBuffersOverflowCounter.entrySet())
                 .append("\n\n");
 
         sb.append("\tpackets received rates per processor: ")

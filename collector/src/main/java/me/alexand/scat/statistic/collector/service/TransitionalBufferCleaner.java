@@ -31,7 +31,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
-import static me.alexand.scat.statistic.collector.model.TemplateType.UNKNOWN;
 import static me.alexand.scat.statistic.collector.utils.Constants.INTERIM_BUFFER_CLEANER_RUN_FREQUENCY;
 import static me.alexand.scat.statistic.collector.utils.Constants.INTERIM_BUFFER_DEPTH;
 import static me.alexand.scat.statistic.collector.utils.DateTimeUtils.DATE_TIME_FORMATTER;
@@ -66,8 +65,6 @@ public class TransitionalBufferCleaner {
         long totalRecordsDeleted = 0;
 
         for (TemplateType type : TemplateType.values()) {
-            if (type.equals(UNKNOWN)) continue;
-
             long recordsDeleted = transitionalBufferRepository.delete(type, beforeEventTime);
             totalRecordsDeleted += recordsDeleted;
 

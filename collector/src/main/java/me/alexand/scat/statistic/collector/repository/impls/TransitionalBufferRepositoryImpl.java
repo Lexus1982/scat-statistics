@@ -48,8 +48,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static me.alexand.scat.statistic.collector.model.TemplateType.UNKNOWN;
-
 /**
  * SQL Databases реализация репозитория для IPFIX-записей
  *
@@ -116,9 +114,6 @@ public class TransitionalBufferRepositoryImpl implements TransitionalBufferRepos
     @Override
     @Transactional("bufferTM")
     public int save(TemplateType type, List<IPFIXDataRecord> records) {
-        //TODO
-        if (type == UNKNOWN) return 0;
-
         String sql = null;
 
         switch (type) {
