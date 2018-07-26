@@ -58,7 +58,7 @@ import static me.alexand.scat.statistic.collector.utils.Constants.MESSAGE_HEADER
  * <p>
  * Обязательными параметрами для создания экземпляра являются IP-адрес и порт для создания сокета, а также размер
  * внутреннего буфера (в пакетах) и размер приемного буфера сокета для TCP (SO_RCVBUF)
- * 
+ *
  * @author asidorov84@gmail.com
  */
 @Component("TCPPacketsReceiver")
@@ -93,7 +93,7 @@ public final class TCPPacketsReceiver implements PacketsReceiver {
 
         serverSocket = new ServerSocket(port, 10, InetAddress.getByName(address));
         serverSocket.setReceiveBufferSize(socketReceiveBufferSize);
-        
+
         LOGGER.debug("Created server socket on {}:{}",
                 serverSocket.getInetAddress().getHostAddress(),
                 serverSocket.getLocalPort());
@@ -142,8 +142,8 @@ public final class TCPPacketsReceiver implements PacketsReceiver {
                     sessionThread.start();
                     sessionThreads.add(sessionThread);
                 }
-            } catch (SocketException e) {}
-            catch (IOException e) {
+            } catch (SocketException e) {
+            } catch (IOException e) {
                 LOGGER.error(e.getMessage());
             }
 
@@ -152,16 +152,17 @@ public final class TCPPacketsReceiver implements PacketsReceiver {
     }
 
     private class Session implements Runnable {
+        private static final long MAX_SEQUENCE_NUMBER = 4294967296L;
         private final Socket socket;
         private final int id;
         private final byte[] packetBuffer = new byte[65535];
         private final byte[] header = new byte[MESSAGE_HEADER_LENGTH];
 
-        private long sequenceNumberOffset;
+        private long domainID;
+        private long prevSequenceNumber;
         private boolean isFirstPacket = true;
-        private long prevDomainID = -1;
 
-        public Session(Socket socket, int id) {
+        Session(Socket socket, int id) {
             this.socket = socket;
             this.id = id;
         }
@@ -184,51 +185,51 @@ public final class TCPPacketsReceiver implements PacketsReceiver {
                     System.arraycopy(header, 0, packetBuffer, 0, header.length);
 
                     int version = twoBytesToInt(header, 0);
-                    
+
                     if (version != 0x0A) {
                         LOGGER.debug("Illegal version of message: {}", version);
                         LOGGER.debug("Closing session (id = {})...", id);
                         break;
                     }
-                    
+
                     int fullMessageLength = twoBytesToInt(header, 2);
-                    
-                    //Для каждого домена поле sequenceNumber означает количество переданных от СКАТа записей (кроме шаблонов)
-                    //Задача: нужно подсчитать, сколько было передано записей СКАТом с момента создании сессии
-                    //При получении первого пакета сохраняем количество уже переданных (до создания данной сессии) 
-                    long sequenceNumber = fourBytesToLong(header, 8);
-                    long domainID = fourBytesToLong(header, 12);
-
-                    //TODO Интересно, а domainID в рамках сессии меняется?
-                    if (isFirstPacket) {
-                        prevDomainID = domainID;
-                    } else {
-                        if (prevDomainID != domainID) {
-                            LOGGER.debug("DomainID not unique per TCP-session");
-                        }
-                    }
+                    long currentSequenceNumber = fourBytesToLong(header, 8);
 
                     if (isFirstPacket) {
-                        sequenceNumberOffset = sequenceNumber;
+                        //DomainID не меняется в рамках TCP-сессии.
+                        domainID = fourBytesToLong(header, 12);
+                        prevSequenceNumber = currentSequenceNumber;
                         isFirstPacket = false;
                     } else {
-                        statCollector.registerExportedRecords(domainID, sequenceNumber - sequenceNumberOffset);
+                        long exportedRecordsCounter;
+
+                        //если текущее значение меньше чем предыдущее, значит было достигнуто максимальное значение
+                        //для беззнакового 4-х байтового типа (2^32)
+                        if (currentSequenceNumber < prevSequenceNumber) {
+                            exportedRecordsCounter = MAX_SEQUENCE_NUMBER - prevSequenceNumber + currentSequenceNumber;
+                        } else {
+                            exportedRecordsCounter = currentSequenceNumber - prevSequenceNumber;
+                        }
+
+                        statCollector.registerExportedRecords(domainID, exportedRecordsCounter);
+                        prevSequenceNumber = currentSequenceNumber;
                     }
 
-                    //Теперь, зная длину сообщения, читаем его тело
+                    //Теперь, зная длину всего сообщения, читаем его тело
                     dis.readFully(packetBuffer, MESSAGE_HEADER_LENGTH, fullMessageLength - MESSAGE_HEADER_LENGTH);
 
+                    //И копируем его в буфер
                     if (!packetsBuffer.offer(copyOf(packetBuffer, fullMessageLength))) {
                         statCollector.registerInputBufferOverflow();
                     }
                 }
-                
+
                 socket.close();
                 LOGGER.debug("Socket of session (id = {}) closed", id);
             } catch (IOException e) {
                 LOGGER.error(e.getMessage());
             }
-            
+
             LOGGER.info("Stop receiving packets within new session (id = {})...", id);
         }
     }

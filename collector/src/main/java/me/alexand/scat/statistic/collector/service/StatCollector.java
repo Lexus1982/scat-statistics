@@ -30,13 +30,11 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -52,8 +50,7 @@ public class StatCollector {
     private final Map<Integer, Long> receivedPacketsCounter = new ConcurrentHashMap<>();
     private final Map<Integer, Long> processedPacketsCounter = new ConcurrentHashMap<>();
     private final Map<Integer, Long> processedPacketsTotalTimeCounter = new ConcurrentHashMap<>();
-    private final Map<Long, Long> exportedRecordsCounter = new ConcurrentHashMap<>();
-    private final Map<Long, Long> processedRecordsCounter = new ConcurrentHashMap<>();
+    private final Map<Long, Long> recordsCounter = new ConcurrentHashMap<>();
 
     private final LocalDateTime applicationStart = LocalDateTime.now();
     private LocalDateTime lastReportDateTime;
@@ -81,8 +78,8 @@ public class StatCollector {
         receivedPacketsCounter.merge(processorId, 1L, (oldValue, newValue) -> oldValue + newValue);
     }
 
-    public void registerExportedRecords(long domainID, long totalExportedRecordsNumber) {
-        exportedRecordsCounter.put(domainID, totalExportedRecordsNumber);
+    public void registerExportedRecords(long domainID, long exportedRecordsNumber) {
+        recordsCounter.merge(domainID, exportedRecordsNumber, (oldValue, newValue) -> oldValue + newValue);
     }
 
     public void registerProcessedPacket(int processorId, long time) {
@@ -90,8 +87,8 @@ public class StatCollector {
         processedPacketsTotalTimeCounter.merge(processorId, time, (oldValue, newValue) -> oldValue + newValue);
     }
 
-    public void registerProcessedRecords(long domainID, long records) {
-        processedRecordsCounter.merge(domainID, records, (oldValue, newValue) -> oldValue + newValue);
+    public void registerProcessedRecords(long domainID, long processedRecordsNumber) {
+        recordsCounter.merge(domainID, processedRecordsNumber, (oldValue, newValue) -> oldValue - newValue);
     }
 
     @Scheduled(fixedDelay = 60_000, initialDelay = 5_000)
@@ -123,16 +120,6 @@ public class StatCollector {
                 .append(inputBufferOverflowCounter.get())
                 .append("\n\n");
 
-        sb.append("\texported records per domain: ")
-                .append(exportedRecordsCounter.entrySet())
-                .append("\n");
-        sb.append("\tprocessed records per domain: ")
-                .append(processedRecordsCounter.entrySet())
-                .append("\n");
-        sb.append("\tlost records per domain: ")
-                .append(getLostRecordsPerDomain())
-                .append("\n\n");
-
         sb.append("\tpackets received rates per processor: ")
                 .append(getReceivedPacketsRatesPerProcessor(receivedPacketsCountersForNow, secondsSinceLastReport))
                 .append("\n");
@@ -152,25 +139,15 @@ public class StatCollector {
         sb.append("\tpackets average parse time: ")
                 .append(getProcessedPacketsAverageParseTime(processedPacketsTotalTimeCountersForNow,
                         processedPacketsCountersForNow))
+                .append("\n\n");
+
+        sb.append("\trecords that not yet processed per domain: ")
+                .append(recordsCounter.entrySet())
                 .append("\n");
 
         sb.append("\n...end of periodical collector report\n");
 
         LOGGER.info(sb.toString());
-    }
-
-    private String getLostRecordsPerDomain() {
-        List<Map.Entry<Long, Long>> exported = new ArrayList<>(exportedRecordsCounter.entrySet());
-        Map<Long, Long> processed = new HashMap<>(processedRecordsCounter);
-
-        return "[ " + exported.stream()
-                .map(e -> {
-                    Long domainID = e.getKey();
-                    Long exportedRecords = e.getValue();
-                    Long processedRecords = processed.get(domainID);
-                    return String.format("%d: %d", domainID, exportedRecords - processedRecords);
-                })
-                .collect(joining(", ")) + "]";
     }
 
     private void resetPacketsCounters(Map<?, Long> packetsCounter) {
