@@ -30,7 +30,6 @@ import me.alexand.scat.statistic.collector.utils.exceptions.IPFIXParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -67,7 +66,7 @@ public final class IPFIXMessageProcessor implements Runnable {
     @Autowired
     public IPFIXMessageProcessor(@Value("${processor.records.batch.size}") int batchSize,
                                  IPFIXParser parser,
-                                 @Qualifier("TCPPacketsReceiver") PacketsReceiver receiver,
+                                 PacketsReceiver receiver,
                                  TransitionalBufferRecorder transitionalBufferRecorder,
                                  StatCollector statCollector) {
         if (batchSize <= 0) {
