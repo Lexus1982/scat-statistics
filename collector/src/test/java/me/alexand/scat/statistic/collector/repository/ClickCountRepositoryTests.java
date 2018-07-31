@@ -21,7 +21,7 @@
 
 package me.alexand.scat.statistic.collector.repository;
 
-import me.alexand.scat.statistic.common.repository.TrackedDomainRequestsRepository;
+import me.alexand.scat.statistic.common.repository.ClickCountRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,9 +31,10 @@ import org.springframework.test.context.jdbc.SqlConfig;
 import org.springframework.test.context.jdbc.SqlGroup;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.util.Collections;
+import java.util.Arrays;
 
-import static me.alexand.scat.statistic.collector.entities.TrackedDomainRequestsTestEntities.TEST;
+import static me.alexand.scat.statistic.collector.entities.ClickCountTestEntities.FIRST_APRIL_COUNT;
+import static me.alexand.scat.statistic.collector.entities.ClickCountTestEntities.SECOND_APRIL_COUNT;
 import static org.junit.Assert.assertEquals;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TEST_METHOD;
@@ -62,23 +63,13 @@ import static org.springframework.test.context.jdbc.SqlConfig.TransactionMode.IS
                         dataSource = "postgresqlTestDataSource")
         )
 })
-public class TrackedDomainRequestsRepositoryTests {
+public class ClickCountRepositoryTests {
     @Autowired
-    private TrackedDomainRequestsRepository repository;
-
-    @Test
-    public void testSave() {
-        assertEquals(1, repository.save(TEST));
-    }
-
-    @Test
-    public void testSaveDuplicate() {
-        assertEquals(1, repository.save(TEST));
-        assertEquals(1, repository.save(TEST));
-    }
+    private ClickCountRepository repository;
 
     @Test
     public void testSaveAll() {
-        assertEquals(1, repository.saveAll(Collections.singletonList(TEST)));
+        assertEquals(2, repository.saveAll(Arrays.asList(FIRST_APRIL_COUNT, SECOND_APRIL_COUNT)));
+        repository.saveAll(Arrays.asList(FIRST_APRIL_COUNT, SECOND_APRIL_COUNT));
     }
 }

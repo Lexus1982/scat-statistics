@@ -25,6 +25,7 @@ import me.alexand.scat.statistic.collector.model.IPFIXDataRecord;
 import me.alexand.scat.statistic.collector.model.IPFIXFieldValue;
 import me.alexand.scat.statistic.collector.model.TemplateType;
 import me.alexand.scat.statistic.collector.repository.TransitionalBufferRepository;
+import me.alexand.scat.statistic.common.model.ClickCount;
 import me.alexand.scat.statistic.common.model.TrackedDomainRequests;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -174,6 +175,34 @@ public class TransitionalBufferRepositoryImpl implements TransitionalBufferRepos
     }
 
     @Override
+    public List<ClickCount> getClickCount(LocalDateTime start, LocalDateTime end) {
+        Objects.requireNonNull(start);
+        Objects.requireNonNull(end);
+        
+        StringBuilder sb = new StringBuilder();
+        sb.append("SELECT ")
+                .append(" cast(cs.event_time AS DATE) AS date, ")
+                .append(" count(*) AS count ")
+                .append("FROM cs_req AS cs ")
+                .append("WHERE cs.event_time >= ? AND cs.event_time < ? ")
+                .append("GROUP BY cast(cs.event_time AS DATE)");
+
+        try {
+            return jdbcTemplate.query(sb.toString(), ps -> {
+                ps.setObject(1, start);
+                ps.setObject(2, end);
+            }, (rs, rowNum) -> ClickCount.builder()
+                    .date(rs.getObject(1, LocalDate.class))
+                    .count(rs.getBigDecimal(2).toBigInteger())
+                    .build());
+        } catch (DataAccessException e) {
+            LOGGER.error(e.getMessage());
+        }
+
+        return new ArrayList<>();
+    }
+
+    @Override
     @Transactional("bufferTM")
     public long delete(TemplateType type, LocalDateTime beforeEventTime) {
         Objects.requireNonNull(type);
@@ -191,7 +220,6 @@ public class TransitionalBufferRepositoryImpl implements TransitionalBufferRepos
         } catch (DataAccessException e) {
             LOGGER.error(e.getMessage());
         }
-
 
         return 0;
     }

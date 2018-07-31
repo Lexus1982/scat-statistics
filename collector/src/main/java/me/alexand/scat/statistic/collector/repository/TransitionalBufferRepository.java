@@ -23,6 +23,7 @@ package me.alexand.scat.statistic.collector.repository;
 
 import me.alexand.scat.statistic.collector.model.IPFIXDataRecord;
 import me.alexand.scat.statistic.collector.model.TemplateType;
+import me.alexand.scat.statistic.common.model.ClickCount;
 import me.alexand.scat.statistic.common.model.TrackedDomainRequests;
 
 import java.time.LocalDateTime;
@@ -35,12 +36,22 @@ import java.util.List;
  */
 public interface TransitionalBufferRepository {
     /**
-     * Получить количество IPFIX-записей указанного типа
+     * Получить количество всех IPFIX-записей указанного типа
      *
      * @param type тип записей (обязательный)
      * @return количество записей
      */
     long getCount(TemplateType type);
+
+    /**
+     * Метод для получения количества IPFIX-записей типа CS_REQ за указанный период времени
+     *
+     * @param start начальная отметка времени (>=) (обязательный)
+     * @param end   конечная отметка времени (<) (обязательный)
+     * @return список экземпляров класса ClickCount, каждый из которых фактически содержит количество веб-запросов,
+     * совершенных абонентами за данную дату
+     */
+    List<ClickCount> getClickCount(LocalDateTime start, LocalDateTime end);
 
     /**
      * Сохранить IPFIX-запись

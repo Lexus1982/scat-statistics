@@ -1,5 +1,27 @@
+/*
+ * Copyright 2018 Alexander Sidorov (asidorov84@gmail.com)
+ *
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package me.alexand.scat.statistic.collector.repository;
 
+import me.alexand.scat.statistic.common.model.ClickCount;
 import me.alexand.scat.statistic.common.model.TrackedDomainRequests;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,6 +38,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static java.util.Arrays.asList;
+import static me.alexand.scat.statistic.collector.entities.ClickCountTestEntities.FIRST_APRIL_COUNT;
+import static me.alexand.scat.statistic.collector.entities.ClickCountTestEntities.SECOND_APRIL_COUNT;
 import static me.alexand.scat.statistic.collector.entities.DataRecordsTestEntities.CS_REQ_DATA_RECORD_1;
 import static me.alexand.scat.statistic.collector.model.TemplateType.*;
 import static org.junit.Assert.*;
@@ -108,5 +132,13 @@ public class TransitionalBufferRepositoryTests {
 
         actual = repository.getMaxEventTime(GENERIC);
         LOGGER.info("actual result: {}", String.valueOf(actual));
+    }
+
+    @Test
+    public void testGetClickCount() {
+        List<ClickCount> actual = repository.getClickCount(LocalDateTime.of(2018, 3, 1, 0, 0, 0), LocalDateTime.of(2018, 5, 1, 0, 0, 0));
+        assertNotNull(actual);
+        assertTrue(actual.contains(FIRST_APRIL_COUNT));
+        assertTrue(actual.contains(SECOND_APRIL_COUNT));
     }
 }

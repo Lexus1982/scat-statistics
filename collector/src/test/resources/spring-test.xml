@@ -74,6 +74,11 @@
         <constructor-arg ref="postgresJdbcTemplate"/>
     </bean>
 
+    <bean id="clickCountRepository"
+          class="me.alexand.scat.statistic.collector.repository.impls.ClickCountRepositoryImpl">
+        <constructor-arg ref="postgresJdbcTemplate"/>
+    </bean>
+
     <bean id="dataTemplateService" class="me.alexand.scat.statistic.collector.service.impls.DataTemplateServiceImpl"/>
     <bean id="statCollector" class="me.alexand.scat.statistic.collector.service.StatCollector"/>
     <bean id="ipfixParser" class="me.alexand.scat.statistic.collector.service.IPFIXParser"/>

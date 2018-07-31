@@ -22,8 +22,10 @@
 package me.alexand.scat.statistic.collector.service;
 
 import me.alexand.scat.statistic.collector.repository.TransitionalBufferRepository;
+import me.alexand.scat.statistic.common.model.ClickCount;
 import me.alexand.scat.statistic.common.model.DomainRegex;
 import me.alexand.scat.statistic.common.model.TrackedDomainRequests;
+import me.alexand.scat.statistic.common.repository.ClickCountRepository;
 import me.alexand.scat.statistic.common.repository.DomainRegexRepository;
 import me.alexand.scat.statistic.common.repository.TrackedDomainRequestsRepository;
 import org.slf4j.Logger;
@@ -48,41 +50,64 @@ public class Sampling {
     private final DomainRegexRepository domainRegexRepository;
     private final TransitionalBufferRepository transitionalBufferRepository;
     private final TrackedDomainRequestsRepository trackedDomainRequestsRepository;
-    private LocalDateTime lastTime;
+    private final ClickCountRepository clickCountRepository;
+    private LocalDateTime lastTimeTrackDomains;
+    private LocalDateTime lastTimeCountClicks;
 
     @Autowired
     public Sampling(DomainRegexRepository domainRegexRepository,
                     TransitionalBufferRepository transitionalBufferRepository,
-                    TrackedDomainRequestsRepository trackedDomainRequestsRepository) {
+                    TrackedDomainRequestsRepository trackedDomainRequestsRepository,
+                    ClickCountRepository clickCountRepository) {
         this.domainRegexRepository = domainRegexRepository;
         this.transitionalBufferRepository = transitionalBufferRepository;
         this.trackedDomainRequestsRepository = trackedDomainRequestsRepository;
-        lastTime = LocalDateTime.now().minusSeconds(60);
+        this.clickCountRepository = clickCountRepository;
+        lastTimeTrackDomains = LocalDateTime.now().minusSeconds(60);
+        lastTimeCountClicks = LocalDateTime.now().minusSeconds(60);
     }
 
     @Scheduled(fixedRate = 30_000, initialDelay = 30_000)//TODO вынести периодичность в проперти
     public void trackDomains() {
         LOGGER.info("start tracking domains...");
-        LocalDateTime endDateTime = lastTime.plusSeconds(30);
+        LocalDateTime endDateTime = lastTimeTrackDomains.plusSeconds(30);
 
         List<String> domainRegexPatterns = domainRegexRepository.getAll().stream()
                 .map(DomainRegex::getPattern)
                 .collect(toList());
 
-        LOGGER.info("\ttime period is between {} and {}",
-                getFormattedDateTime(lastTime),
+        LOGGER.info("\ttime period for tracking domains is between {} and {}",
+                getFormattedDateTime(lastTimeTrackDomains),
                 getFormattedDateTime(endDateTime));
         LOGGER.info("\tlist of domain regex patterns which must be tracked: {}", domainRegexPatterns);
 
         List<TrackedDomainRequests> results = transitionalBufferRepository.getTrackedDomainRequests(domainRegexPatterns,
-                lastTime,
+                lastTimeTrackDomains,
                 endDateTime);
 
-        LOGGER.info("\tnumber of results: {}", results.size());
+        LOGGER.info("\tnumber of tracking domain results: {}", results.size());
 
-        lastTime = endDateTime;
+        lastTimeTrackDomains = endDateTime;
         trackedDomainRequestsRepository.saveAll(results);
 
         LOGGER.info("...stop tracking domains.\n");
+    }
+
+    @Scheduled(fixedRate = 30_000, initialDelay = 35_000)//TODO вынести периодичность в проперти
+    public void countClicks() {
+        LOGGER.info("start counting clicks...");
+        LocalDateTime endDateTime = lastTimeCountClicks.plusSeconds(30);
+
+        LOGGER.info("\ttime period for counting clicks is between {} and {}",
+                getFormattedDateTime(lastTimeCountClicks),
+                getFormattedDateTime(endDateTime));
+
+        List<ClickCount> clickCounts = transitionalBufferRepository.getClickCount(lastTimeCountClicks, endDateTime);
+        LOGGER.info("\tnumber of counts: {}", clickCounts.size());
+
+        lastTimeCountClicks = endDateTime;
+        clickCountRepository.saveAll(clickCounts);
+
+        LOGGER.info("...stop counting clicks\n");
     }
 }

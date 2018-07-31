@@ -13,12 +13,17 @@ CREATE TABLE IF NOT EXISTS domain_regex (
 );
 
 CREATE TABLE IF NOT EXISTS tracked_domain_requests (
-  date       DATE,
-  pattern    VARCHAR,
-  address    VARCHAR(15),
-  login      VARCHAR,
-  first_time TIME,
-  last_time  TIME,
-  count      BIGINT,
+  date       DATE        NOT NULL,
+  pattern    VARCHAR     NOT NULL,
+  address    VARCHAR(15) NOT NULL,
+  login      VARCHAR     NOT NULL,
+  first_time TIME        NOT NULL,
+  last_time  TIME        NOT NULL,
+  count      BIGINT      NOT NULL,
   CONSTRAINT unique_track UNIQUE (date, pattern, address, login)
+);
+
+CREATE TABLE IF NOT EXISTS click_count (
+  date  DATE   NOT NULL UNIQUE,
+  count BIGINT NOT NULL
 );

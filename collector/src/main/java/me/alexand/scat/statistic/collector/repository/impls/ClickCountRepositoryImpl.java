@@ -21,8 +21,8 @@
 
 package me.alexand.scat.statistic.collector.repository.impls;
 
-import me.alexand.scat.statistic.common.model.TrackedDomainRequests;
-import me.alexand.scat.statistic.common.repository.TrackedDomainRequestsRepository;
+import me.alexand.scat.statistic.common.model.ClickCount;
+import me.alexand.scat.statistic.common.repository.ClickCountRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,37 +45,33 @@ import static java.sql.Types.BIGINT;
  * @author asidorov84@gmail.com
  */
 @Repository
-public class TrackedDomainRequestsRepositoryImpl implements TrackedDomainRequestsRepository {
-    private static final Logger LOGGER = LoggerFactory.getLogger(TrackedDomainRequestsRepositoryImpl.class);
-
-    private static final String INSERT_QUERY = "INSERT INTO tracked_domain_requests AS tdr (date, pattern, address, login, first_time, last_time, count) " +
-            " VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT (date, pattern, address, login) DO UPDATE SET " +
-            "last_time = EXCLUDED.last_time, " +
-            "count = tdr.count + EXCLUDED.count";
-
+public class ClickCountRepositoryImpl implements ClickCountRepository {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ClickCountRepositoryImpl.class);
     private final JdbcTemplate jdbcTemplate;
 
     @Autowired
-    public TrackedDomainRequestsRepositoryImpl(@Qualifier("postgresqlJDBCTemplate") JdbcTemplate jdbcTemplate) {
+    public ClickCountRepositoryImpl(@Qualifier("postgresqlJDBCTemplate") JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
     @Override
     @Transactional("postgresqlTM")
-    public int saveAll(List<TrackedDomainRequests> entities) {
+    public int saveAll(List<ClickCount> entities) {
         Objects.requireNonNull(entities);
-        
+        if (entities.isEmpty()) {
+            return 0;
+        }
+
+        String query = "INSERT INTO click_count AS cc (date, count) " +
+                " VALUES (?, ?) ON CONFLICT (date) DO UPDATE SET " +
+                "count = cc.count + EXCLUDED.count";
+
         try {
-            int[] rows = jdbcTemplate.batchUpdate(INSERT_QUERY, new BatchPreparedStatementSetter() {
+            int[] rows = jdbcTemplate.batchUpdate(query, new BatchPreparedStatementSetter() {
                 @Override
                 public void setValues(PreparedStatement ps, int i) throws SQLException {
                     ps.setObject(1, entities.get(i).getDate());
-                    ps.setString(2, entities.get(i).getPattern());
-                    ps.setString(3, entities.get(i).getAddress());
-                    ps.setString(4, entities.get(i).getLogin());
-                    ps.setObject(5, entities.get(i).getFirstTime());
-                    ps.setObject(6, entities.get(i).getLastTime());
-                    ps.setObject(7, entities.get(i).getCount(), BIGINT);
+                    ps.setObject(2, entities.get(i).getCount(), BIGINT);
                 }
 
                 @Override
@@ -83,28 +79,8 @@ public class TrackedDomainRequestsRepositoryImpl implements TrackedDomainRequest
                     return entities.size();
                 }
             });
-            
+
             return Arrays.stream(rows).sum();
-        } catch (DataAccessException e) {
-            LOGGER.error(e.getMessage());
-        }
-
-        return 0;
-    }
-
-    @Override
-    @Transactional("postgresqlTM")
-    public int save(TrackedDomainRequests entity) {
-        try {
-            return jdbcTemplate.update(INSERT_QUERY, ps -> {
-                ps.setObject(1, entity.getDate());
-                ps.setString(2, entity.getPattern());
-                ps.setString(3, entity.getAddress());
-                ps.setString(4, entity.getLogin());
-                ps.setObject(5, entity.getFirstTime());
-                ps.setObject(6, entity.getLastTime());
-                ps.setObject(7, entity.getCount(), BIGINT);
-            });
         } catch (DataAccessException e) {
             LOGGER.error(e.getMessage());
         }
