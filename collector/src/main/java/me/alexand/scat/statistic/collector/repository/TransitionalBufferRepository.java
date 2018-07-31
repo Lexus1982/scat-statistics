@@ -23,7 +23,7 @@ package me.alexand.scat.statistic.collector.repository;
 
 import me.alexand.scat.statistic.collector.model.IPFIXDataRecord;
 import me.alexand.scat.statistic.collector.model.TemplateType;
-import me.alexand.scat.statistic.common.model.TrackedResult;
+import me.alexand.scat.statistic.common.model.TrackedDomainRequests;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -67,7 +67,7 @@ public interface TransitionalBufferRepository {
      * @param end            конечная отметка времени (<) (обязательный)
      * @return список результатов об отслеженных доменах
      */
-    List<TrackedResult> getTrackedDomainsStatistic(List<String> domainPatterns, LocalDateTime start, LocalDateTime end);
+    List<TrackedDomainRequests> getTrackedDomainRequests(List<String> domainPatterns, LocalDateTime start, LocalDateTime end);
 
     /**
      * Получить минимальную отметку времени у записей данного типа, находящихся в буфере

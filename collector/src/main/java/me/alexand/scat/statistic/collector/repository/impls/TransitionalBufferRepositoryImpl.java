@@ -25,7 +25,7 @@ import me.alexand.scat.statistic.collector.model.IPFIXDataRecord;
 import me.alexand.scat.statistic.collector.model.IPFIXFieldValue;
 import me.alexand.scat.statistic.collector.model.TemplateType;
 import me.alexand.scat.statistic.collector.repository.TransitionalBufferRepository;
-import me.alexand.scat.statistic.common.model.TrackedResult;
+import me.alexand.scat.statistic.common.model.TrackedDomainRequests;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +41,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -196,7 +198,7 @@ public class TransitionalBufferRepositoryImpl implements TransitionalBufferRepos
 
     @Override
     @Transactional(value = "bufferTM", readOnly = true)
-    public List<TrackedResult> getTrackedDomainsStatistic(List<String> domainPatterns, LocalDateTime start, LocalDateTime end) {
+    public List<TrackedDomainRequests> getTrackedDomainRequests(List<String> domainPatterns, LocalDateTime start, LocalDateTime end) {
         Objects.requireNonNull(domainPatterns);
         Objects.requireNonNull(start);
         Objects.requireNonNull(end);
@@ -208,11 +210,12 @@ public class TransitionalBufferRepositoryImpl implements TransitionalBufferRepos
         StringBuilder querySB = new StringBuilder();
 
         querySB.append("SELECT ")
-                .append(" td.regex_pattern, ")
+                .append(" cast(cs.event_time AS DATE) AS date, ")
+                .append(" td.pattern, ")
                 .append(" cs.ip_src, ")
                 .append(" cs.login, ")
-                .append(" min(cs.event_time) AS first_time, ")
-                .append(" max(cs.event_time) AS last_time, ")
+                .append(" cast(min(cs.event_time) AS TIME) AS first_time, ")
+                .append(" cast(max(cs.event_time) AS TIME) AS last_time, ")
                 .append(" count(*) AS cnt ")
                 .append("FROM cs_req AS cs INNER JOIN (VALUES ");
 
@@ -221,10 +224,10 @@ public class TransitionalBufferRepositoryImpl implements TransitionalBufferRepos
                 .collect(Collectors.joining(", "));
 
         querySB.append(values)
-                .append(") as td (regex_pattern) ")
-                .append("ON REGEXP_MATCHES(lower(cs.hostname), trim(BOTH FROM td.regex_pattern)) ")
+                .append(") as td (pattern) ")
+                .append("ON REGEXP_MATCHES(lower(cs.hostname), trim(BOTH FROM td.pattern)) ")
                 .append("WHERE cs.event_time >= ? AND cs.event_time < ? ")
-                .append("GROUP BY td.regex_pattern, cs.ip_src, cs.login");
+                .append("GROUP BY cast(cs.event_time AS DATE), td.pattern, cs.ip_src, cs.login");
 
         try {
             return jdbcTemplate.query(querySB.toString(),
@@ -232,13 +235,14 @@ public class TransitionalBufferRepositoryImpl implements TransitionalBufferRepos
                         ps.setObject(1, start);
                         ps.setObject(2, end);
                     },
-                    (rs, rowNum) -> TrackedResult.builder()
-                            .regexPattern(rs.getString(1))
-                            .address(rs.getString(2))
-                            .login(rs.getString(3))
-                            .firstTime(rs.getTimestamp(4).toLocalDateTime())
-                            .lastTime(rs.getTimestamp(5).toLocalDateTime())
-                            .count(rs.getBigDecimal(6).toBigInteger())
+                    (rs, rowNum) -> TrackedDomainRequests.builder()
+                            .date(rs.getObject(1, LocalDate.class))
+                            .pattern(rs.getString(2))
+                            .address(rs.getString(3))
+                            .login(rs.getString(4))
+                            .firstTime(rs.getObject(5, LocalTime.class))
+                            .lastTime(rs.getObject(6, LocalTime.class))
+                            .count(rs.getBigDecimal(7).toBigInteger())
                             .build());
         } catch (DataAccessException e) {
             LOGGER.error(e.getMessage());

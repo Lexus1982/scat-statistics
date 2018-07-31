@@ -21,29 +21,23 @@
 
 package me.alexand.scat.statistic.collector.entities;
 
-import me.alexand.scat.statistic.common.model.DomainRegex;
+import me.alexand.scat.statistic.common.model.TrackedDomainRequests;
 
-import java.time.LocalDateTime;
+import java.math.BigInteger;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 /**
  * @author asidorov84@gmail.com
  */
-public interface TrackedDomainsTestEntities {
-    long POPULATED_DOMAINS_COUNT = 2;
-
-    String VK_COM_REGEX_PATTERN = ".*vk\\.com$";
-    String MAIL_RU_REGEX_PATTERN = ".*mail\\.ru$";
-    String OK_RU_REGEX_PATTERN = ".*ok\\.ru$";
-
-    DomainRegex TEST_VK_COM = DomainRegex.builder()
-            .id(1)
-            .regexPattern(VK_COM_REGEX_PATTERN)
-            .dateAdded(LocalDateTime.of(2018, 1, 1, 1, 1, 1))
-            .build();
-
-    DomainRegex TEST_MAIL_RU = DomainRegex.builder()
-            .id(2)
-            .regexPattern(MAIL_RU_REGEX_PATTERN)
-            .dateAdded(LocalDateTime.of(2018, 1, 1, 1, 1, 1))
+public interface TrackedDomainRequestsTestEntities {
+    TrackedDomainRequests TEST = TrackedDomainRequests.builder()
+            .date(LocalDate.of(2018, 4, 1))
+            .pattern(".*vk\\.com$")
+            .address("176.221.0.224")
+            .login("polyakov_al@setka.ru")
+            .firstTime(LocalTime.of(17, 6, 17))
+            .lastTime(LocalTime.of(17, 6, 19))
+            .count(BigInteger.valueOf(3))
             .build();
 }

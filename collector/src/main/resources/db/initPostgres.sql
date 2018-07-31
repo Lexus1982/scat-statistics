@@ -1,18 +1,22 @@
-DROP TABLE IF EXISTS tracked_domains;
-DROP TABLE IF EXISTS tracked_results;
+CREATE SEQUENCE IF NOT EXISTS domain_regex_id_seq
+  START 1000
+  INCREMENT BY 1;
 
-CREATE TABLE tracked_domains (
-  regex_pattern VARCHAR UNIQUE,
-  is_active     BOOLEAN   NOT NULL DEFAULT TRUE,
-  date_added    TIMESTAMP NOT NULL DEFAULT now()
+CREATE TABLE IF NOT EXISTS domain_regex (
+  id         BIGINT PRIMARY KEY      DEFAULT nextval('domain_regex_id_seq'),
+  pattern    VARCHAR UNIQUE NOT NULL,
+  date_added TIMESTAMP      NOT NULL DEFAULT now()
 );
 
-CREATE TABLE tracked_results (
-  regex_pattern VARCHAR,
-  address       CHAR(15),
-  login         VARCHAR,
-  first_time    TIMESTAMP,
-  last_time     TIMESTAMP,
-  count         BIGINT,
-  CONSTRAINT unique_track UNIQUE (regex_pattern, address, login)
+CREATE TABLE IF NOT EXISTS tracked_domain_requests (
+  date       DATE,
+  pattern    VARCHAR,
+  address    VARCHAR(15),
+  login      VARCHAR,
+  first_time TIME,
+  last_time  TIME,
+  count      BIGINT,
+  CONSTRAINT unique_track UNIQUE (date, pattern, address, login)
 );
+
+CREATE INDEX IF NOT EXISTS tracked_domain_requests_date_pattern_idx ON tracked_domain_requests (date, pattern);

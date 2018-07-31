@@ -35,7 +35,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.util.List;
 import java.util.regex.PatternSyntaxException;
 
-import static me.alexand.scat.statistic.collector.entities.TrackedDomainsTestEntities.*;
+import static me.alexand.scat.statistic.collector.entities.DomainRegexTestEntities.*;
 import static org.junit.Assert.*;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TEST_METHOD;
@@ -102,13 +102,13 @@ public class DomainRegexRepositoryTests {
     public void testAdd() {
         DomainRegex actual = repository.add(OK_RU_REGEX_PATTERN);
         assertNotNull(actual);
-        assertEquals(OK_RU_REGEX_PATTERN, actual.getRegexPattern());
+        assertEquals(OK_RU_REGEX_PATTERN, actual.getPattern());
 
         List<DomainRegex> domainRegexList = repository.getAll();
         assertNotNull(domainRegexList);
 
         assertTrue(domainRegexList.stream()
-                .map(DomainRegex::getRegexPattern)
+                .map(DomainRegex::getPattern)
                 .anyMatch(pattern -> pattern.equals(OK_RU_REGEX_PATTERN)));
     }
 

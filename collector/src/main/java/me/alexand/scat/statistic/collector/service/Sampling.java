@@ -23,9 +23,9 @@ package me.alexand.scat.statistic.collector.service;
 
 import me.alexand.scat.statistic.collector.repository.TransitionalBufferRepository;
 import me.alexand.scat.statistic.common.model.DomainRegex;
-import me.alexand.scat.statistic.common.model.TrackedResult;
+import me.alexand.scat.statistic.common.model.TrackedDomainRequests;
 import me.alexand.scat.statistic.common.repository.DomainRegexRepository;
-import me.alexand.scat.statistic.common.repository.TrackedResultRepository;
+import me.alexand.scat.statistic.common.repository.TrackedDomainRequestsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,16 +47,16 @@ public class Sampling {
     private static final Logger LOGGER = LoggerFactory.getLogger(Sampling.class);
     private final DomainRegexRepository domainRegexRepository;
     private final TransitionalBufferRepository transitionalBufferRepository;
-    private final TrackedResultRepository trackedResultRepository;
+    private final TrackedDomainRequestsRepository trackedDomainRequestsRepository;
     private LocalDateTime lastTime;
 
     @Autowired
     public Sampling(DomainRegexRepository domainRegexRepository,
                     TransitionalBufferRepository transitionalBufferRepository,
-                    TrackedResultRepository trackedResultRepository) {
+                    TrackedDomainRequestsRepository trackedDomainRequestsRepository) {
         this.domainRegexRepository = domainRegexRepository;
         this.transitionalBufferRepository = transitionalBufferRepository;
-        this.trackedResultRepository = trackedResultRepository;
+        this.trackedDomainRequestsRepository = trackedDomainRequestsRepository;
         lastTime = LocalDateTime.now().minusSeconds(60);
     }
 
@@ -66,8 +66,7 @@ public class Sampling {
         LocalDateTime endDateTime = lastTime.plusSeconds(30);
 
         List<String> domainRegexPatterns = domainRegexRepository.getAll().stream()
-                .map(DomainRegex::getRegexPattern)
-                .map(regexPattern -> regexPattern.trim().toLowerCase())
+                .map(DomainRegex::getPattern)
                 .collect(toList());
 
         LOGGER.info("\ttime period is between {} and {}",
@@ -75,14 +74,14 @@ public class Sampling {
                 getFormattedDateTime(endDateTime));
         LOGGER.info("\tlist of domain regex patterns which must be tracked: {}", domainRegexPatterns);
 
-        List<TrackedResult> results = transitionalBufferRepository.getTrackedDomainsStatistic(domainRegexPatterns,
+        List<TrackedDomainRequests> results = transitionalBufferRepository.getTrackedDomainRequests(domainRegexPatterns,
                 lastTime,
                 endDateTime);
 
         LOGGER.info("\tnumber of results: {}", results.size());
 
         lastTime = endDateTime;
-        trackedResultRepository.saveAll(results);
+        trackedDomainRequestsRepository.saveAll(results);
 
         LOGGER.info("...stop tracking domains.\n");
     }

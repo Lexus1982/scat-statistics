@@ -21,7 +21,7 @@
 
 package me.alexand.scat.statistic.collector.repository;
 
-import me.alexand.scat.statistic.common.repository.TrackedResultRepository;
+import me.alexand.scat.statistic.common.repository.TrackedDomainRequestsRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +31,9 @@ import org.springframework.test.context.jdbc.SqlConfig;
 import org.springframework.test.context.jdbc.SqlGroup;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import static me.alexand.scat.statistic.collector.entities.TrackedResultsTestEntities.TEST;
+import java.util.Collections;
+
+import static me.alexand.scat.statistic.collector.entities.TrackedDomainRequestsTestEntities.TEST;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TEST_METHOD;
 import static org.springframework.test.context.jdbc.SqlConfig.TransactionMode.ISOLATED;
@@ -60,9 +62,9 @@ import static org.springframework.test.context.jdbc.SqlConfig.TransactionMode.IS
                         dataSource = "postgresqlTestDataSource")
         )
 })
-public class TrackedResultRepositoryTests {
+public class TrackedDomainRequestsRepositoryTests {
     @Autowired
-    private TrackedResultRepository repository;
+    private TrackedDomainRequestsRepository repository;
 
     @Test
     public void testSave() {
@@ -73,5 +75,10 @@ public class TrackedResultRepositoryTests {
     public void testSaveDuplicate() {
         repository.save(TEST);
         repository.save(TEST);
+    }
+
+    @Test
+    public void testSaveAll() {
+        repository.saveAll(Collections.singletonList(TEST));
     }
 }

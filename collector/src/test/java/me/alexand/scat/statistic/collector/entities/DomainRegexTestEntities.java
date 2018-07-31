@@ -21,21 +21,29 @@
 
 package me.alexand.scat.statistic.collector.entities;
 
-import me.alexand.scat.statistic.common.model.TrackedResult;
+import me.alexand.scat.statistic.common.model.DomainRegex;
 
-import java.math.BigInteger;
 import java.time.LocalDateTime;
 
 /**
  * @author asidorov84@gmail.com
  */
-public interface TrackedResultsTestEntities {
-    TrackedResult TEST = TrackedResult.builder()
-            .regexPattern(".*vk\\.com$")
-            .address("176.221.0.224")
-            .login("polyakov_al@setka.ru")
-            .firstTime(LocalDateTime.of(2018, 4, 1, 17, 6, 17))
-            .lastTime(LocalDateTime.of(2018, 4, 1, 17, 6, 19))
-            .count(BigInteger.valueOf(3))
+public interface DomainRegexTestEntities {
+    long POPULATED_DOMAINS_COUNT = 2;
+
+    String VK_COM_REGEX_PATTERN = ".*vk\\.com$";
+    String MAIL_RU_REGEX_PATTERN = ".*mail\\.ru$";
+    String OK_RU_REGEX_PATTERN = ".*ok\\.ru$";
+
+    DomainRegex TEST_VK_COM = DomainRegex.builder()
+            .id(1)
+            .pattern(VK_COM_REGEX_PATTERN)
+            .dateAdded(LocalDateTime.of(2018, 1, 1, 1, 1, 1))
+            .build();
+
+    DomainRegex TEST_MAIL_RU = DomainRegex.builder()
+            .id(2)
+            .pattern(MAIL_RU_REGEX_PATTERN)
+            .dateAdded(LocalDateTime.of(2018, 1, 1, 1, 1, 1))
             .build();
 }

@@ -1,2 +1,2 @@
 TRUNCATE TABLE domain_regex;
-TRUNCATE TABLE tracked_results;
+TRUNCATE TABLE tracked_domain_requests;

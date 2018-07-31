@@ -21,15 +21,15 @@
 
 package me.alexand.scat.statistic.common.repository;
 
-import me.alexand.scat.statistic.common.model.TrackedResult;
+import me.alexand.scat.statistic.common.model.TrackedDomainRequests;
 
 import java.util.List;
 
 /**
  * @author asidorov84@gmail.com
  */
-public interface TrackedResultRepository {
-    int saveAll(List<TrackedResult> results);
+public interface TrackedDomainRequestsRepository {
+    int saveAll(List<TrackedDomainRequests> results);
 
-    int save(TrackedResult result);
+    int save(TrackedDomainRequests result);
 }

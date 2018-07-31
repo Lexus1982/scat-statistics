@@ -35,12 +35,12 @@ import java.util.Objects;
  */
 public class DomainRegex {
     private final long id;
-    private final String regexPattern;
+    private final String pattern;
     private final LocalDateTime dateAdded;
 
     private DomainRegex(DomainRegex.Builder builder) {
         this.id = builder.id;
-        this.regexPattern = builder.regexPattern;
+        this.pattern = builder.pattern;
         this.dateAdded = builder.dateAdded;
     }
 
@@ -52,8 +52,8 @@ public class DomainRegex {
         return id;
     }
 
-    public String getRegexPattern() {
-        return regexPattern;
+    public String getPattern() {
+        return pattern;
     }
 
     public LocalDateTime getDateAdded() {
@@ -66,27 +66,27 @@ public class DomainRegex {
         if (o == null || getClass() != o.getClass()) return false;
         DomainRegex that = (DomainRegex) o;
         return id == that.id &&
-                Objects.equals(regexPattern, that.regexPattern) &&
+                Objects.equals(pattern, that.pattern) &&
                 Objects.equals(dateAdded, that.dateAdded);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, regexPattern, dateAdded);
+        return Objects.hash(id, pattern, dateAdded);
     }
 
     @Override
     public String toString() {
         return "DomainRegex{" +
                 "id=" + id +
-                ", regexPattern='" + regexPattern + '\'' +
+                ", pattern='" + pattern + '\'' +
                 ", dateAdded=" + dateAdded +
                 '}';
     }
 
     public static class Builder {
         private long id;
-        private String regexPattern;
+        private String pattern;
         private LocalDateTime dateAdded;
 
         private Builder() {
@@ -97,8 +97,8 @@ public class DomainRegex {
             return this;
         }
 
-        public Builder regexPattern(String regexPattern) {
-            this.regexPattern = regexPattern;
+        public Builder pattern(String regexPattern) {
+            this.pattern = regexPattern;
             return this;
         }
 

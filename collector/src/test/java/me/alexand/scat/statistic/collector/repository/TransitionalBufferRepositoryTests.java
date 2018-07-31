@@ -1,6 +1,6 @@
 package me.alexand.scat.statistic.collector.repository;
 
-import me.alexand.scat.statistic.common.model.TrackedResult;
+import me.alexand.scat.statistic.common.model.TrackedDomainRequests;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -48,8 +48,8 @@ import static org.springframework.test.context.jdbc.SqlConfig.TransactionMode.IS
                 )
         )
 })
-public class InterimBufferRepositoryTests {
-    private static final Logger LOGGER = LoggerFactory.getLogger(InterimBufferRepositoryTests.class);
+public class TransitionalBufferRepositoryTests {
+    private static final Logger LOGGER = LoggerFactory.getLogger(TransitionalBufferRepositoryTests.class);
     private static final long EXPECTED_CS_REQ_RECORDS_COUNT = 22;
     private static final LocalDateTime DELETE_BEFORE_DATE_TIME = LocalDateTime.parse("2018-04-01T17:06:10");
     private static final long EXPECTED_DELETED_RECORDS_COUNT = 6;
@@ -75,7 +75,7 @@ public class InterimBufferRepositoryTests {
 
     @Test
     public void testGetTrackedResults() {
-        List<TrackedResult> actual = repository.getTrackedDomainsStatistic(
+        List<TrackedDomainRequests> actual = repository.getTrackedDomainRequests(
                 asList(".*mail\\.ru$", ".*vk\\.com$"),
                 LocalDateTime.parse("2018-04-01T17:06:10"),
                 LocalDateTime.parse("2018-04-01T17:07:09"));

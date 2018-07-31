@@ -45,6 +45,10 @@
         <jdbc:script location="classpath:db/initBuffer.sql"/>
     </jdbc:initialize-database>
 
+    <jdbc:initialize-database data-source="postgresqlDataSource">
+        <jdbc:script location="classpath:db/initPostgres.sql"/>
+    </jdbc:initialize-database>
+
     <bean id="bufferJDBCTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
         <constructor-arg ref="hsqldbDataSource"/>
     </bean>

@@ -69,8 +69,8 @@ public class DomainRegexRepositoryImpl implements DomainRegexRepository {
         //проверка синтаксиса регулярного выражения
         Pattern.compile(pattern);
 
-        String query = "INSERT INTO domain_regex AS td (regex_pattern, date_added) VALUES (?, ?)" +
-                " ON CONFLICT (regex_pattern) DO NOTHING ";
+        String query = "INSERT INTO domain_regex AS td (pattern, date_added) VALUES (?, ?)" +
+                " ON CONFLICT (pattern) DO NOTHING ";
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         try {
@@ -85,7 +85,7 @@ public class DomainRegexRepositoryImpl implements DomainRegexRepository {
             if (rowsCount == 1) {
                 DomainRegex result = DomainRegex.builder()
                         .id(Objects.requireNonNull(keyHolder.getKey()).longValue())
-                        .regexPattern(pattern)
+                        .pattern(pattern)
                         .dateAdded(dateAdded)
                         .build();
 
@@ -116,10 +116,10 @@ public class DomainRegexRepositoryImpl implements DomainRegexRepository {
     @Transactional(value = "postgresqlTM", readOnly = true)
     public List<DomainRegex> getAll() {
         try {
-            return jdbcTemplate.query("SELECT id, regex_pattern, date_added FROM domain_regex",
+            return jdbcTemplate.query("SELECT id, pattern, date_added FROM domain_regex",
                     (rs, rowNum) -> DomainRegex.builder()
                             .id(rs.getLong(1))
-                            .regexPattern(rs.getString(2))
+                            .pattern(rs.getString(2))
                             .dateAdded(rs.getTimestamp(3).toLocalDateTime())
                             .build());
         } catch (DataAccessException e) {

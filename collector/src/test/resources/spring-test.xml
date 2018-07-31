@@ -69,8 +69,8 @@
         <constructor-arg ref="postgresJdbcTemplate"/>
     </bean>
 
-    <bean id="trackedResultRepository"
-          class="me.alexand.scat.statistic.collector.repository.impls.TrackedResultRepositoryImpl">
+    <bean id="trackedDomainRequestsRepository"
+          class="me.alexand.scat.statistic.collector.repository.impls.TrackedDomainRequestsRepositoryImpl">
         <constructor-arg ref="postgresJdbcTemplate"/>
     </bean>
 
