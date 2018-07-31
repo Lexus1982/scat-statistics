@@ -21,8 +21,8 @@
 
 package me.alexand.scat.statistic.collector.repository;
 
-import me.alexand.scat.statistic.common.model.TrackedDomain;
-import me.alexand.scat.statistic.common.repository.TrackedDomainRepository;
+import me.alexand.scat.statistic.common.model.DomainRegex;
+import me.alexand.scat.statistic.common.repository.DomainRegexRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +33,7 @@ import org.springframework.test.context.jdbc.SqlGroup;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.List;
+import java.util.regex.PatternSyntaxException;
 
 import static me.alexand.scat.statistic.collector.entities.TrackedDomainsTestEntities.*;
 import static org.junit.Assert.*;
@@ -63,43 +64,72 @@ import static org.springframework.test.context.jdbc.SqlConfig.TransactionMode.IS
                         dataSource = "postgresqlTestDataSource")
         )
 })
-public class TrackedDomainRepositoryTests {
-    private static final long POPULATED_DOMAINS_COUNT = 2;
-
+public class DomainRegexRepositoryTests {
     @Autowired
-    private TrackedDomainRepository repository;
+    private DomainRegexRepository repository;
 
     @Test
     public void testGetAll() {
-        List<TrackedDomain> actual = repository.getAll();
+        List<DomainRegex> actual = repository.getAll();
         assertNotNull(actual);
-        assertTrue(actual.size() == POPULATED_DOMAINS_COUNT);
-        assertTrue(actual.contains(TEST_MAIL_RU));
+        assertEquals(actual.size(), POPULATED_DOMAINS_COUNT);
         assertTrue(actual.contains(TEST_VK_COM));
+        assertTrue(actual.contains(TEST_MAIL_RU));
+        
+        repository.delete(TEST_VK_COM.getId());
+        repository.delete(TEST_MAIL_RU.getId());
+        actual = repository.getAll();
+        assertNotNull(actual);
+        assertTrue(actual.isEmpty());
     }
 
     @Test
     public void testGetCount() {
         assertEquals(POPULATED_DOMAINS_COUNT, repository.getCount());
+        repository.delete(TEST_VK_COM.getId());
+        repository.delete(TEST_MAIL_RU.getId());
+        assertEquals(0, repository.getCount());
     }
 
     @Test
-    public void testSaveDuplicate() {
-        repository.save(TEST_UPDATED_MAIL_RU);
+    public void testAddDuplicate() {
+        DomainRegex actual = repository.add(MAIL_RU_REGEX_PATTERN);
+        assertNull(actual);
         assertEquals(POPULATED_DOMAINS_COUNT, repository.getCount());
-
-        List<TrackedDomain> actual = repository.getAll();
-        assertNotNull(actual);
-        assertTrue(actual.contains(TEST_UPDATED_MAIL_RU));
     }
 
     @Test
-    public void testSave() {
-        repository.save(TEST_OK_RU);
-        assertEquals(POPULATED_DOMAINS_COUNT + 1, repository.getCount());
-
-        List<TrackedDomain> actual = repository.getAll();
+    public void testAdd() {
+        DomainRegex actual = repository.add(OK_RU_REGEX_PATTERN);
         assertNotNull(actual);
-        assertTrue(actual.contains(TEST_OK_RU));
+        assertEquals(OK_RU_REGEX_PATTERN, actual.getRegexPattern());
+
+        List<DomainRegex> domainRegexList = repository.getAll();
+        assertNotNull(domainRegexList);
+
+        assertTrue(domainRegexList.stream()
+                .map(DomainRegex::getRegexPattern)
+                .anyMatch(pattern -> pattern.equals(OK_RU_REGEX_PATTERN)));
+    }
+
+    @Test
+    public void testDelete() {
+        assertTrue(repository.delete(TEST_VK_COM.getId()));
+        assertFalse(repository.delete(0));
+    }
+
+    @Test(expected = PatternSyntaxException.class)
+    public void testAddWithInvalidSyntax() {
+        repository.add("\\\\1111\\q");
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testAddWithNull() {
+        repository.add(null);
+    }
+
+    @Test(expected = PatternSyntaxException.class)
+    public void testAddWithEmpty() {
+        repository.add("");
     }
 }

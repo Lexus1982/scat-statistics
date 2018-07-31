@@ -21,7 +21,7 @@
 
 package me.alexand.scat.statistic.collector.entities;
 
-import me.alexand.scat.statistic.common.model.TrackedDomain;
+import me.alexand.scat.statistic.common.model.DomainRegex;
 
 import java.time.LocalDateTime;
 
@@ -29,27 +29,21 @@ import java.time.LocalDateTime;
  * @author asidorov84@gmail.com
  */
 public interface TrackedDomainsTestEntities {
-    TrackedDomain TEST_VK_COM = TrackedDomain.builder()
-            .regexPattern(".*vk\\.com$")
-            .active(true)
+    long POPULATED_DOMAINS_COUNT = 2;
+
+    String VK_COM_REGEX_PATTERN = ".*vk\\.com$";
+    String MAIL_RU_REGEX_PATTERN = ".*mail\\.ru$";
+    String OK_RU_REGEX_PATTERN = ".*ok\\.ru$";
+
+    DomainRegex TEST_VK_COM = DomainRegex.builder()
+            .id(1)
+            .regexPattern(VK_COM_REGEX_PATTERN)
             .dateAdded(LocalDateTime.of(2018, 1, 1, 1, 1, 1))
             .build();
 
-    TrackedDomain TEST_MAIL_RU = TrackedDomain.builder()
-            .regexPattern(".*mail\\.ru$")
-            .active(true)
-            .dateAdded(LocalDateTime.of(2018, 1, 1, 1, 1, 1))
-            .build();
-
-    TrackedDomain TEST_UPDATED_MAIL_RU = TrackedDomain.builder()
-            .regexPattern(".*mail\\.ru$")
-            .active(false)
-            .dateAdded(LocalDateTime.of(2018, 1, 1, 1, 1, 1))
-            .build();
-
-    TrackedDomain TEST_OK_RU = TrackedDomain.builder()
-            .regexPattern(".*ok\\.ru$")
-            .active(true)
+    DomainRegex TEST_MAIL_RU = DomainRegex.builder()
+            .id(2)
+            .regexPattern(MAIL_RU_REGEX_PATTERN)
             .dateAdded(LocalDateTime.of(2018, 1, 1, 1, 1, 1))
             .build();
 }

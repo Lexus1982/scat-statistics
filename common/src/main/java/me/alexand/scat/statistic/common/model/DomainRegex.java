@@ -25,32 +25,35 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 /**
- * Класс, описывающий доменное имя, которое необходимо отслеживать
- * Доменное имя задается в виде регулярного выражения стадарта POSIX
+ * Шаблон доменных имен
+ * <p>
+ * Шаблон представляет собой корректное регулярное выражение.
+ * Описание синтаксиса регулярных выражений представлен в классе {@code java.util.regex.Pattern}
  *
  * @author asidorov84@gmail.com
+ * @see java.util.regex.Pattern
  */
-public class TrackedDomain {
+public class DomainRegex {
+    private final long id;
     private final String regexPattern;
-    private final boolean isActive;
     private final LocalDateTime dateAdded;
 
-    private TrackedDomain(TrackedDomain.Builder builder) {
+    private DomainRegex(DomainRegex.Builder builder) {
+        this.id = builder.id;
         this.regexPattern = builder.regexPattern;
-        this.isActive = builder.isActive;
         this.dateAdded = builder.dateAdded;
     }
 
-    public static TrackedDomain.Builder builder() {
-        return new TrackedDomain.Builder();
+    public static DomainRegex.Builder builder() {
+        return new DomainRegex.Builder();
+    }
+
+    public long getId() {
+        return id;
     }
 
     public String getRegexPattern() {
         return regexPattern;
-    }
-
-    public boolean isActive() {
-        return isActive;
     }
 
     public LocalDateTime getDateAdded() {
@@ -61,41 +64,41 @@ public class TrackedDomain {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        TrackedDomain that = (TrackedDomain) o;
-        return isActive == that.isActive &&
+        DomainRegex that = (DomainRegex) o;
+        return id == that.id &&
                 Objects.equals(regexPattern, that.regexPattern) &&
                 Objects.equals(dateAdded, that.dateAdded);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(regexPattern, isActive, dateAdded);
+        return Objects.hash(id, regexPattern, dateAdded);
     }
 
     @Override
     public String toString() {
-        return "TrackedDomain{" +
-                "regexPattern='" + regexPattern + '\'' +
-                ", isActive=" + isActive +
+        return "DomainRegex{" +
+                "id=" + id +
+                ", regexPattern='" + regexPattern + '\'' +
                 ", dateAdded=" + dateAdded +
                 '}';
     }
 
     public static class Builder {
+        private long id;
         private String regexPattern;
-        private boolean isActive;
         private LocalDateTime dateAdded;
 
         private Builder() {
         }
 
-        public Builder regexPattern(String regexPattern) {
-            this.regexPattern = regexPattern;
+        public Builder id(long id) {
+            this.id = id;
             return this;
         }
 
-        public Builder active(boolean isActive) {
-            this.isActive = isActive;
+        public Builder regexPattern(String regexPattern) {
+            this.regexPattern = regexPattern;
             return this;
         }
 
@@ -104,8 +107,8 @@ public class TrackedDomain {
             return this;
         }
 
-        public TrackedDomain build() {
-            return new TrackedDomain(this);
+        public DomainRegex build() {
+            return new DomainRegex(this);
         }
     }
 }

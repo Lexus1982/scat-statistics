@@ -22,9 +22,9 @@
 package me.alexand.scat.statistic.collector.service;
 
 import me.alexand.scat.statistic.collector.repository.TransitionalBufferRepository;
-import me.alexand.scat.statistic.common.model.TrackedDomain;
+import me.alexand.scat.statistic.common.model.DomainRegex;
 import me.alexand.scat.statistic.common.model.TrackedResult;
-import me.alexand.scat.statistic.common.repository.TrackedDomainRepository;
+import me.alexand.scat.statistic.common.repository.DomainRegexRepository;
 import me.alexand.scat.statistic.common.repository.TrackedResultRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,16 +45,16 @@ import static me.alexand.scat.statistic.collector.utils.DateTimeUtils.getFormatt
 @Service
 public class Sampling {
     private static final Logger LOGGER = LoggerFactory.getLogger(Sampling.class);
-    private final TrackedDomainRepository trackedDomainRepository;
+    private final DomainRegexRepository domainRegexRepository;
     private final TransitionalBufferRepository transitionalBufferRepository;
     private final TrackedResultRepository trackedResultRepository;
     private LocalDateTime lastTime;
 
     @Autowired
-    public Sampling(TrackedDomainRepository trackedDomainRepository,
+    public Sampling(DomainRegexRepository domainRegexRepository,
                     TransitionalBufferRepository transitionalBufferRepository,
                     TrackedResultRepository trackedResultRepository) {
-        this.trackedDomainRepository = trackedDomainRepository;
+        this.domainRegexRepository = domainRegexRepository;
         this.transitionalBufferRepository = transitionalBufferRepository;
         this.trackedResultRepository = trackedResultRepository;
         lastTime = LocalDateTime.now().minusSeconds(60);
@@ -63,24 +63,25 @@ public class Sampling {
     @Scheduled(fixedRate = 30_000, initialDelay = 30_000)//TODO вынести периодичность в проперти
     public void trackDomains() {
         LOGGER.info("start tracking domains...");
+        LocalDateTime endDateTime = lastTime.plusSeconds(30);
 
-        List<String> domainRegexPatterns = trackedDomainRepository.getAll().stream()
-                .filter(TrackedDomain::isActive)
-                .map(TrackedDomain::getRegexPattern)
+        List<String> domainRegexPatterns = domainRegexRepository.getAll().stream()
+                .map(DomainRegex::getRegexPattern)
+                .map(regexPattern -> regexPattern.trim().toLowerCase())
                 .collect(toList());
 
         LOGGER.info("\ttime period is between {} and {}",
                 getFormattedDateTime(lastTime),
-                getFormattedDateTime(lastTime.plusSeconds(30)));
+                getFormattedDateTime(endDateTime));
         LOGGER.info("\tlist of domain regex patterns which must be tracked: {}", domainRegexPatterns);
 
         List<TrackedResult> results = transitionalBufferRepository.getTrackedDomainsStatistic(domainRegexPatterns,
                 lastTime,
-                lastTime.plusSeconds(30));
+                endDateTime);
 
         LOGGER.info("\tnumber of results: {}", results.size());
 
-        lastTime = lastTime.plusSeconds(30);
+        lastTime = endDateTime;
         trackedResultRepository.saveAll(results);
 
         LOGGER.info("...stop tracking domains.\n");

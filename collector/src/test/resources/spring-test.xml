@@ -64,8 +64,8 @@
         <constructor-arg ref="hsqlJdbcTemplate"/>
     </bean>
 
-    <bean id="trackedDomainRepository"
-          class="me.alexand.scat.statistic.collector.repository.impls.TrackedDomainRepositoryImpl">
+    <bean id="domainRegexRepository"
+          class="me.alexand.scat.statistic.collector.repository.impls.DomainRegexRepositoryImpl">
         <constructor-arg ref="postgresJdbcTemplate"/>
     </bean>
 
