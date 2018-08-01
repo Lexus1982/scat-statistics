@@ -30,6 +30,8 @@ import static me.alexand.scat.statistic.collector.model.TemplateType.*;
 import static me.alexand.scat.statistic.collector.utils.InfoModelEntities.*;
 
 /**
+ * Шаблоны экспортируемых данных АПК "СКАТ"
+ *
  * @author asidorov84@gmail.com
  */
 public interface SCATDataTemplateEntities {

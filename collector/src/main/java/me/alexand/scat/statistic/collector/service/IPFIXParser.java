@@ -187,7 +187,7 @@ public class IPFIXParser {
                 int length = twoBytesToInt(payload, offset);
                 offset += 2;
 
-                byte[] recordsPayload = copyOfRange(payload, offset, offset + length);//TODO копировать или нет?
+                byte[] recordsPayload = copyOfRange(payload, offset, offset + length);
 
                 List<? extends IPFIXRecord> records = null;
 

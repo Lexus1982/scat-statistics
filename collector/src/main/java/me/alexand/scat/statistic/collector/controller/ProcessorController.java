@@ -42,7 +42,7 @@ import static java.lang.Thread.NORM_PRIORITY;
 /**
  * Контроллер коллектора.
  * <p>
- * Загружает шаблоны СКАТ из XML-файла. Создает и запускает в разных потоках процессоры для обработки.
+ * Загружает шаблоны СКАТ. Создает и запускает в разных потоках процессоры для обработки.
  *
  * @author asidorov84@gmail.com
  * @see IPFIXMessageProcessor
@@ -64,7 +64,7 @@ public final class ProcessorController {
         }
 
         LOGGER.info("Loading SCAT templates");
-        dataTemplateService.loadFromXML("");
+        dataTemplateService.load();
         
         this.receiver = receiver;
 

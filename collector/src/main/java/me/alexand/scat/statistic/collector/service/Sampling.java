@@ -38,6 +38,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
+import static me.alexand.scat.statistic.collector.utils.Constants.SAMPLING_RUN_FREQUENCY;
 import static me.alexand.scat.statistic.collector.utils.DateTimeUtils.getFormattedDateTime;
 
 /**
@@ -67,7 +68,7 @@ public class Sampling {
         lastTimeCountClicks = LocalDateTime.now().minusSeconds(60);
     }
 
-    @Scheduled(fixedRate = 30_000, initialDelay = 30_000)//TODO вынести периодичность в проперти
+    @Scheduled(fixedRate = SAMPLING_RUN_FREQUENCY, initialDelay = SAMPLING_RUN_FREQUENCY)
     public void trackDomains() {
         LOGGER.info("start tracking domains...");
         LocalDateTime endDateTime = lastTimeTrackDomains.plusSeconds(30);
@@ -93,7 +94,7 @@ public class Sampling {
         LOGGER.info("...stop tracking domains.\n");
     }
 
-    @Scheduled(fixedRate = 30_000, initialDelay = 35_000)//TODO вынести периодичность в проперти
+    @Scheduled(fixedRate = SAMPLING_RUN_FREQUENCY, initialDelay = SAMPLING_RUN_FREQUENCY + 5000)
     public void countClicks() {
         LOGGER.info("start counting clicks...");
         LocalDateTime endDateTime = lastTimeCountClicks.plusSeconds(30);

@@ -29,6 +29,8 @@ import java.util.List;
 import static me.alexand.scat.statistic.collector.model.IANAAbstractDataTypes.*;
 
 /**
+ * Информационные элементы шаблонов АПК "СКАТ"
+ *
  * @author asidorov84@gmail.com
  */
 

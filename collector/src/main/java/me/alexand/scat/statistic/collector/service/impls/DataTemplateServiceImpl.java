@@ -56,9 +56,7 @@ public class DataTemplateServiceImpl implements DataTemplateService {
     }
 
     @Override
-    public void loadFromXML(String filename) {
-        //TODO распарсить и сохранить в репозитории шаблоны, в перспективе
-
+    public void load() {
         DATA_TEMPLATE_LIST.forEach(dataTemplate -> {
             SCATDataTemplateRepository.save(dataTemplate);
             dataTemplate.getSpecifiers().forEach(infoModelRepository::save);

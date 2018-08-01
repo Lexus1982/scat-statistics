@@ -32,7 +32,7 @@ import java.util.List;
  * @author asidorov84@gmail.com
  */
 public interface DataTemplateService {
-    void loadFromXML(String filename);
+    void load();
 
     TemplateType getTypeByIPFIXSpecifiers(List<IPFIXFieldSpecifier> specifiers)
             throws UnknownInfoModelException, UnknownTemplateTypeException;

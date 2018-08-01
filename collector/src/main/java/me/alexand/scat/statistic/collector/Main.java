@@ -21,7 +21,8 @@
 
 package me.alexand.scat.statistic.collector;
 
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import me.alexand.scat.statistic.collector.config.ApplicationConfig;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 /**
  * Точка входа в приложение
@@ -30,6 +31,6 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  */
 public final class Main {
     public static void main(String[] args) {
-        new ClassPathXmlApplicationContext("classpath:spring-app.xml").registerShutdownHook();
+        new AnnotationConfigApplicationContext(ApplicationConfig.class).registerShutdownHook();
     }
 }
