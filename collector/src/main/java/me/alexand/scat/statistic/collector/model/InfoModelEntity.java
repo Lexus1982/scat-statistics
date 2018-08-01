@@ -24,9 +24,10 @@ package me.alexand.scat.statistic.collector.model;
 import java.util.Objects;
 
 /**
- * Класс, описывающий информационный элемент шаблона платформы СКАТ.
+ * Класс, описывающий информационный элемент шаблона АПК "СКАТ".
  *
  * @author asidorov84@gmail.com
+ * @see IANAAbstractDataTypes
  */
 public final class InfoModelEntity {
     //Уникальный идентификатор организации, согласно IANA

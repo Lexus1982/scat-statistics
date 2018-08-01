@@ -24,12 +24,14 @@ package me.alexand.scat.statistic.collector.model;
 import java.util.Objects;
 
 /**
- * Единица данных определенного типа
+ * Единица данных определенного типа, экспортируемых протоколом IPFIX
  *
  * @author asidorov84@gmail.com
+ * @see <a href="https://tools.ietf.org/html/rfc7011#section-3.4.3">RFC-7011</a>
+ * @see IANAAbstractDataTypes
  */
 
-public class IPFIXFieldValue {
+public final class IPFIXFieldValue {
     private final String name;
     private final Object value;
     private final IANAAbstractDataTypes type;
@@ -62,7 +64,7 @@ public class IPFIXFieldValue {
         if (o == null || getClass() != o.getClass()) return false;
         IPFIXFieldValue that = (IPFIXFieldValue) o;
         return Objects.equals(name, that.name) &&
-                //Objects.equals(value, that.value) &&
+                Objects.equals(value, that.value) &&
                 type == that.type;
     }
 

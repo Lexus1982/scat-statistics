@@ -25,9 +25,11 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Класс с описанием шаблона выгружаемых из платформы СКАТ данных
+ * Класс, описывающий шаблон выгружаемых из АПК "СКАТ" данных
  *
  * @author asidorov84@gmail.com
+ * @see TemplateType
+ * @see InfoModelEntity
  */
 public final class SCATDataTemplate {
     private final TemplateType type;

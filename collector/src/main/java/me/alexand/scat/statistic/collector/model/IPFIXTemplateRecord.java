@@ -26,6 +26,7 @@ import java.util.Objects;
 
 /**
  * IP Flow Information Export (IPFIX) Template Record
+ * <pre>
  * -----------------------------------------------------------------
  * +0                   1                   2                   3
  * +0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -38,16 +39,18 @@ import java.util.Objects;
  * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  * |                        Field specifier                        |
  * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * </pre>
  *
  * @author asidorov84@gmail.com
- * @link https://tools.ietf.org/html/rfc7011
+ * @see <a href="https://tools.ietf.org/html/rfc7011#section-3.4.1">RFC-7011</a>
+ * @see IPFIXRecord
+ * @see IPFIXFieldSpecifier
  */
 
-public class IPFIXTemplateRecord extends AbstractIPFIXRecord {
+public final class IPFIXTemplateRecord extends IPFIXRecord {
     private final int templateID;
     private final int fieldCount;
     private final long exportTime;
-    private final TemplateType type;
     private final List<IPFIXFieldSpecifier> fieldSpecifiers;
 
     public static IPFIXTemplateRecord.Builder builder() {

@@ -189,7 +189,7 @@ public class IPFIXParser {
 
                 byte[] recordsPayload = copyOfRange(payload, offset, offset + length);//TODO копировать или нет?
 
-                List<? extends AbstractIPFIXRecord> records = null;
+                List<? extends IPFIXRecord> records = null;
 
                 if (setID == 2) {
                     records = parseTemplateRecords(observationDomainID, exportTime, recordsPayload);

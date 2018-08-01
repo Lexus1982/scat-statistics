@@ -29,13 +29,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PreDestroy;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -68,6 +66,7 @@ import static me.alexand.scat.statistic.collector.utils.Constants.TCP_LISTEN_BAC
 @Lazy
 public final class TCPPacketsReceiver implements PacketsReceiver {
     private static final Logger LOGGER = LoggerFactory.getLogger(TCPPacketsReceiver.class);
+    private final int bufferCapacity;
     private final BlockingQueue<byte[]> packetsBuffer;
 
     private final ServerSocket serverSocket;
@@ -92,6 +91,7 @@ public final class TCPPacketsReceiver implements PacketsReceiver {
         }
 
         this.statCollector = statCollector;
+        this.bufferCapacity = bufferCapacity;
 
         packetsBuffer = new ArrayBlockingQueue<>(bufferCapacity);
         LOGGER.debug("Initialize internal packets buffer with size: {}", bufferCapacity);
@@ -104,6 +104,10 @@ public final class TCPPacketsReceiver implements PacketsReceiver {
                 serverSocket.getLocalPort());
 
         connectionListenerThread = new Thread(new Server(), "connection-listener-thread");
+    }
+    
+    @Override
+    public void start() {
         connectionListenerThread.start();
     }
 
@@ -112,15 +116,36 @@ public final class TCPPacketsReceiver implements PacketsReceiver {
         return packetsBuffer.take();
     }
 
-    @PreDestroy
-    private void shutdown() {
+    @Override
+    public boolean shutdown() {
+        //Прекращаем слушать новые подключения к коллектору
         try {
             serverSocket.close();
-            LOGGER.debug("Server socket closed");
         } catch (IOException e) {
             LOGGER.error(e.getMessage());
+            return false;
         }
+        LOGGER.debug("...server socket closed");
+
+        connectionListenerThread.interrupt();
+        try {
+            while (connectionListenerThread.isAlive()) {
+                Thread.sleep(100);
+            }
+        } catch (InterruptedException e) {
+            LOGGER.error(e.getMessage());
+            return false;
+        }
+        
+        //Закрываем все текущие открытые подключения
         sessionThreads.forEach(Thread::interrupt);
+        
+        return true;
+    }
+
+    @Override
+    public int getRemainingPacketsCount() {
+        return bufferCapacity - packetsBuffer.remainingCapacity();
     }
 
     private class Server implements Runnable {
@@ -147,7 +172,6 @@ public final class TCPPacketsReceiver implements PacketsReceiver {
                     sessionThread.start();
                     sessionThreads.add(sessionThread);
                 }
-            } catch (SocketException e) {
             } catch (IOException e) {
                 LOGGER.error(e.getMessage());
             }

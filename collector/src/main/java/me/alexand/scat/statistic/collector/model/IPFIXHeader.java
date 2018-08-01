@@ -24,7 +24,8 @@ package me.alexand.scat.statistic.collector.model;
 import java.util.Objects;
 
 /**
- * IP Flow Information Export (IPFIX) message header
+ * IP Flow Information Export (IPFIX) message header.
+ * <pre>
  * -----------------------------------------------------------------
  * +0                   1                   2                   3
  * +0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -37,12 +38,13 @@ import java.util.Objects;
  * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  * |                   Observation Domain ID                       |
  * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * </pre>
  *
  * @author asidorov84@gmail.com
- * @link https://tools.ietf.org/html/rfc7011
+ * @see  <a href="https://tools.ietf.org/html/rfc7011#section-3.1">RFC-7011</a>
  */
 
-public class IPFIXHeader {
+public final class IPFIXHeader {
     public static final int IPFIX_MESSAGE_HEADER_LENGTH = 16;
     public static final int IPFIX_MESSAGE_VERSION = 0x0A;
 

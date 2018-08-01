@@ -26,9 +26,12 @@ import java.sql.Types;
 import static java.sql.Types.*;
 
 /**
- * Типы данных согласно классификации IANA
+ * Типы экспортируемых данных, согласно классификации IANA.
+ * Пока включены только используемые АПК "СКАТ". Каждому типу соответствует его длина в байтах,
+ * и соответствующий тип в SQL
  *
  * @author asidorov84@gmail.com
+ * @see <a href="https://tools.ietf.org/html/rfc7012#page-9">RFC-7012</a>
  */
 
 public enum IANAAbstractDataTypes {

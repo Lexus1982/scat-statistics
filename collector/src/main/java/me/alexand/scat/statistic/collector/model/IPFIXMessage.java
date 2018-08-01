@@ -26,7 +26,8 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * IP Flow Information Export (IPFIX) message
+ * IP Flow Information Export (IPFIX) message.
+ * <pre>
  * +----------------------------------------------------+
  * | Message Header                                     |
  * +----------------------------------------------------+
@@ -38,11 +39,14 @@ import java.util.Objects;
  * +----------------------------------------------------+
  * | Set                                                |
  * +----------------------------------------------------+
+ * </pre>
  *
  * @author asidorov84@gmail.com
- * @link https://tools.ietf.org/html/rfc7011
+ * @see <a href="https://tools.ietf.org/html/rfc7011#section-3">RFC-7011</a>
+ * @see IPFIXHeader
+ * @see IPFIXSet
  */
-public class IPFIXMessage {
+public final class IPFIXMessage {
     private final IPFIXHeader header;
     private final List<IPFIXSet> sets;
 

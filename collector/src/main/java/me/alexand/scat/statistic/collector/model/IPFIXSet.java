@@ -26,7 +26,8 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * IP Flow Information Export (IPFIX) message Set
+ * IP Flow Information Export (IPFIX) message Set.
+ * <pre>
  * -----------------------------------------------------------------
  * +0                   1                   2                   3
  * +0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -43,15 +44,17 @@ import java.util.Objects;
  * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  * |                       padding (optional)                      |
  * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * </pre>
  *
  * @author asidorov84@gmail.com
- * @link https://tools.ietf.org/html/rfc7011
+ * @see <a href="https://tools.ietf.org/html/rfc7011#section-3.3">RFC-7011</a>
+ * @see IPFIXRecord
  */
 
-public class IPFIXSet {
+public final class IPFIXSet {
     private final int setID;
     private final int length;
-    private final List<? extends AbstractIPFIXRecord> records;
+    private final List<? extends IPFIXRecord> records;
 
     public static IPFIXSet.Builder builder() {
         return new IPFIXSet.Builder();
@@ -71,7 +74,7 @@ public class IPFIXSet {
         return length;
     }
 
-    public List<? extends AbstractIPFIXRecord> getRecords() {
+    public List<? extends IPFIXRecord> getRecords() {
         return records;
     }
 
@@ -102,7 +105,7 @@ public class IPFIXSet {
     public static class Builder {
         private int setID;
         private int length;
-        private List<? extends AbstractIPFIXRecord> records = new ArrayList<>();
+        private List<? extends IPFIXRecord> records = new ArrayList<>();
 
         private Builder() {
         }
@@ -117,7 +120,7 @@ public class IPFIXSet {
             return this;
         }
 
-        public Builder records(List<? extends AbstractIPFIXRecord> records) {
+        public Builder records(List<? extends IPFIXRecord> records) {
             this.records = records;
             return this;
         }

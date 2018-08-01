@@ -24,7 +24,9 @@ package me.alexand.scat.statistic.collector.model;
 import java.util.Objects;
 
 /**
- * IPFIX Field Specifier
+ * IP Flow Information Export (IPFIX) Field Specifier.
+ * <pre>
+ * -----------------------------------------------------------------
  * +0                   1                   2                   3
  * +0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -32,27 +34,15 @@ import java.util.Objects;
  * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  * |                     Enterprise Number                         |
  * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * </pre>
  *
  * @author asidorov84@gmail.com
- * @link https://tools.ietf.org/html/rfc7011
+ * @see <a href="https://tools.ietf.org/html/rfc7011#section-3.2">RFC-7011</a>
  */
-
-public class IPFIXFieldSpecifier {
-
-    //If E bit is zero, the Information Element identifier identifies an Information
-    //Element in IANA-IPFIX, and the 4-bytes Enterprise Number field must not present.
-    //If E bit is one, the Information Element identifier identifies an enterprise-
-    //specific Information Element, and the Enterprise Number field must be present.
+public final class IPFIXFieldSpecifier {
     private final boolean enterpriseBit;
-
-    //A numeric value that represents the Information Element.
     private final int informationElementIdentifier;
-
-    //The length of the corresponding encoded Information Element, in bytes.
     private final int fieldLength;
-
-    //IANA enterprise number of the authority defining the Information Element identifier
-    //in the IPFIX Template Record.
     private final long enterpriseNumber;
 
     private IPFIXFieldSpecifier(IPFIXFieldSpecifier.Builder builder) {

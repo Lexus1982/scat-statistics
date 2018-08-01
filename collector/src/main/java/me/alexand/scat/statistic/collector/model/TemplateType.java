@@ -22,6 +22,8 @@
 package me.alexand.scat.statistic.collector.model;
 
 /**
+ * Типы шаблонов экспортируемых данных АПК "СКАТ"
+ *
  * @author asidorov84@gmail.com
  */
 public enum TemplateType {
