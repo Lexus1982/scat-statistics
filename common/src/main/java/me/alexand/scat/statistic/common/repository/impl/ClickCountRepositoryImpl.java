@@ -19,18 +19,15 @@
  * under the License.
  */
 
-package me.alexand.scat.statistic.collector.repository.impls;
+package me.alexand.scat.statistic.common.repository.impl;
 
-import me.alexand.scat.statistic.common.model.ClickCount;
+import me.alexand.scat.statistic.common.entities.ClickCount;
 import me.alexand.scat.statistic.common.repository.ClickCountRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.PreparedStatement;
@@ -42,15 +39,17 @@ import java.util.Objects;
 import static java.sql.Types.BIGINT;
 
 /**
+ * Реализация хранилища сущностей ClickCount на основе JDBC
+ *
  * @author asidorov84@gmail.com
+ * @see ClickCount
+ * @see ClickCountRepository
  */
-@Repository
 public class ClickCountRepositoryImpl implements ClickCountRepository {
     private static final Logger LOGGER = LoggerFactory.getLogger(ClickCountRepositoryImpl.class);
     private final JdbcTemplate jdbcTemplate;
 
-    @Autowired
-    public ClickCountRepositoryImpl(@Qualifier("postgresqlJDBCTemplate") JdbcTemplate jdbcTemplate) {
+    public ClickCountRepositoryImpl(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 

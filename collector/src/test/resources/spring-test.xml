@@ -1,11 +1,10 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:context="http://www.springframework.org/schema/context"
        xmlns:jdbc="http://www.springframework.org/schema/jdbc"
-       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:tx="http://www.springframework.org/schema/tx" xmlns:context="http://www.springframework.org/schema/context"
 
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd   http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+          http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd   http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
     <context:property-placeholder location="classpath:app-test.properties"
                                   system-properties-mode="NEVER"
@@ -20,63 +19,29 @@
         <property name="maxTotal" value="${processors.count}"/>
     </bean>
 
-    <bean id="postgresqlTestDataSource" class="org.apache.commons.dbcp2.BasicDataSource">
-        <property name="driverClassName" value="${db.postgresql.driverClassName}"/>
-        <property name="url" value="${db.postgresql.url}"/>
-        <property name="username" value="${db.postgresql.username}"/>
-        <property name="password" value="${db.postgresql.password}"/>
-        <property name="initialSize" value="${processors.count}"/>
-        <property name="maxTotal" value="${processors.count}"/>
-    </bean>
-
     <tx:annotation-driven/>
 
     <bean id="hsqlJdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
         <constructor-arg ref="hsqlTestDataSource"/>
     </bean>
 
-    <bean id="postgresJdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
-        <constructor-arg ref="postgresqlTestDataSource"/>
-    </bean>
-
     <jdbc:initialize-database data-source="hsqlTestDataSource">
-        <jdbc:script location="classpath:db/hsqldb/init.sql"/>
-    </jdbc:initialize-database>
-
-    <jdbc:initialize-database data-source="postgresqlTestDataSource">
-        <jdbc:script location="classpath:db/postgres/init.sql"/>
+        <jdbc:script location="classpath:initBuffer.sql"/>
     </jdbc:initialize-database>
 
     <bean id="bufferTM" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
         <property name="dataSource" ref="hsqlTestDataSource"/>
     </bean>
 
-    <bean id="postgresqlTM" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
-        <property name="dataSource" ref="postgresqlTestDataSource"/>
-    </bean>
-
     <bean id="infoModelRepository"
           class="me.alexand.scat.statistic.collector.repository.impls.InMemoryInfoModelRepositoryImpl"/>
+
     <bean id="SCATDataTemplateRepository"
           class="me.alexand.scat.statistic.collector.repository.impls.InMemorySCATDataTemplateRepositoryImpl"/>
+
     <bean id="dataRecordsRepository"
           class="me.alexand.scat.statistic.collector.repository.impls.TransitionalBufferRepositoryImpl">
         <constructor-arg ref="hsqlJdbcTemplate"/>
-    </bean>
-
-    <bean id="domainRegexRepository"
-          class="me.alexand.scat.statistic.collector.repository.impls.DomainRegexRepositoryImpl">
-        <constructor-arg ref="postgresJdbcTemplate"/>
-    </bean>
-
-    <bean id="trackedDomainRequestsRepository"
-          class="me.alexand.scat.statistic.collector.repository.impls.TrackedDomainRequestsRepositoryImpl">
-        <constructor-arg ref="postgresJdbcTemplate"/>
-    </bean>
-
-    <bean id="clickCountRepository"
-          class="me.alexand.scat.statistic.collector.repository.impls.ClickCountRepositoryImpl">
-        <constructor-arg ref="postgresJdbcTemplate"/>
     </bean>
 
     <bean id="dataTemplateService" class="me.alexand.scat.statistic.collector.service.impls.DataTemplateServiceImpl"/>

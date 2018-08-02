@@ -19,18 +19,15 @@
  * under the License.
  */
 
-package me.alexand.scat.statistic.collector.repository.impls;
+package me.alexand.scat.statistic.common.repository.impl;
 
-import me.alexand.scat.statistic.common.model.TrackedDomainRequests;
+import me.alexand.scat.statistic.common.entities.TrackedDomainRequests;
 import me.alexand.scat.statistic.common.repository.TrackedDomainRequestsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.PreparedStatement;
@@ -42,9 +39,12 @@ import java.util.Objects;
 import static java.sql.Types.BIGINT;
 
 /**
+ * Реализация хранилища сущностей TrackedDomainRequests на основе JDBC
+ *
  * @author asidorov84@gmail.com
+ * @see TrackedDomainRequests
+ * @see TrackedDomainRequestsRepository
  */
-@Repository
 public class TrackedDomainRequestsRepositoryImpl implements TrackedDomainRequestsRepository {
     private static final Logger LOGGER = LoggerFactory.getLogger(TrackedDomainRequestsRepositoryImpl.class);
 
@@ -55,8 +55,7 @@ public class TrackedDomainRequestsRepositoryImpl implements TrackedDomainRequest
 
     private final JdbcTemplate jdbcTemplate;
 
-    @Autowired
-    public TrackedDomainRequestsRepositoryImpl(@Qualifier("postgresqlJDBCTemplate") JdbcTemplate jdbcTemplate) {
+    public TrackedDomainRequestsRepositoryImpl(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
@@ -64,7 +63,7 @@ public class TrackedDomainRequestsRepositoryImpl implements TrackedDomainRequest
     @Transactional("postgresqlTM")
     public int saveAll(List<TrackedDomainRequests> entities) {
         Objects.requireNonNull(entities);
-        
+
         try {
             int[] rows = jdbcTemplate.batchUpdate(INSERT_QUERY, new BatchPreparedStatementSetter() {
                 @Override
@@ -83,7 +82,7 @@ public class TrackedDomainRequestsRepositoryImpl implements TrackedDomainRequest
                     return entities.size();
                 }
             });
-            
+
             return Arrays.stream(rows).sum();
         } catch (DataAccessException e) {
             LOGGER.error(e.getMessage());

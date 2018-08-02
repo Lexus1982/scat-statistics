@@ -23,8 +23,8 @@ package me.alexand.scat.statistic.collector.repository;
 
 import me.alexand.scat.statistic.collector.model.IPFIXDataRecord;
 import me.alexand.scat.statistic.collector.model.TemplateType;
-import me.alexand.scat.statistic.common.model.ClickCount;
-import me.alexand.scat.statistic.common.model.TrackedDomainRequests;
+import me.alexand.scat.statistic.common.entities.ClickCount;
+import me.alexand.scat.statistic.common.entities.TrackedDomainRequests;
 
 import java.time.LocalDateTime;
 import java.util.List;

@@ -22,9 +22,9 @@
 package me.alexand.scat.statistic.collector.service;
 
 import me.alexand.scat.statistic.collector.repository.TransitionalBufferRepository;
-import me.alexand.scat.statistic.common.model.ClickCount;
-import me.alexand.scat.statistic.common.model.DomainRegex;
-import me.alexand.scat.statistic.common.model.TrackedDomainRequests;
+import me.alexand.scat.statistic.common.entities.ClickCount;
+import me.alexand.scat.statistic.common.entities.DomainRegex;
+import me.alexand.scat.statistic.common.entities.TrackedDomainRequests;
 import me.alexand.scat.statistic.common.repository.ClickCountRepository;
 import me.alexand.scat.statistic.common.repository.DomainRegexRepository;
 import me.alexand.scat.statistic.common.repository.TrackedDomainRequestsRepository;

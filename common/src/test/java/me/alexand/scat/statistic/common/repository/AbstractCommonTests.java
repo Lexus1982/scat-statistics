@@ -19,23 +19,17 @@
  * under the License.
  */
 
-package me.alexand.scat.statistic.collector.repository;
+package me.alexand.scat.statistic.common.repository;
 
-import me.alexand.scat.statistic.common.repository.ClickCountRepository;
-import org.junit.Test;
+import me.alexand.scat.statistic.common.config.CommonConfig;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlConfig;
 import org.springframework.test.context.jdbc.SqlGroup;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.util.Arrays;
-
-import static me.alexand.scat.statistic.collector.entities.ClickCountTestEntities.FIRST_APRIL_COUNT;
-import static me.alexand.scat.statistic.collector.entities.ClickCountTestEntities.SECOND_APRIL_COUNT;
-import static org.junit.Assert.assertEquals;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TEST_METHOD;
 import static org.springframework.test.context.jdbc.SqlConfig.TransactionMode.ISOLATED;
@@ -44,32 +38,25 @@ import static org.springframework.test.context.jdbc.SqlConfig.TransactionMode.IS
  * @author asidorov84@gmail.com
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration("classpath:spring-test.xml")
+@TestPropertySource("classpath:common-test.properties")
+@ContextConfiguration(classes = CommonConfig.class)
 @SqlGroup({
         @Sql(
-                scripts = "classpath:db/postgres/populate.sql",
+                scripts = "classpath:db/populate.sql",
                 executionPhase = BEFORE_TEST_METHOD,
                 config = @SqlConfig(
                         transactionManager = "postgresqlTM",
                         transactionMode = ISOLATED,
-                        dataSource = "postgresqlTestDataSource")
+                        dataSource = "postgresqlDataSource")
         ),
         @Sql(
-                scripts = "classpath:db/postgres/clear.sql",
+                scripts = "classpath:db/clear.sql",
                 executionPhase = AFTER_TEST_METHOD,
                 config = @SqlConfig(
                         transactionManager = "postgresqlTM",
                         transactionMode = ISOLATED,
-                        dataSource = "postgresqlTestDataSource")
+                        dataSource = "postgresqlDataSource")
         )
 })
-public class ClickCountRepositoryTests {
-    @Autowired
-    private ClickCountRepository repository;
-
-    @Test
-    public void testSaveAll() {
-        assertEquals(2, repository.saveAll(Arrays.asList(FIRST_APRIL_COUNT, SECOND_APRIL_COUNT)));
-        repository.saveAll(Arrays.asList(FIRST_APRIL_COUNT, SECOND_APRIL_COUNT));
-    }
+public abstract class AbstractCommonTests {
 }

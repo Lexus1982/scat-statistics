@@ -19,24 +19,40 @@
  * under the License.
  */
 
-package me.alexand.scat.statistic.collector.entities;
+package me.alexand.scat.statistic.common.repository;
 
-import me.alexand.scat.statistic.common.model.ClickCount;
+import me.alexand.scat.statistic.common.entities.ClickCount;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigInteger;
 import java.time.LocalDate;
 
+import static java.util.Arrays.asList;
+import static org.junit.Assert.assertEquals;
+
 /**
+ * Тесты для проверки хранилища сущностей ClickCount
+ *
  * @author asidorov84@gmail.com
  */
-public interface ClickCountTestEntities {
-    ClickCount FIRST_APRIL_COUNT = ClickCount.builder()
+public class ClickCountRepositoryTests extends AbstractCommonTests {
+    private static final ClickCount FIRST_APRIL_COUNT = ClickCount.builder()
             .date(LocalDate.of(2018, 4, 1))
             .count(BigInteger.valueOf(16))
             .build();
 
-    ClickCount SECOND_APRIL_COUNT = ClickCount.builder()
+    private static final ClickCount SECOND_APRIL_COUNT = ClickCount.builder()
             .date(LocalDate.of(2018, 4, 2))
             .count(BigInteger.valueOf(6))
             .build();
+
+    @Autowired
+    private ClickCountRepository repository;
+
+    @Test
+    public void testSaveAll() {
+        assertEquals(2, repository.saveAll(asList(FIRST_APRIL_COUNT, SECOND_APRIL_COUNT)));
+        repository.saveAll(asList(FIRST_APRIL_COUNT, SECOND_APRIL_COUNT));
+    }
 }

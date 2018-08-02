@@ -37,7 +37,6 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author asidorov84@gmail.com
  */
-
 public class SCATDataTemplateRepositoryTests {
     private static final Logger LOGGER = LoggerFactory.getLogger(SCATDataTemplateRepositoryTests.class);
     private final SCATDataTemplateRepository repository = new InMemorySCATDataTemplateRepositoryImpl();

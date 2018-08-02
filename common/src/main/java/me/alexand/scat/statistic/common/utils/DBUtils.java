@@ -19,31 +19,22 @@
  * under the License.
  */
 
-package me.alexand.scat.statistic.collector.entities;
+package me.alexand.scat.statistic.common.utils;
 
-import me.alexand.scat.statistic.common.model.DomainRegex;
-
-import java.time.LocalDateTime;
+import org.springframework.core.io.Resource;
+import org.springframework.jdbc.datasource.init.DatabasePopulator;
+import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 
 /**
+ * Вспомогательные методы для работы с базами данных
+ *
  * @author asidorov84@gmail.com
  */
-public interface DomainRegexTestEntities {
-    long POPULATED_DOMAINS_COUNT = 2;
-
-    String VK_COM_REGEX_PATTERN = ".*vk\\.com$";
-    String MAIL_RU_REGEX_PATTERN = ".*mail\\.ru$";
-    String OK_RU_REGEX_PATTERN = ".*ok\\.ru$";
-
-    DomainRegex TEST_VK_COM = DomainRegex.builder()
-            .id(1)
-            .pattern(VK_COM_REGEX_PATTERN)
-            .dateAdded(LocalDateTime.of(2018, 1, 1, 1, 1, 1))
-            .build();
-
-    DomainRegex TEST_MAIL_RU = DomainRegex.builder()
-            .id(2)
-            .pattern(MAIL_RU_REGEX_PATTERN)
-            .dateAdded(LocalDateTime.of(2018, 1, 1, 1, 1, 1))
-            .build();
+public interface DBUtils {
+    static DatabasePopulator databasePopulator(Resource dataScript) {
+        final ResourceDatabasePopulator databasePopulator = new ResourceDatabasePopulator();
+        databasePopulator.setContinueOnError(false);
+        databasePopulator.addScript(dataScript);
+        return databasePopulator;
+    }
 }

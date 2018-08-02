@@ -37,7 +37,6 @@ import static org.junit.Assert.assertNull;
  *
  * @author asidorov84@gmail.com
  */
-
 public class InfoModelRepositoryTests {
     private static final Logger LOGGER = LoggerFactory.getLogger(InfoModelRepositoryTests.class);
     private final InfoModelRepository repository = new InMemoryInfoModelRepositoryImpl();

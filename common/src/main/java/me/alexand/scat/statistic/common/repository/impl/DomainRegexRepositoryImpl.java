@@ -19,19 +19,16 @@
  * under the License.
  */
 
-package me.alexand.scat.statistic.collector.repository.impls;
+package me.alexand.scat.statistic.common.repository.impl;
 
-import me.alexand.scat.statistic.common.model.DomainRegex;
+import me.alexand.scat.statistic.common.entities.DomainRegex;
 import me.alexand.scat.statistic.common.repository.DomainRegexRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.PreparedStatement;
@@ -44,18 +41,17 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 /**
- * SQL-реализация хранилища шаблонов доменных имен
+ * Реализация хранилища шаблонов доменных имен на основе JDBC
  *
  * @author asidorov84@gmail.com
+ * @see DomainRegex
  * @see DomainRegexRepository
  */
-@Repository
 public class DomainRegexRepositoryImpl implements DomainRegexRepository {
     private static final Logger LOGGER = LoggerFactory.getLogger(DomainRegexRepositoryImpl.class);
     private final JdbcTemplate jdbcTemplate;
 
-    @Autowired
-    public DomainRegexRepositoryImpl(@Qualifier("postgresqlJDBCTemplate") JdbcTemplate jdbcTemplate) {
+    public DomainRegexRepositoryImpl(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 

@@ -21,15 +21,22 @@
 
 package me.alexand.scat.statistic.common.repository;
 
-import me.alexand.scat.statistic.common.model.TrackedDomainRequests;
+import me.alexand.scat.statistic.common.entities.TrackedDomainRequests;
 
 import java.util.List;
 
 /**
+ * Интерфейс для работы с хранилищем сущностей TrackedDomainRequests
+ *
  * @author asidorov84@gmail.com
+ * @see TrackedDomainRequests
  */
 public interface TrackedDomainRequestsRepository {
+    //TODO добавить javadoc
     int saveAll(List<TrackedDomainRequests> results);
 
+    //TODO добавить javadoc
     int save(TrackedDomainRequests result);
+    
+    //TODO добавить методы getAll, getCount, get с фильтрами и пейджингом 
 }

@@ -19,68 +19,61 @@
  * under the License.
  */
 
-package me.alexand.scat.statistic.collector.repository;
+package me.alexand.scat.statistic.common.repository;
 
-import me.alexand.scat.statistic.common.model.DomainRegex;
-import me.alexand.scat.statistic.common.repository.DomainRegexRepository;
+import me.alexand.scat.statistic.common.entities.DomainRegex;
+import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.context.jdbc.SqlConfig;
-import org.springframework.test.context.jdbc.SqlGroup;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.regex.PatternSyntaxException;
 
-import static me.alexand.scat.statistic.collector.entities.DomainRegexTestEntities.*;
-import static org.junit.Assert.*;
-import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD;
-import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TEST_METHOD;
-import static org.springframework.test.context.jdbc.SqlConfig.TransactionMode.ISOLATED;
+import static org.junit.Assert.assertEquals;
+
 
 /**
+ * Тесты для проверки хранилища шаблонов доменных имен
+ *
  * @author asidorov84@gmail.com
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration("classpath:spring-test.xml")
-@SqlGroup({
-        @Sql(
-                scripts = "classpath:db/postgres/populate.sql",
-                executionPhase = BEFORE_TEST_METHOD,
-                config = @SqlConfig(
-                        transactionManager = "postgresqlTM",
-                        transactionMode = ISOLATED,
-                        dataSource = "postgresqlTestDataSource")
-        ),
-        @Sql(
-                scripts = "classpath:db/postgres/clear.sql",
-                executionPhase = AFTER_TEST_METHOD,
-                config = @SqlConfig(
-                        transactionManager = "postgresqlTM",
-                        transactionMode = ISOLATED,
-                        dataSource = "postgresqlTestDataSource")
-        )
-})
-public class DomainRegexRepositoryTests {
+public class DomainRegexRepositoryTests extends AbstractCommonTests {
+    private static final long POPULATED_DOMAINS_COUNT = 2;
+
+    private static final String VK_COM_REGEX_PATTERN = ".*vk\\.com$";
+    private static final String MAIL_RU_REGEX_PATTERN = ".*mail\\.ru$";
+    private static final String OK_RU_REGEX_PATTERN = ".*ok\\.ru$";
+
+    private static final DomainRegex TEST_VK_COM = DomainRegex.builder()
+            .id(1)
+            .pattern(VK_COM_REGEX_PATTERN)
+            .dateAdded(LocalDateTime.of(2018, 1, 1, 1, 1, 1))
+            .build();
+
+    private static final DomainRegex TEST_MAIL_RU = DomainRegex.builder()
+            .id(2)
+            .pattern(MAIL_RU_REGEX_PATTERN)
+            .dateAdded(LocalDateTime.of(2018, 1, 1, 1, 1, 1))
+            .build();
+
+
     @Autowired
     private DomainRegexRepository repository;
 
     @Test
     public void testGetAll() {
         List<DomainRegex> actual = repository.getAll();
-        assertNotNull(actual);
+        Assert.assertNotNull(actual);
         assertEquals(actual.size(), POPULATED_DOMAINS_COUNT);
-        assertTrue(actual.contains(TEST_VK_COM));
-        assertTrue(actual.contains(TEST_MAIL_RU));
-        
+        Assert.assertTrue(actual.contains(TEST_VK_COM));
+        Assert.assertTrue(actual.contains(TEST_MAIL_RU));
+
         repository.delete(TEST_VK_COM.getId());
         repository.delete(TEST_MAIL_RU.getId());
         actual = repository.getAll();
-        assertNotNull(actual);
-        assertTrue(actual.isEmpty());
+        Assert.assertNotNull(actual);
+        Assert.assertTrue(actual.isEmpty());
     }
 
     @Test
@@ -94,28 +87,28 @@ public class DomainRegexRepositoryTests {
     @Test
     public void testAddDuplicate() {
         DomainRegex actual = repository.add(MAIL_RU_REGEX_PATTERN);
-        assertNull(actual);
+        Assert.assertNull(actual);
         assertEquals(POPULATED_DOMAINS_COUNT, repository.getCount());
     }
 
     @Test
     public void testAdd() {
         DomainRegex actual = repository.add(OK_RU_REGEX_PATTERN);
-        assertNotNull(actual);
+        Assert.assertNotNull(actual);
         assertEquals(OK_RU_REGEX_PATTERN, actual.getPattern());
 
         List<DomainRegex> domainRegexList = repository.getAll();
-        assertNotNull(domainRegexList);
+        Assert.assertNotNull(domainRegexList);
 
-        assertTrue(domainRegexList.stream()
+        Assert.assertTrue(domainRegexList.stream()
                 .map(DomainRegex::getPattern)
                 .anyMatch(pattern -> pattern.equals(OK_RU_REGEX_PATTERN)));
     }
 
     @Test
     public void testDelete() {
-        assertTrue(repository.delete(TEST_VK_COM.getId()));
-        assertFalse(repository.delete(0));
+        Assert.assertTrue(repository.delete(TEST_VK_COM.getId()));
+        Assert.assertFalse(repository.delete(0));
     }
 
     @Test(expected = PatternSyntaxException.class)

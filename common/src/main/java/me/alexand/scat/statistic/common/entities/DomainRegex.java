@@ -19,13 +19,13 @@
  * under the License.
  */
 
-package me.alexand.scat.statistic.common.model;
+package me.alexand.scat.statistic.common.entities;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
 
 /**
- * Шаблон доменных имен
+ * Шаблон доменных имен.
  * <p>
  * Шаблон представляет собой корректное регулярное выражение.
  * Описание синтаксиса регулярных выражений представлен в классе {@code java.util.regex.Pattern}
@@ -33,7 +33,7 @@ import java.util.Objects;
  * @author asidorov84@gmail.com
  * @see java.util.regex.Pattern
  */
-public class DomainRegex {
+public final class DomainRegex {
     private final long id;
     private final String pattern;
     private final LocalDateTime dateAdded;

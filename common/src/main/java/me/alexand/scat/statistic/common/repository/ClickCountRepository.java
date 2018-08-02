@@ -21,13 +21,19 @@
 
 package me.alexand.scat.statistic.common.repository;
 
-import me.alexand.scat.statistic.common.model.ClickCount;
+import me.alexand.scat.statistic.common.entities.ClickCount;
 
 import java.util.List;
 
 /**
+ * Интерфейс для работы с хранилищем сущностей ClickCount
+ *
  * @author asidorov84@gmail.com
+ * @see ClickCount
  */
 public interface ClickCountRepository {
+    //TODO добавить javadoc
     int saveAll(List<ClickCount> entities);
+    
+    //TODO добавить методы getAll, getCount, get c фильтрами по диапазону дат и пейджингом
 }

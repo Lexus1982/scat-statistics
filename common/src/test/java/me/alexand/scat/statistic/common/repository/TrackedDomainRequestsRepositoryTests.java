@@ -19,19 +19,25 @@
  * under the License.
  */
 
-package me.alexand.scat.statistic.collector.entities;
+package me.alexand.scat.statistic.common.repository;
 
-import me.alexand.scat.statistic.common.model.TrackedDomainRequests;
+import me.alexand.scat.statistic.common.entities.TrackedDomainRequests;
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Collections;
 
 /**
+ * Тесты для проверки хранилища сущностей TrackedDomainRequests
+ *
  * @author asidorov84@gmail.com
  */
-public interface TrackedDomainRequestsTestEntities {
-    TrackedDomainRequests TEST = TrackedDomainRequests.builder()
+public class TrackedDomainRequestsRepositoryTests extends AbstractCommonTests {
+    private static final TrackedDomainRequests TEST = TrackedDomainRequests.builder()
             .date(LocalDate.of(2018, 4, 1))
             .pattern(".*vk\\.com$")
             .address("176.221.0.224")
@@ -40,4 +46,23 @@ public interface TrackedDomainRequestsTestEntities {
             .lastTime(LocalTime.of(17, 6, 19))
             .count(BigInteger.valueOf(3))
             .build();
+
+    @Autowired
+    private TrackedDomainRequestsRepository repository;
+
+    @Test
+    public void testSave() {
+        Assert.assertEquals(1, repository.save(TEST));
+    }
+
+    @Test
+    public void testSaveDuplicate() {
+        Assert.assertEquals(1, repository.save(TEST));
+        Assert.assertEquals(1, repository.save(TEST));
+    }
+
+    @Test
+    public void testSaveAll() {
+        Assert.assertEquals(1, repository.saveAll(Collections.singletonList(TEST)));
+    }
 }

@@ -23,6 +23,7 @@ package me.alexand.scat.statistic.collector.entities;
 
 import me.alexand.scat.statistic.collector.model.*;
 
+import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
@@ -76,19 +77,71 @@ public interface IPFIXMessageTestEntities {
     IPFIXDataRecord IPFIX_CS_REQ_DATA_RECORD = IPFIXDataRecord.builder()
             .type(CS_REQ)
             .fieldValues(asList(
-                    IPFIXFieldValue.builder().name("timestamp").type(DATE_TIME_SECONDS).build(),
-                    IPFIXFieldValue.builder().name("login").type(STRING).build(),
-                    IPFIXFieldValue.builder().name("ipSrc").type(IPV4_ADDRESS).build(),
-                    IPFIXFieldValue.builder().name("ipDst").type(IPV4_ADDRESS).build(),
-                    IPFIXFieldValue.builder().name("domain").type(STRING).build(),
-                    IPFIXFieldValue.builder().name("path").type(STRING).build(),
-                    IPFIXFieldValue.builder().name("refer").type(STRING).build(),
-                    IPFIXFieldValue.builder().name("userAgent").type(STRING).build(),
-                    IPFIXFieldValue.builder().name("cookie").type(STRING).build(),
-                    IPFIXFieldValue.builder().name("sessionID").type(UNSIGNED64).build(),
-                    IPFIXFieldValue.builder().name("locked").type(UNSIGNED64).build(),
-                    IPFIXFieldValue.builder().name("hostType").type(UNSIGNED8).build(),
-                    IPFIXFieldValue.builder().name("method").type(UNSIGNED8).build()))
+                    IPFIXFieldValue.builder()
+                            .name("timestamp")
+                            .type(DATE_TIME_SECONDS)
+                            .value(LocalDateTime.of(2017, 10, 16, 13, 52, 18))
+                            .build(),
+                    IPFIXFieldValue.builder()
+                            .name("login")
+                            .type(STRING)
+                            .value("")
+                            .build(),
+                    IPFIXFieldValue.builder()
+                            .name("ipSrc")
+                            .type(IPV4_ADDRESS)
+                            .value("31.170.168.171")
+                            .build(),
+                    IPFIXFieldValue.builder()
+                            .name("ipDst")
+                            .type(IPV4_ADDRESS)
+                            .value("217.12.15.96")
+                            .build(),
+                    IPFIXFieldValue.builder()
+                            .name("domain")
+                            .type(STRING)
+                            .value("yboss.yahooapis.com")
+                            .build(),
+                    IPFIXFieldValue.builder()
+                            .name("path")
+                            .type(STRING)
+                            .value("/ysearch/web,images?abstract=long&format=json&images.count=50&images.start=0&market=en-us&q=Kenmore%20Elite%20Upright%20Vacuum%20-torrent%20-%22sex%22%20-%22anal%22%20-%22porn%22%20-%22bdsm%22%20-%22vagin%22%20-%22penis%22%20-%22anime%22%20-%22casual%20encounters%22%20-%22chicks%22%20-%22dating%22%20-%22kinky%22%20-%22naked%22%20-%22nude%22%20-%22personals%22%20-%22porn%22%20-%22porno%22%20-%22sex%22%20-%22x-rated%22%20-%22xxx%22&sites=wikipedia.org&web.count=50&web.start=0")
+                            .build(),
+                    IPFIXFieldValue.builder()
+                            .name("refer")
+                            .type(STRING)
+                            .value("")
+                            .build(),
+                    IPFIXFieldValue.builder()
+                            .name("userAgent")
+                            .type(STRING)
+                            .value("")
+                            .build(),
+                    IPFIXFieldValue.builder()
+                            .name("cookie")
+                            .type(STRING)
+                            .value("")
+                            .build(),
+                    IPFIXFieldValue.builder()
+                            .name("sessionID")
+                            .type(UNSIGNED64)
+                            .value(new BigInteger("301089013125136674"))
+                            .build(),
+                    IPFIXFieldValue.builder()
+                            .name("locked")
+                            .type(UNSIGNED64)
+                            .value(BigInteger.valueOf(0))
+                            .build(),
+                    IPFIXFieldValue.builder()
+                            .name("hostType")
+                            .type(UNSIGNED8)
+                            .value(1)
+                            .build(),
+                    IPFIXFieldValue.builder()
+                            .name("method")
+                            .type(UNSIGNED8)
+                            .value(1)
+                            .build()))
             .build();
 
     IPFIXHeader IPFIX_HEADER_WITH_CS_REQ_DATA = IPFIXHeader.builder()

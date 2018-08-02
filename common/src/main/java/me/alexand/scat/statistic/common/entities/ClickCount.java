@@ -19,8 +19,7 @@
  * under the License.
  */
 
-package me.alexand.scat.statistic.common.model;
-
+package me.alexand.scat.statistic.common.entities;
 
 import java.math.BigInteger;
 import java.time.LocalDate;
@@ -31,7 +30,7 @@ import java.util.Objects;
  *
  * @author asidorov84@gmail.com
  */
-public class ClickCount {
+public final class ClickCount {
     private final LocalDate date;
     private final BigInteger count;
 

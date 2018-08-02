@@ -21,23 +21,21 @@
 
 package me.alexand.scat.statistic.collector.config;
 
+import me.alexand.scat.statistic.common.config.CommonConfig;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.annotation.*;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
-import org.springframework.jdbc.datasource.init.DatabasePopulator;
 import org.springframework.jdbc.datasource.init.DatabasePopulatorUtils;
-import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+
+import static me.alexand.scat.statistic.common.utils.DBUtils.databasePopulator;
 
 
 /**
@@ -48,12 +46,12 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @Configuration
 @PropertySource("app.properties")
 @PropertySource(value = "file:${conf.dir}/collector.cfg", ignoreResourceNotFound = true)
+@Import(CommonConfig.class)
 @ComponentScan("me.alexand.scat.statistic.collector")
 @EnableTransactionManagement
 @EnableScheduling
 public class ApplicationConfig {
-    private static final Resource BUFFER_INIT_SCRIPT = new ClassPathResource("db/initBuffer.sql");
-    private static final Resource POSTGRESQL_INIT_SCRIPT = new ClassPathResource("db/initPostgres.sql");
+    private static final Resource BUFFER_INIT_SCRIPT = new ClassPathResource("initBuffer.sql");
 
     private final Environment env;
 
@@ -61,8 +59,6 @@ public class ApplicationConfig {
     public ApplicationConfig(Environment env) {
         this.env = env;
     }
-
-    //HSQLDB beans
 
     @Bean
     BasicDataSource hsqldbDataSource() {
@@ -90,34 +86,6 @@ public class ApplicationConfig {
         return new JdbcTemplate(hsqldbDataSource());
     }
 
-    //PostgreSQL beans
-
-    @Bean
-    BasicDataSource postgresqlDataSource() {
-        BasicDataSource dataSource = new BasicDataSource();
-
-        dataSource.setDriverClassName(env.getRequiredProperty("db.postgresql.driverClassName"));
-        dataSource.setUrl(env.getRequiredProperty("db.postgresql.url"));
-        dataSource.setUsername(env.getRequiredProperty("db.postgresql.username"));
-        dataSource.setPassword(env.getRequiredProperty("db.postgresql.password"));
-        dataSource.setInitialSize(Integer.parseInt(env.getRequiredProperty("processors.count")));
-        dataSource.setMaxTotal(Integer.parseInt(env.getRequiredProperty("processors.count")));
-
-        DatabasePopulatorUtils.execute(databasePopulator(POSTGRESQL_INIT_SCRIPT), dataSource);
-
-        return dataSource;
-    }
-
-    @Bean("postgresqlTM")
-    DataSourceTransactionManager postgresqlTransactionManager() {
-        return new DataSourceTransactionManager(postgresqlDataSource());
-    }
-
-    @Bean("postgresqlJDBCTemplate")
-    JdbcTemplate postgresqlJdbcTemplate() {
-        return new JdbcTemplate(postgresqlDataSource());
-    }
-
     //Scheduler
 
     @Bean
@@ -126,12 +94,5 @@ public class ApplicationConfig {
         threadPoolTaskScheduler.setPoolSize(4);
         threadPoolTaskScheduler.setThreadNamePrefix("periodical-scheduler");
         return threadPoolTaskScheduler;
-    }
-
-    private DatabasePopulator databasePopulator(Resource dataScript) {
-        final ResourceDatabasePopulator databasePopulator = new ResourceDatabasePopulator();
-        databasePopulator.setContinueOnError(false);
-        databasePopulator.addScript(dataScript);
-        return databasePopulator;
     }
 }

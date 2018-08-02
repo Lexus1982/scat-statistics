@@ -19,7 +19,7 @@
  * under the License.
  */
 
-package me.alexand.scat.statistic.common.model;
+package me.alexand.scat.statistic.common.entities;
 
 import java.math.BigInteger;
 import java.time.LocalDate;

@@ -21,17 +21,16 @@
 
 package me.alexand.scat.statistic.common.repository;
 
-import me.alexand.scat.statistic.common.model.DomainRegex;
+import me.alexand.scat.statistic.common.entities.DomainRegex;
 
 import java.util.List;
 import java.util.regex.PatternSyntaxException;
 
 /**
- * Интерфейс для хранения шаблонов доменных имен
- * Содержит методы для добавления шаблона в хранилище,
- * получения всех шаблонов, а также количества этих шаблонов
+ * Интерфейс для работы с хранилищем шаблонов доменных имен
  *
  * @author asidorov84@gmail.com
+ * @see DomainRegex
  */
 public interface DomainRegexRepository {
     /**
@@ -42,11 +41,10 @@ public interface DomainRegexRepository {
      * @param pattern корректное регулярное выражение
      * @return экземпляр класса DomainRegex, или null, если такой шаблон уже добавлен
      * @throws PatternSyntaxException если регулярное выражение содержит синтаксическую ошибку
-     * @throws NullPointerException если параметр null
+     * @throws NullPointerException   если параметр null
      * @see java.util.regex.Pattern
      */
     DomainRegex add(String pattern) throws PatternSyntaxException;
-
 
     /**
      * Метод для удаления шаблона из хранилища
@@ -55,7 +53,6 @@ public interface DomainRegexRepository {
      * @return true, если шаблон был удален успешно, иначе false
      */
     boolean delete(long id);
-
 
     /**
      * Метод для получения списка всех шаблонов доменных имен
@@ -70,4 +67,6 @@ public interface DomainRegexRepository {
      * @return количество шаблонов
      */
     long getCount();
+    
+    //TODO добавить метод get c пейджингом
 }
