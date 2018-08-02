@@ -36,6 +36,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.init.DatabasePopulatorUtils;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import static me.alexand.scat.statistic.common.utils.DBUtils.databasePopulator;
@@ -47,17 +48,17 @@ import static me.alexand.scat.statistic.common.utils.DBUtils.databasePopulator;
  */
 @Configuration
 @EnableTransactionManagement
-public class CommonConfig {
+public class PersistenceConfig {
     private static final Resource DB_INIT_SCRIPT = new ClassPathResource("initDB.sql");
 
     private final Environment env;
 
-    public CommonConfig(Environment env) {
+    public PersistenceConfig(Environment env) {
         this.env = env;
     }
 
-    @Bean("postgresqlDataSource")
-    BasicDataSource postgresqlDataSource() {
+    @Bean
+    public BasicDataSource persistenceDataSource() {
         BasicDataSource dataSource = new BasicDataSource();
 
         dataSource.setDriverClassName(env.getRequiredProperty("db.postgresql.driverClassName"));
@@ -72,28 +73,28 @@ public class CommonConfig {
         return dataSource;
     }
 
-    @Bean("postgresqlTM")
-    DataSourceTransactionManager postgresqlTransactionManager() {
-        return new DataSourceTransactionManager(postgresqlDataSource());
+    @Bean
+    public JdbcTemplate persistenceJdbcTemplate() {
+        return new JdbcTemplate(persistenceDataSource());
     }
 
-    @Bean("postgresqlJDBCTemplate")
-    JdbcTemplate postgresqlJdbcTemplate() {
-        return new JdbcTemplate(postgresqlDataSource());
+    @Bean("persistenceTM")
+    public PlatformTransactionManager persistenceTransactionManager() {
+        return new DataSourceTransactionManager(persistenceDataSource());
     }
 
     @Bean
-    ClickCountRepository clickCountRepository() {
-        return new ClickCountRepositoryImpl(postgresqlJdbcTemplate());
+    public ClickCountRepository clickCountRepository() {
+        return new ClickCountRepositoryImpl(persistenceJdbcTemplate());
     }
 
     @Bean
-    DomainRegexRepository domainRegexRepository() {
-        return new DomainRegexRepositoryImpl(postgresqlJdbcTemplate());
+    public DomainRegexRepository domainRegexRepository() {
+        return new DomainRegexRepositoryImpl(persistenceJdbcTemplate());
     }
 
     @Bean
-    TrackedDomainRequestsRepository trackedDomainRequestsRepository() {
-        return new TrackedDomainRequestsRepositoryImpl(postgresqlJdbcTemplate());
+    public TrackedDomainRequestsRepository trackedDomainRequestsRepository() {
+        return new TrackedDomainRequestsRepositoryImpl(persistenceJdbcTemplate());
     }
 }

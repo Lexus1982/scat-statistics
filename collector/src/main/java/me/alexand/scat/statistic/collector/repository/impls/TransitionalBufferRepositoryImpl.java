@@ -175,10 +175,11 @@ public class TransitionalBufferRepositoryImpl implements TransitionalBufferRepos
     }
 
     @Override
+    @Transactional(value = "bufferTM", readOnly = true)
     public List<ClickCount> getClickCount(LocalDateTime start, LocalDateTime end) {
         Objects.requireNonNull(start);
         Objects.requireNonNull(end);
-        
+
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT ")
                 .append(" cast(cs.event_time AS DATE) AS date, ")

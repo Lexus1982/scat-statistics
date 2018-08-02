@@ -54,7 +54,7 @@ public class ClickCountRepositoryImpl implements ClickCountRepository {
     }
 
     @Override
-    @Transactional("postgresqlTM")
+    @Transactional("persistenceTM")
     public int saveAll(List<ClickCount> entities) {
         Objects.requireNonNull(entities);
         if (entities.isEmpty()) {

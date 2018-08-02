@@ -56,7 +56,7 @@ public class DomainRegexRepositoryImpl implements DomainRegexRepository {
     }
 
     @Override
-    @Transactional("postgresqlTM")
+    @Transactional("persistenceTM")
     public DomainRegex add(String pattern) throws PatternSyntaxException {
         Objects.requireNonNull(pattern);
         if (pattern.isEmpty()) {
@@ -97,7 +97,7 @@ public class DomainRegexRepositoryImpl implements DomainRegexRepository {
     }
 
     @Override
-    @Transactional("postgresqlTM")
+    @Transactional("persistenceTM")
     public boolean delete(long id) {
         try {
             return jdbcTemplate.update("DELETE FROM domain_regex WHERE id = ?", id) == 1;
@@ -109,7 +109,7 @@ public class DomainRegexRepositoryImpl implements DomainRegexRepository {
     }
 
     @Override
-    @Transactional(value = "postgresqlTM", readOnly = true)
+    @Transactional(value = "persistenceTM", readOnly = true)
     public List<DomainRegex> getAll() {
         try {
             return jdbcTemplate.query("SELECT id, pattern, date_added FROM domain_regex",
@@ -126,7 +126,7 @@ public class DomainRegexRepositoryImpl implements DomainRegexRepository {
     }
 
     @Override
-    @Transactional(value = "postgresqlTM", readOnly = true)
+    @Transactional(value = "persistenceTM", readOnly = true)
     public long getCount() {
         try {
             Long count = jdbcTemplate.queryForObject("SELECT count(*) AS cnt FROM domain_regex", Long.class);

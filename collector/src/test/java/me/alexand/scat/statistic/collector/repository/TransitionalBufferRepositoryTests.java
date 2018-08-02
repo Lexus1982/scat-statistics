@@ -21,6 +21,7 @@
 
 package me.alexand.scat.statistic.collector.repository;
 
+import me.alexand.scat.statistic.collector.TestConfig;
 import me.alexand.scat.statistic.common.entities.ClickCount;
 import me.alexand.scat.statistic.common.entities.TrackedDomainRequests;
 import org.junit.Test;
@@ -49,25 +50,17 @@ import static org.springframework.test.context.jdbc.SqlConfig.TransactionMode.IS
  * @author asidorov84@gmail.com
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration("classpath:spring-test.xml")
+@ContextConfiguration(classes = TestConfig.class)
 @SqlGroup({
         @Sql(
                 scripts = "classpath:sql/populate.sql",
                 executionPhase = BEFORE_TEST_METHOD,
-                config = @SqlConfig(
-                        transactionManager = "bufferTM",
-                        transactionMode = ISOLATED,
-                        dataSource = "hsqlTestDataSource"
-                )
+                config = @SqlConfig(transactionMode = ISOLATED)
         ),
         @Sql(
                 scripts = "classpath:sql/clear.sql",
                 executionPhase = AFTER_TEST_METHOD,
-                config = @SqlConfig(
-                        transactionManager = "bufferTM",
-                        transactionMode = ISOLATED,
-                        dataSource = "hsqlTestDataSource"
-                )
+                config = @SqlConfig(transactionMode = ISOLATED)
         )
 })
 public class TransitionalBufferRepositoryTests {

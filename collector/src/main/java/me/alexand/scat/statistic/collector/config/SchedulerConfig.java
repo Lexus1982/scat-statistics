@@ -19,18 +19,24 @@
  * under the License.
  */
 
-package me.alexand.scat.statistic.collector;
+package me.alexand.scat.statistic.collector.config;
 
-import me.alexand.scat.statistic.collector.config.CollectorConfig;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 /**
- * Точка входа в приложение
- *
  * @author asidorov84@gmail.com
  */
-public final class Main {
-    public static void main(String[] args) {
-        new AnnotationConfigApplicationContext(CollectorConfig.class).registerShutdownHook();
+@Configuration
+@EnableScheduling
+public class SchedulerConfig {
+    @Bean
+    public ThreadPoolTaskScheduler threadPoolTaskScheduler() {
+        ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadPoolTaskScheduler();
+        threadPoolTaskScheduler.setPoolSize(4);
+        threadPoolTaskScheduler.setThreadNamePrefix("periodical-scheduler");
+        return threadPoolTaskScheduler;
     }
 }

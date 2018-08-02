@@ -21,7 +21,7 @@
 
 package me.alexand.scat.statistic.common.repository;
 
-import me.alexand.scat.statistic.common.config.CommonConfig;
+import me.alexand.scat.statistic.common.config.PersistenceConfig;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -39,23 +39,17 @@ import static org.springframework.test.context.jdbc.SqlConfig.TransactionMode.IS
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @TestPropertySource("classpath:common-test.properties")
-@ContextConfiguration(classes = CommonConfig.class)
+@ContextConfiguration(classes = PersistenceConfig.class)
 @SqlGroup({
         @Sql(
                 scripts = "classpath:db/populate.sql",
                 executionPhase = BEFORE_TEST_METHOD,
-                config = @SqlConfig(
-                        transactionManager = "postgresqlTM",
-                        transactionMode = ISOLATED,
-                        dataSource = "postgresqlDataSource")
+                config = @SqlConfig(transactionMode = ISOLATED)
         ),
         @Sql(
                 scripts = "classpath:db/clear.sql",
                 executionPhase = AFTER_TEST_METHOD,
-                config = @SqlConfig(
-                        transactionManager = "postgresqlTM",
-                        transactionMode = ISOLATED,
-                        dataSource = "postgresqlDataSource")
+                config = @SqlConfig(transactionMode = ISOLATED)
         )
 })
 public abstract class AbstractCommonTests {

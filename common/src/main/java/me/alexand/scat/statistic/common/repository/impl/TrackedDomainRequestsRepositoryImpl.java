@@ -60,7 +60,7 @@ public class TrackedDomainRequestsRepositoryImpl implements TrackedDomainRequest
     }
 
     @Override
-    @Transactional("postgresqlTM")
+    @Transactional("persistenceTM")
     public int saveAll(List<TrackedDomainRequests> entities) {
         Objects.requireNonNull(entities);
 
@@ -92,7 +92,7 @@ public class TrackedDomainRequestsRepositoryImpl implements TrackedDomainRequest
     }
 
     @Override
-    @Transactional("postgresqlTM")
+    @Transactional("persistenceTM")
     public int save(TrackedDomainRequests entity) {
         try {
             return jdbcTemplate.update(INSERT_QUERY, ps -> {

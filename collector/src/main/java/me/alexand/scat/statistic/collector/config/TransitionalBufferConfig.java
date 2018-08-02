@@ -21,47 +21,36 @@
 
 package me.alexand.scat.statistic.collector.config;
 
-import me.alexand.scat.statistic.common.config.CommonConfig;
 import org.apache.commons.dbcp2.BasicDataSource;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.init.DatabasePopulatorUtils;
-import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import static me.alexand.scat.statistic.common.utils.DBUtils.databasePopulator;
 
-
 /**
- * Конфигурация контейнера Spring Framework
- *
  * @author asidorov84@gmail.com
  */
 @Configuration
-@PropertySource("app.properties")
-@PropertySource(value = "file:${conf.dir}/collector.cfg", ignoreResourceNotFound = true)
-@Import(CommonConfig.class)
-@ComponentScan("me.alexand.scat.statistic.collector")
 @EnableTransactionManagement
-@EnableScheduling
-public class ApplicationConfig {
+public class TransitionalBufferConfig {
     private static final Resource BUFFER_INIT_SCRIPT = new ClassPathResource("initBuffer.sql");
 
     private final Environment env;
 
-    @Autowired
-    public ApplicationConfig(Environment env) {
+    public TransitionalBufferConfig(Environment env) {
         this.env = env;
     }
 
     @Bean
-    BasicDataSource hsqldbDataSource() {
+    public BasicDataSource bufferDataSource() {
         BasicDataSource dataSource = new BasicDataSource();
 
         dataSource.setDriverClassName(env.getRequiredProperty("db.hsqldb.driverClassName"));
@@ -76,23 +65,13 @@ public class ApplicationConfig {
         return dataSource;
     }
 
-    @Bean("bufferTM")
-    DataSourceTransactionManager hsqldbTransactionManager() {
-        return new DataSourceTransactionManager(hsqldbDataSource());
-    }
-
     @Bean("bufferJDBCTemplate")
-    JdbcTemplate hsqldbJdbcTemplate() {
-        return new JdbcTemplate(hsqldbDataSource());
+    public JdbcTemplate bufferJdbcTemplate() {
+        return new JdbcTemplate(bufferDataSource());
     }
 
-    //Scheduler
-
-    @Bean
-    public ThreadPoolTaskScheduler threadPoolTaskScheduler() {
-        ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadPoolTaskScheduler();
-        threadPoolTaskScheduler.setPoolSize(4);
-        threadPoolTaskScheduler.setThreadNamePrefix("periodical-scheduler");
-        return threadPoolTaskScheduler;
+    @Bean("bufferTM")
+    public PlatformTransactionManager transactionManager() {
+        return new DataSourceTransactionManager(bufferDataSource());
     }
 }

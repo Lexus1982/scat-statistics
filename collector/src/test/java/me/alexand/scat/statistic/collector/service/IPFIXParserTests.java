@@ -21,6 +21,7 @@
 
 package me.alexand.scat.statistic.collector.service;
 
+import me.alexand.scat.statistic.collector.TestConfig;
 import me.alexand.scat.statistic.collector.model.IPFIXMessage;
 import me.alexand.scat.statistic.collector.repository.InfoModelRepository;
 import me.alexand.scat.statistic.collector.repository.SCATDataTemplateRepository;
@@ -55,7 +56,7 @@ import static org.junit.Assert.assertNotNull;
  */
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration("classpath:spring-test.xml")
+@ContextConfiguration(classes = TestConfig.class)
 public class IPFIXParserTests {
     private static final Logger LOGGER = LoggerFactory.getLogger(IPFIXParserTests.class);
 

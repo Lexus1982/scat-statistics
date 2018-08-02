@@ -19,18 +19,26 @@
  * under the License.
  */
 
-package me.alexand.scat.statistic.collector;
+package me.alexand.scat.statistic.collector.config;
 
-import me.alexand.scat.statistic.collector.config.CollectorConfig;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import me.alexand.scat.statistic.common.config.PersistenceConfig;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.PropertySource;
+
 
 /**
- * Точка входа в приложение
+ * Конфигурация контейнера Spring Framework
  *
  * @author asidorov84@gmail.com
  */
-public final class Main {
-    public static void main(String[] args) {
-        new AnnotationConfigApplicationContext(CollectorConfig.class).registerShutdownHook();
-    }
+@Configuration
+@PropertySource("app.properties")
+@PropertySource(value = "file:${conf.dir}/collector.cfg", ignoreResourceNotFound = true)
+@Import({TransitionalBufferConfig.class,
+        PersistenceConfig.class,
+        SchedulerConfig.class})
+@ComponentScan("me.alexand.scat.statistic.collector")
+public class CollectorConfig {
 }
