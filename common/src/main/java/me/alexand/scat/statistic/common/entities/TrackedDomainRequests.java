@@ -31,7 +31,7 @@ import java.util.Objects;
  *
  * @author asidorov84@gmail.com
  */
-public class TrackedDomainRequests {
+public final class TrackedDomainRequests {
     private final LocalDate date;
     private final String pattern;
     private final String address;

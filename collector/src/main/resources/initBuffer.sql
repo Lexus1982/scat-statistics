@@ -2,7 +2,7 @@ DROP TABLE IF EXISTS cs_req;
 DROP TABLE IF EXISTS cs_resp;
 DROP TABLE IF EXISTS generic;
 
-CREATE TABLE cs_req (
+CREATE TABLE IF NOT EXISTS cs_req (
   event_time TIMESTAMP,
   login      VARCHAR(8000),
   ip_src     VARCHAR(15),
@@ -18,10 +18,10 @@ CREATE TABLE cs_req (
   method     SMALLINT
 );
 
-CREATE INDEX cs_req_event_time_idx
+CREATE INDEX IF NOT EXISTS cs_req_event_time_idx
   ON cs_req (event_time);
 
-CREATE TABLE cs_resp (
+CREATE TABLE IF NOT EXISTS cs_resp (
   event_time     TIMESTAMP,
   login          VARCHAR(8000),
   ip_src         VARCHAR(15),
@@ -32,10 +32,10 @@ CREATE TABLE cs_resp (
   session_id     DECIMAL
 );
 
-CREATE INDEX cs_resp_event_time_idx
+CREATE INDEX IF NOT EXISTS cs_resp_event_time_idx
   ON cs_resp (event_time);
 
-CREATE TABLE generic (
+CREATE TABLE IF NOT EXISTS generic (
   octet_delta_count              DECIMAL,
   packet_delta_count             DECIMAL,
   protocol_identifier            SMALLINT,
@@ -59,8 +59,8 @@ CREATE TABLE generic (
   post_nat_source_transport_port INTEGER
 );
 
-CREATE INDEX generic_flow_start_idx
+CREATE INDEX IF NOT EXISTS generic_flow_start_idx
   ON generic (flow_start_millisecond);
 
-CREATE INDEX generic_flow_end_idx
+CREATE INDEX IF NOT EXISTS generic_flow_end_idx
   ON generic (flow_end_millisecond);
