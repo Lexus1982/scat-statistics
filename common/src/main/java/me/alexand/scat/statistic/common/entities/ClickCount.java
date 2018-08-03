@@ -21,6 +21,9 @@
 
 package me.alexand.scat.statistic.common.entities;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import me.alexand.scat.statistic.common.utils.Constants;
+
 import java.math.BigInteger;
 import java.time.LocalDate;
 import java.util.Objects;
@@ -31,6 +34,7 @@ import java.util.Objects;
  * @author asidorov84@gmail.com
  */
 public final class ClickCount {
+    @JsonFormat(pattern = Constants.DATE_PATTERN)
     private final LocalDate date;
     private final BigInteger count;
 

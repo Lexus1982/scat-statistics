@@ -19,23 +19,24 @@
  * under the License.
  */
 
-package me.alexand.scat.statistic.common.repository;
+package me.alexand.scat.statistic.api.utils;
 
-import me.alexand.scat.statistic.common.entities.ClickCount;
-
-import java.util.List;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 /**
- * Интерфейс для работы с хранилищем сущностей ClickCount
- *
  * @author asidorov84@gmail.com
- * @see ClickCount
  */
-public interface ClickCountRepository {
-    //TODO добавить javadoc
-    int saveAll(List<ClickCount> entities);
-    
-    //TODO добавить методы getAll, getCount, get c фильтрами по диапазону дат и пейджингом
-    
-    List<ClickCount> getAll();
+public class JacksonObjectMapper extends ObjectMapper {
+    private static final ObjectMapper OBJECT_MAPPER = new JacksonObjectMapper();
+
+    public static ObjectMapper getObjectMapper() {
+        return OBJECT_MAPPER;
+    }
+
+    private JacksonObjectMapper() {
+        registerModule(new JavaTimeModule());
+        configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+    }
 }

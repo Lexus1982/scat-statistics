@@ -19,23 +19,23 @@
  * under the License.
  */
 
-package me.alexand.scat.statistic.common.repository;
+package me.alexand.scat.statistic.api.controllers;
 
-import me.alexand.scat.statistic.common.entities.ClickCount;
-
-import java.util.List;
+import me.alexand.scat.statistic.api.service.TrackedDomainRequestsService;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Интерфейс для работы с хранилищем сущностей ClickCount
- *
  * @author asidorov84@gmail.com
- * @see ClickCount
  */
-public interface ClickCountRepository {
-    //TODO добавить javadoc
-    int saveAll(List<ClickCount> entities);
-    
-    //TODO добавить методы getAll, getCount, get c фильтрами по диапазону дат и пейджингом
-    
-    List<ClickCount> getAll();
+@RestController
+@RequestMapping("api/tracked/domain/requests")//TODO подумать над адресами
+public class TrackedDomainRequestsRestController {
+    private final TrackedDomainRequestsService trackedDomainRequestsService;
+
+    public TrackedDomainRequestsRestController(TrackedDomainRequestsService trackedDomainRequestsService) {
+        this.trackedDomainRequestsService = trackedDomainRequestsService;
+    }
+
+    //TODO
 }

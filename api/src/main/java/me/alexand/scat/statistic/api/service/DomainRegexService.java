@@ -19,23 +19,21 @@
  * under the License.
  */
 
-package me.alexand.scat.statistic.common.repository;
+package me.alexand.scat.statistic.api.service;
 
-import me.alexand.scat.statistic.common.entities.ClickCount;
-
-import java.util.List;
+import me.alexand.scat.statistic.common.repository.DomainRegexRepository;
+import org.springframework.stereotype.Service;
 
 /**
- * Интерфейс для работы с хранилищем сущностей ClickCount
- *
  * @author asidorov84@gmail.com
- * @see ClickCount
  */
-public interface ClickCountRepository {
-    //TODO добавить javadoc
-    int saveAll(List<ClickCount> entities);
-    
-    //TODO добавить методы getAll, getCount, get c фильтрами по диапазону дат и пейджингом
-    
-    List<ClickCount> getAll();
+@Service
+public class DomainRegexService {
+    private final DomainRegexRepository repository;
+
+    public DomainRegexService(DomainRegexRepository repository) {
+        this.repository = repository;
+    }
+
+    //TODO
 }

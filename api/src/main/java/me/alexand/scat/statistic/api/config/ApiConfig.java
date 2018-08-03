@@ -19,23 +19,23 @@
  * under the License.
  */
 
-package me.alexand.scat.statistic.common.repository;
+package me.alexand.scat.statistic.api.config;
 
-import me.alexand.scat.statistic.common.entities.ClickCount;
-
-import java.util.List;
+import me.alexand.scat.statistic.common.config.PersistenceConfig;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.PropertySource;
 
 /**
- * Интерфейс для работы с хранилищем сущностей ClickCount
+ * Корневая конфигурация приложения
  *
  * @author asidorov84@gmail.com
- * @see ClickCount
  */
-public interface ClickCountRepository {
-    //TODO добавить javadoc
-    int saveAll(List<ClickCount> entities);
-    
-    //TODO добавить методы getAll, getCount, get c фильтрами по диапазону дат и пейджингом
-    
-    List<ClickCount> getAll();
+@Configuration
+@PropertySource("classpath:app.properties")
+@PropertySource(value = "file:${conf.dir}/api.cfg", ignoreResourceNotFound = true)
+@Import(PersistenceConfig.class)
+@ComponentScan(basePackages = "me.alexand.scat.statistic.api.service")
+public class ApiConfig {
 }

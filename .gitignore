@@ -2,6 +2,8 @@
 *.iml
 out
 log
+/api/dependency-reduced-pom.xml
+/api/target/
 /collector/dependency-reduced-pom.xml
 /collector/target/
 /common/dependency-reduced-pom.xml

@@ -65,8 +65,8 @@ public class PersistenceConfig {
         dataSource.setUrl(env.getRequiredProperty("db.postgresql.url"));
         dataSource.setUsername(env.getRequiredProperty("db.postgresql.username"));
         dataSource.setPassword(env.getRequiredProperty("db.postgresql.password"));
-        dataSource.setInitialSize(Integer.parseInt(env.getRequiredProperty("processors.count")));
-        dataSource.setMaxTotal(Integer.parseInt(env.getRequiredProperty("processors.count")));
+        dataSource.setInitialSize(Integer.parseInt(env.getRequiredProperty("db.postgresql.pool.init.size")));
+        dataSource.setMaxTotal(Integer.parseInt(env.getRequiredProperty("db.postgresql.pool.max.size")));
 
         DatabasePopulatorUtils.execute(databasePopulator(DB_INIT_SCRIPT), dataSource);
 

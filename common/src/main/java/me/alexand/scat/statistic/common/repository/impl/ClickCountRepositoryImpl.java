@@ -32,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -85,5 +86,21 @@ public class ClickCountRepositoryImpl implements ClickCountRepository {
         }
 
         return 0;
+    }
+
+    @Override
+    @Transactional(value = "persistenceTM", readOnly = true)
+    public List<ClickCount> getAll() {
+        String query = "SELECT date, count FROM click_count";
+        try {
+            return jdbcTemplate.query(query, (rs, rowNum) -> ClickCount.builder()
+                    .date(rs.getTimestamp(1).toLocalDateTime().toLocalDate())
+                    .count(rs.getBigDecimal(2).toBigInteger())
+                    .build());
+        } catch (DataAccessException e) {
+            LOGGER.error(e.getMessage());
+        }
+        
+        return new ArrayList<>();
     }
 }

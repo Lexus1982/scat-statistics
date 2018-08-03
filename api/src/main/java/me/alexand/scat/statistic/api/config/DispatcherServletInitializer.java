@@ -19,23 +19,28 @@
  * under the License.
  */
 
-package me.alexand.scat.statistic.common.repository;
+package me.alexand.scat.statistic.api.config;
 
-import me.alexand.scat.statistic.common.entities.ClickCount;
-
-import java.util.List;
+import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
 /**
- * Интерфейс для работы с хранилищем сущностей ClickCount
+ * Инициализатор DispatcherServlet
  *
  * @author asidorov84@gmail.com
- * @see ClickCount
  */
-public interface ClickCountRepository {
-    //TODO добавить javadoc
-    int saveAll(List<ClickCount> entities);
-    
-    //TODO добавить методы getAll, getCount, get c фильтрами по диапазону дат и пейджингом
-    
-    List<ClickCount> getAll();
+public class DispatcherServletInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
+    @Override
+    protected Class<?>[] getRootConfigClasses() {
+        return new Class[]{ApiConfig.class};
+    }
+
+    @Override
+    protected Class<?>[] getServletConfigClasses() {
+        return new Class[]{WebConfig.class};
+    }
+
+    @Override
+    protected String[] getServletMappings() {
+        return new String[]{"/"};
+    }
 }

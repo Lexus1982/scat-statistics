@@ -19,23 +19,26 @@
  * under the License.
  */
 
-package me.alexand.scat.statistic.common.repository;
+package me.alexand.scat.statistic.api.config;
 
-import me.alexand.scat.statistic.common.entities.ClickCount;
-
-import java.util.List;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import me.alexand.scat.statistic.api.utils.JacksonObjectMapper;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 /**
- * Интерфейс для работы с хранилищем сущностей ClickCount
+ * Web-контекст приложения
  *
  * @author asidorov84@gmail.com
- * @see ClickCount
  */
-public interface ClickCountRepository {
-    //TODO добавить javadoc
-    int saveAll(List<ClickCount> entities);
-    
-    //TODO добавить методы getAll, getCount, get c фильтрами по диапазону дат и пейджингом
-    
-    List<ClickCount> getAll();
+@Configuration
+@EnableWebMvc
+@ComponentScan(basePackages = "me.alexand.scat.statistic.api.controllers")
+public class WebConfig {
+    @Bean
+    ObjectMapper objectMapper() {
+        return JacksonObjectMapper.getObjectMapper();
+    }
 }

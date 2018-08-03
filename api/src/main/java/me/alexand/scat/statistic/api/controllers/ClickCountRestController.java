@@ -19,23 +19,34 @@
  * under the License.
  */
 
-package me.alexand.scat.statistic.common.repository;
+package me.alexand.scat.statistic.api.controllers;
 
+import me.alexand.scat.statistic.api.service.ClickCountService;
 import me.alexand.scat.statistic.common.entities.ClickCount;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
 /**
- * Интерфейс для работы с хранилищем сущностей ClickCount
- *
  * @author asidorov84@gmail.com
- * @see ClickCount
  */
-public interface ClickCountRepository {
-    //TODO добавить javadoc
-    int saveAll(List<ClickCount> entities);
+@RestController
+@RequestMapping("api/click/count")//TODO подумать на адресами
+public class ClickCountRestController {
+    private final ClickCountService clickCountService;
+
+    public ClickCountRestController(ClickCountService clickCountService) {
+        this.clickCountService = clickCountService;
+    }
+
+    @GetMapping("test")
+    @ResponseBody
+    public List<ClickCount> test() {
+        return clickCountService.getAll();
+    }
     
-    //TODO добавить методы getAll, getCount, get c фильтрами по диапазону дат и пейджингом
-    
-    List<ClickCount> getAll();
+    //TODO
 }
