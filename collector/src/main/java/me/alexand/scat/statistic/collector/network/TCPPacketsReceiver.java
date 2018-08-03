@@ -104,6 +104,7 @@ public final class TCPPacketsReceiver implements PacketsReceiver {
                 serverSocket.getLocalPort());
 
         connectionListenerThread = new Thread(new Server(), "connection-listener-thread");
+        connectionListenerThread.start();
     }
     
     @Override

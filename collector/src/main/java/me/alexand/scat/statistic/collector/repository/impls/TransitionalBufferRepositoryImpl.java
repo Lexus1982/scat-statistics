@@ -240,7 +240,7 @@ public class TransitionalBufferRepositoryImpl implements TransitionalBufferRepos
 
         querySB.append("SELECT ")
                 .append(" cast(cs.event_time AS DATE) AS date, ")
-                .append(" td.pattern, ")
+                .append(" trim(BOTH FROM td.pattern) AS pattern, ")
                 .append(" cs.ip_src, ")
                 .append(" cs.login, ")
                 .append(" cast(min(cs.event_time) AS TIME) AS first_time, ")
