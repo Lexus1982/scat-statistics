@@ -23,6 +23,7 @@ package me.alexand.scat.statistic.common.repository.impl;
 
 import me.alexand.scat.statistic.common.entities.ClickCount;
 import me.alexand.scat.statistic.common.repository.ClickCountRepository;
+import me.alexand.scat.statistic.common.utils.SortingAndPagination;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
@@ -32,12 +33,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
 import static java.sql.Types.BIGINT;
+import static me.alexand.scat.statistic.common.utils.ColumnOrder.DESC;
 
 /**
  * Реализация хранилища сущностей ClickCount на основе JDBC
@@ -48,6 +51,10 @@ import static java.sql.Types.BIGINT;
  */
 public class ClickCountRepositoryImpl implements ClickCountRepository {
     private static final Logger LOGGER = LoggerFactory.getLogger(ClickCountRepositoryImpl.class);
+    private static final SortingAndPagination DEFAULT_SORTING_PARAM = SortingAndPagination.builder()
+            .orderingColumn("date", DESC)
+            .build();
+
     private final JdbcTemplate jdbcTemplate;
 
     public ClickCountRepositoryImpl(JdbcTemplate jdbcTemplate) {
@@ -90,17 +97,63 @@ public class ClickCountRepositoryImpl implements ClickCountRepository {
 
     @Override
     @Transactional(value = "persistenceTM", readOnly = true)
-    public List<ClickCount> getAll() {
-        String query = "SELECT date, count FROM click_count";
+    public List<ClickCount> findAll() {
+        return findBetween(null, null, DEFAULT_SORTING_PARAM);
+    }
+
+    @Override
+    @Transactional(value = "persistenceTM", readOnly = true)
+    public List<ClickCount> findAll(SortingAndPagination sortingAndPagination) {
+        return findBetween(null, null, sortingAndPagination);
+    }
+
+    @Override
+    @Transactional(value = "persistenceTM", readOnly = true)
+    public List<ClickCount> findBetween(LocalDate start, LocalDate end) {
+        return findBetween(start, end, DEFAULT_SORTING_PARAM);
+    }
+
+    @Override
+    @Transactional(value = "persistenceTM", readOnly = true)
+    public List<ClickCount> findBetween(LocalDate start, LocalDate end, SortingAndPagination sortingAndPagination) {
+        String suffix = sortingAndPagination != null ? sortingAndPagination.formSQLSuffix() : "";
+        String filters = "";
+
+        if (start != null && end != null) {
+            filters = " WHERE date BETWEEN ? AND ? ";
+        }
+
+        if (start != null && end == null) {
+            filters = " WHERE date >= ? ";
+        }
+
+        if (start == null && end != null) {
+            filters = " WHERE date <= ? ";
+        }
+
         try {
-            return jdbcTemplate.query(query, (rs, rowNum) -> ClickCount.builder()
-                    .date(rs.getTimestamp(1).toLocalDateTime().toLocalDate())
-                    .count(rs.getBigDecimal(2).toBigInteger())
-                    .build());
+            return jdbcTemplate.query(String.format("SELECT date, count FROM click_count %s %s", filters, suffix),
+                    ps -> {
+                        int paramNumber = 1;
+                        if (start != null) ps.setObject(paramNumber++, start);
+                        if (end != null) ps.setObject(paramNumber, end);
+                    },
+                    (rs, rowNum) -> ClickCount.builder()
+                            .date(rs.getTimestamp(1).toLocalDateTime().toLocalDate())
+                            .count(rs.getBigDecimal(2).toBigInteger())
+                            .build());
         } catch (DataAccessException e) {
             LOGGER.error(e.getMessage());
         }
-        
+
         return new ArrayList<>();
+    }
+
+    @Override
+    @Transactional(value = "persistenceTM", readOnly = true)
+    public ClickCount findByDate(LocalDate date) {
+        Objects.requireNonNull(date);
+        List<ClickCount> list = findBetween(date, date);
+        return !list.isEmpty() ? list.get(0) : null;
     }
 }

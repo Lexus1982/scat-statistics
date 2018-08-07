@@ -19,29 +19,18 @@
  * under the License.
  */
 
-package me.alexand.scat.statistic.api.service;
-
-import me.alexand.scat.statistic.common.entities.ClickCount;
-import me.alexand.scat.statistic.common.repository.ClickCountRepository;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
+package me.alexand.scat.statistic.common.utils;
 
 /**
+ * Порядок сортировки столбца:
+ * <ul>
+ * <li>ASC - по возрастанию,</li>
+ * <li>DESC - по убыванию</li>
+ * </ul>
+ *
  * @author asidorov84@gmail.com
  */
-@Service
-public class ClickCountService {
-    private final ClickCountRepository repository;
-
-    public ClickCountService(ClickCountRepository repository) {
-        this.repository = repository;
-    }
-
-    public List<ClickCount> getAll() {
-        return repository.findAll();
-    }
-
-    //TODO
-
+public enum ColumnOrder {
+    ASC,
+    DESC
 }

@@ -22,7 +22,9 @@
 package me.alexand.scat.statistic.common.repository;
 
 import me.alexand.scat.statistic.common.entities.ClickCount;
+import me.alexand.scat.statistic.common.utils.SortingAndPagination;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -32,10 +34,58 @@ import java.util.List;
  * @see ClickCount
  */
 public interface ClickCountRepository {
-    //TODO добавить javadoc
+
+    /**
+     * Метод для сохранения общего количества веб-запросов в базе данных.
+     * Если данные для указанного дня уже имеются, то производится суммирование старого значения с новым.
+     * Иначе создается новая запись на указанный день с соответствующим количеством запросов.
+     *
+     * @param entities список сущностей типа ClickCount (обязательный)
+     * @return количество успешно обновленных записей
+     */
     int saveAll(List<ClickCount> entities);
-    
-    //TODO добавить методы getAll, getCount, get c фильтрами по диапазону дат и пейджингом
-    
-    List<ClickCount> getAll();
+
+    /**
+     * Метод для получения всех ClickCount из базы данных.
+     * Список отсортирован по дате по убыванию.
+     *
+     * @return список ClickCount
+     */
+    List<ClickCount> findAll();
+
+    /**
+     * Метод для получения ClickCount из базы данных c параметрами сортировки и пейджинга.
+     *
+     * @param sortingAndPagination параметры сортировки и пейджинга (необязательный)
+     * @return список ClickCount
+     */
+    List<ClickCount> findAll(SortingAndPagination sortingAndPagination);
+
+    /**
+     * Метод для получения ClickCount из базы данных за указанный период
+     *
+     * @param start начальная дата (необязательный, включительно)
+     * @param end   конечная дата (необязательный, включительно)
+     * @return список ClickCount
+     */
+    List<ClickCount> findBetween(LocalDate start, LocalDate end);
+
+    /**
+     * Метод для получения ClickCount из базы данных за указанный период с параметрами сортировки и пейджинга
+     *
+     * @param start                начальная дата (необязательный, включительно)
+     * @param end                  конечная дата (необязательный, включительно)
+     * @param sortingAndPagination параметры сортировки и пейджинга (необязательный)
+     * @return список ClickCount
+     */
+    List<ClickCount> findBetween(LocalDate start, LocalDate end, SortingAndPagination sortingAndPagination);
+
+
+    /**
+     * Метод для получения ClickCount за указанную дату
+     *
+     * @param date дата (обязательный)
+     * @return экземпляр класса ClickCount, либо null - если за указанную дату нет данных
+     */
+    ClickCount findByDate(LocalDate date);
 }
