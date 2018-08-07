@@ -31,7 +31,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static java.util.Arrays.asList;
-import static me.alexand.scat.statistic.common.utils.ClickCountTestEntities.*;
+import static me.alexand.scat.statistic.common.data.ClickCountTestEntities.*;
 import static me.alexand.scat.statistic.common.utils.ColumnOrder.ASC;
 import static org.junit.Assert.*;
 
@@ -67,8 +67,8 @@ public class ClickCountRepositoryTests extends AbstractCommonTests {
     public void testFindAll() {
         List<ClickCount> actual = repository.findAll();
         assertNotNull(actual);
-        assertEquals(CLICK_COUNT_SET.size(), actual.size());
-        CLICK_COUNT_SET.forEach(cc -> assertTrue(actual.contains(cc)));
+        assertEquals(CLICK_COUNT_LIST.size(), actual.size());
+        CLICK_COUNT_LIST.forEach(cc -> assertTrue(actual.contains(cc)));
     }
 
     @Test

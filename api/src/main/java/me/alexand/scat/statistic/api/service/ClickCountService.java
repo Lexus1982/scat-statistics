@@ -23,8 +23,10 @@ package me.alexand.scat.statistic.api.service;
 
 import me.alexand.scat.statistic.common.entities.ClickCount;
 import me.alexand.scat.statistic.common.repository.ClickCountRepository;
+import me.alexand.scat.statistic.common.utils.SortingAndPagination;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -38,10 +40,12 @@ public class ClickCountService {
         this.repository = repository;
     }
 
-    public List<ClickCount> getAll() {
-        return repository.findAll();
+    public List<ClickCount> get(LocalDate start, LocalDate end, Long page, Long size, String[] ordering) {
+        SortingAndPagination sortingAndPagination = SortingAndPagination.builder()
+                .offset(size * (page - 1))
+                .limit(size)
+                .build();
+        
+        return repository.findBetween(start, end, sortingAndPagination);
     }
-
-    //TODO
-
 }

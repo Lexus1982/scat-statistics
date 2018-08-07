@@ -19,15 +19,14 @@
  * under the License.
  */
 
-package me.alexand.scat.statistic.common.utils;
+package me.alexand.scat.statistic.common.data;
 
 import me.alexand.scat.statistic.common.entities.ClickCount;
 
 import java.math.BigInteger;
 import java.time.LocalDate;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Экземпляры класса ClickCount для тестов
@@ -108,7 +107,7 @@ public interface ClickCountTestEntities {
             .count(BigInteger.valueOf(20180805))
             .build();
 
-    Set<ClickCount> CLICK_COUNT_SET = Stream.of(
+    List<ClickCount> CLICK_COUNT_LIST = Arrays.asList(
             COUNTER_20180725,
             COUNTER_20180726,
             COUNTER_20180727,
@@ -120,6 +119,5 @@ public interface ClickCountTestEntities {
             COUNTER_20180802,
             COUNTER_20180803,
             COUNTER_20180804,
-            COUNTER_20180805)
-            .collect(Collectors.toSet());
+            COUNTER_20180805);
 }

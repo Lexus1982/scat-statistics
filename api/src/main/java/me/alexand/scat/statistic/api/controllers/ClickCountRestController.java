@@ -23,30 +23,33 @@ package me.alexand.scat.statistic.api.controllers;
 
 import me.alexand.scat.statistic.api.service.ClickCountService;
 import me.alexand.scat.statistic.common.entities.ClickCount;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
+
+import static me.alexand.scat.statistic.api.utils.Constants.BASE_URL;
 
 /**
  * @author asidorov84@gmail.com
  */
 @RestController
-@RequestMapping("api/click/count")//TODO подумать на адресами
+@RequestMapping(ClickCountRestController.URL)
 public class ClickCountRestController {
+    public static final String URL = BASE_URL + "/requests/total";
     private final ClickCountService clickCountService;
 
     public ClickCountRestController(ClickCountService clickCountService) {
         this.clickCountService = clickCountService;
     }
 
-    @GetMapping("test")
+    @GetMapping("get")
     @ResponseBody
-    public List<ClickCount> test() {
-        return clickCountService.getAll();
+    public List<ClickCount> get(@RequestParam(name = "start", required = false) LocalDate start,
+                                @RequestParam(name = "end", required = false) LocalDate end,
+                                @RequestParam(name = "page", required = false, defaultValue = "0") long page,
+                                @RequestParam(name = "size", required = false, defaultValue = "0") long size,
+                                @RequestParam(name = "order", required = false) String[] ordering) {
+        return clickCountService.get(start, end, page, size, ordering);
     }
-    
-    //TODO
 }

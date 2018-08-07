@@ -41,6 +41,8 @@ import java.util.List;
 import static java.util.Arrays.asList;
 import static me.alexand.scat.statistic.collector.entities.DataRecordsTestEntities.CS_REQ_DATA_RECORD_1;
 import static me.alexand.scat.statistic.collector.model.TemplateType.*;
+import static me.alexand.scat.statistic.common.data.ClickCountTestEntities.COUNTER_20180401;
+import static me.alexand.scat.statistic.common.data.ClickCountTestEntities.COUNTER_20180402;
 import static org.junit.Assert.*;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TEST_METHOD;
@@ -127,8 +129,10 @@ public class TransitionalBufferRepositoryTests {
 
     @Test
     public void testGetClickCount() {
+        List<ClickCount> expected = asList(COUNTER_20180401, COUNTER_20180402);
         List<ClickCount> actual = repository.getClickCount(LocalDateTime.of(2018, 3, 1, 0, 0, 0), LocalDateTime.of(2018, 5, 1, 0, 0, 0));
         assertNotNull(actual);
-        //TODO
+        assertEquals(expected.size(), actual.size());
+        expected.forEach(cc -> assertTrue(actual.contains(cc)));
     }
 }

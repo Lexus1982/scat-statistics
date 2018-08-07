@@ -22,6 +22,8 @@
 package me.alexand.scat.statistic.common.entities;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import me.alexand.scat.statistic.common.utils.Constants;
 
 import java.math.BigInteger;
@@ -33,6 +35,7 @@ import java.util.Objects;
  *
  * @author asidorov84@gmail.com
  */
+@JsonDeserialize(builder = ClickCount.Builder.class)
 public final class ClickCount {
     @JsonFormat(pattern = Constants.DATE_PATTERN)
     private final LocalDate date;
@@ -77,6 +80,7 @@ public final class ClickCount {
                 '}';
     }
 
+    @JsonPOJOBuilder(withPrefix = "")
     public static class Builder {
         private LocalDate date;
         private BigInteger count;
