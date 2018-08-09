@@ -31,6 +31,7 @@ import me.alexand.scat.statistic.common.repository.TrackedDomainRequestsReposito
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -107,7 +108,13 @@ public class Sampling {
         LOGGER.info("\tnumber of counts: {}", clickCounts.size());
 
         lastTimeCountClicks = endDateTime;
-        clickCountRepository.saveAll(clickCounts);
+        
+        try {
+            clickCountRepository.saveAll(clickCounts);
+        } catch (DataAccessException e) {
+            LOGGER.error(e.getMessage());
+        }
+        
 
         LOGGER.info("...stop counting clicks\n");
     }

@@ -30,7 +30,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -53,29 +52,14 @@ public class ClickCountRestController {
     }
 
     @GetMapping
-    @ResponseBody
     public List<ClickCount> getAll(@RequestParam(name = "start", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
                                    @RequestParam(name = "end", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
-                                   @SPRequestParam SortingAndPagination sortingAndPagination,
-                                   HttpServletRequest request) {
-        LOGGER.debug("got request {} from {}:{} with parameters: start='{}', end='{}', sap='{}'",
-                request.getPathInfo(),
-                request.getRemoteAddr(),
-                request.getRemotePort(),
-                start,
-                end,
-                sortingAndPagination);
+                                   @SPRequestParam SortingAndPagination sortingAndPagination) {
         return clickCountService.getAll(start, end, sortingAndPagination);
     }
 
     @GetMapping("/{date}")
-    public ClickCount getOne(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-                             HttpServletRequest request) {
-        LOGGER.debug("got request {} from {}:{}",
-                request.getPathInfo(),
-                request.getRemoteAddr(),
-                request.getRemotePort(),
-                date);
+    public ClickCount getOne(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         return clickCountService.getOne(date);
     }
 }

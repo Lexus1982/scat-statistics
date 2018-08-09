@@ -80,7 +80,6 @@ public interface ClickCountRepository {
      */
     List<ClickCount> findBetween(LocalDate start, LocalDate end, SortingAndPagination sortingAndPagination);
 
-
     /**
      * Метод для получения ClickCount за указанную дату
      *
