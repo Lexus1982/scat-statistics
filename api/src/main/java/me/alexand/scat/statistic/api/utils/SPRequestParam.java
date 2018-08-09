@@ -19,30 +19,20 @@
  * under the License.
  */
 
-package me.alexand.scat.statistic.api.service;
+package me.alexand.scat.statistic.api.utils;
 
-import me.alexand.scat.statistic.common.entities.ClickCount;
-import me.alexand.scat.statistic.common.repository.ClickCountRepository;
-import me.alexand.scat.statistic.common.utils.SortingAndPagination;
-import org.springframework.stereotype.Service;
-
-import java.time.LocalDate;
-import java.util.List;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Сервисный класс для сущностей ClickCount
+ * Аннотация для параметров сортировки и пейджинга
  *
  * @author asidorov84@gmail.com
+ * @see SortingAndPaginationArgumentResolver
  */
-@Service
-public class ClickCountService {
-    private final ClickCountRepository repository;
-
-    public ClickCountService(ClickCountRepository repository) {
-        this.repository = repository;
-    }
-
-    public List<ClickCount> get(LocalDate start, LocalDate end, SortingAndPagination sortingAndPagination) {
-        return repository.findBetween(start, end, sortingAndPagination);
-    }
+@Retention(RetentionPolicy.RUNTIME)
+@Target(value = {ElementType.PARAMETER})
+public @interface SPRequestParam {
 }

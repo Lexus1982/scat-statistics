@@ -21,7 +21,6 @@
 
 package me.alexand.scat.statistic.api.config;
 
-import me.alexand.scat.statistic.common.data.ClickCountTestEntities;
 import me.alexand.scat.statistic.common.repository.ClickCountRepository;
 import me.alexand.scat.statistic.common.repository.DomainRegexRepository;
 import me.alexand.scat.statistic.common.repository.TrackedDomainRequestsRepository;
@@ -30,21 +29,17 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.isNull;
-import static org.mockito.Mockito.when;
-
+/**
+ * Конфигурация контекста Spring для проведения тестов
+ *
+ * @author asidorov84@gmail.com
+ */
 @Configuration
 @ComponentScan(basePackages = "me.alexand.scat.statistic.api.service")
 public class TestConfig {
     @Bean
     public ClickCountRepository clickCountMockRepository() {
-        ClickCountRepository clickCountRepository = Mockito.mock(ClickCountRepository.class);
-
-        when(clickCountRepository.findBetween(isNull(), isNull(), any()))
-                .thenReturn(ClickCountTestEntities.CLICK_COUNT_LIST);
-
-        return clickCountRepository;
+        return Mockito.mock(ClickCountRepository.class);
     }
 
     @Bean

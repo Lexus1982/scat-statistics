@@ -23,10 +23,15 @@ package me.alexand.scat.statistic.api.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import me.alexand.scat.statistic.api.utils.JacksonObjectMapper;
+import me.alexand.scat.statistic.api.utils.SortingAndPaginationArgumentResolver;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import java.util.List;
 
 /**
  * Web-контекст приложения
@@ -36,9 +41,14 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 @Configuration
 @EnableWebMvc
 @ComponentScan(basePackages = "me.alexand.scat.statistic.api.controllers")
-public class WebConfig {
+public class WebConfig implements WebMvcConfigurer {
     @Bean
     ObjectMapper objectMapper() {
         return JacksonObjectMapper.getObjectMapper();
+    }
+
+    @Override
+    public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
+        resolvers.add(new SortingAndPaginationArgumentResolver());
     }
 }

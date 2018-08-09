@@ -79,6 +79,30 @@ public final class SortingAndPagination {
         return sb.toString();
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SortingAndPagination that = (SortingAndPagination) o;
+        return offset == that.offset &&
+                limit == that.limit &&
+                Objects.equals(orderingColumns, that.orderingColumns);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(offset, limit, orderingColumns);
+    }
+
+    @Override
+    public String toString() {
+        return "SortingAndPagination{" +
+                "offset=" + offset +
+                ", limit=" + limit +
+                ", orderingColumns=" + orderingColumns +
+                '}';
+    }
+
     public final static class Builder {
         private long offset = 0;
         private long limit = 0;
@@ -89,7 +113,7 @@ public final class SortingAndPagination {
 
         public Builder offset(long offset) {
             if (offset < 0) {
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException("offset must have non-negative value");
             }
             this.offset = offset;
             return this;
@@ -97,7 +121,7 @@ public final class SortingAndPagination {
 
         public Builder limit(long limit) {
             if (limit < 0) {
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException("limit must have non-negative value");
             }
             this.limit = limit;
             return this;

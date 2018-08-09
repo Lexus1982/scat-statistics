@@ -22,21 +22,30 @@
 package me.alexand.scat.statistic.api.controllers;
 
 import me.alexand.scat.statistic.api.service.ClickCountService;
+import me.alexand.scat.statistic.api.utils.SPRequestParam;
 import me.alexand.scat.statistic.common.entities.ClickCount;
+import me.alexand.scat.statistic.common.utils.SortingAndPagination;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
 import java.util.List;
 
 import static me.alexand.scat.statistic.api.utils.Constants.BASE_URL;
 
 /**
+ * REST-контроллер ресурсов ClickCount
+ *
  * @author asidorov84@gmail.com
  */
 @RestController
 @RequestMapping(ClickCountRestController.URL)
 public class ClickCountRestController {
-    public static final String URL = BASE_URL + "/requests/total";
+    private static final Logger LOGGER = LoggerFactory.getLogger(ClickCountRestController.class);
+    public static final String URL = BASE_URL + "/clickcount";
     private final ClickCountService clickCountService;
 
     public ClickCountRestController(ClickCountService clickCountService) {
@@ -45,11 +54,17 @@ public class ClickCountRestController {
 
     @GetMapping("get")
     @ResponseBody
-    public List<ClickCount> get(@RequestParam(name = "start", required = false) LocalDate start,
-                                @RequestParam(name = "end", required = false) LocalDate end,
-                                @RequestParam(name = "page", required = false, defaultValue = "0") long page,
-                                @RequestParam(name = "size", required = false, defaultValue = "0") long size,
-                                @RequestParam(name = "order", required = false) String[] ordering) {
-        return clickCountService.get(start, end, page, size, ordering);
+    public List<ClickCount> get(@RequestParam(name = "start", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+                                @RequestParam(name = "end", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
+                                @SPRequestParam SortingAndPagination sortingAndPagination,
+                                HttpServletRequest request) {
+        LOGGER.debug("got request {} from {}:{} with parameters: start='{}', end='{}', sap='{}'",
+                request.getPathInfo(),
+                request.getRemoteAddr(),
+                request.getRemotePort(),
+                start,
+                end,
+                sortingAndPagination);
+        return clickCountService.get(start, end, sortingAndPagination);
     }
 }

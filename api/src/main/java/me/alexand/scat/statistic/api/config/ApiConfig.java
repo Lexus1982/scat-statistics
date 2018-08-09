@@ -33,7 +33,7 @@ import org.springframework.context.annotation.PropertySource;
  * @author asidorov84@gmail.com
  */
 @Configuration
-@PropertySource("classpath:app.properties")
+@PropertySource("classpath:api.properties")
 @PropertySource(value = "file:${conf.dir}/api.cfg", ignoreResourceNotFound = true)
 @Import(PersistenceConfig.class)
 @ComponentScan(basePackages = "me.alexand.scat.statistic.api.service")

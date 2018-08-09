@@ -22,62 +22,49 @@
 package me.alexand.scat.statistic.api.controllers;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import me.alexand.scat.statistic.api.config.TestConfig;
-import me.alexand.scat.statistic.api.config.WebConfig;
 import me.alexand.scat.statistic.common.entities.ClickCount;
+import me.alexand.scat.statistic.common.repository.ClickCountRepository;
+import me.alexand.scat.statistic.common.utils.ColumnOrder;
+import me.alexand.scat.statistic.common.utils.SortingAndPagination;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.filter.CharacterEncodingFilter;
 
-import javax.annotation.PostConstruct;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import static java.util.Arrays.asList;
 import static me.alexand.scat.statistic.api.controllers.ClickCountRestController.URL;
-import static me.alexand.scat.statistic.common.data.ClickCountTestEntities.CLICK_COUNT_LIST;
+import static me.alexand.scat.statistic.common.data.ClickCountTestEntities.*;
+import static me.alexand.scat.statistic.common.utils.ColumnOrder.DESC;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = {WebConfig.class, TestConfig.class})
-@WebAppConfiguration
-public class ClickCountControllerTests {
-    private static final CharacterEncodingFilter CHARACTER_ENCODING_FILTER = new CharacterEncodingFilter();
-
-    static {
-        CHARACTER_ENCODING_FILTER.setEncoding("UTF-8");
-        CHARACTER_ENCODING_FILTER.setForceEncoding(true);
-    }
-
-    private MockMvc mockMvc;
-    
-    @Autowired
-    private ObjectMapper om;
+/**
+ * Тесты контроллера ресурсов ClickCount
+ *
+ * @author asidorov84@gmail.com
+ */
+public class ClickCountControllerTests extends AbstractControllerTests {
 
     @Autowired
-    private WebApplicationContext webApplicationContext;
-
-    @PostConstruct
-    private void postConstruct() {
-        mockMvc = MockMvcBuilders
-                .webAppContextSetup(webApplicationContext)
-                .addFilter(CHARACTER_ENCODING_FILTER)
-                .build();
-    }
+    private ClickCountRepository clickCountRepository;
 
     @Test
     public void testGetAll() throws Exception {
+        when(clickCountRepository.findBetween(isNull(), isNull(), eq(SortingAndPagination.builder()
+                .offset(0)
+                .limit(0)
+                .build())))
+                .thenReturn(CLICK_COUNT_LIST);
+
         String responseContent = mockMvc.perform(get(URL + "/get"))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -86,7 +73,107 @@ public class ClickCountControllerTests {
                 .getResponse()
                 .getContentAsString();
 
-        List<ClickCount> actual = om.readValue(responseContent, new TypeReference<List<ClickCount>>() {});
+        List<ClickCount> actual = om.readValue(responseContent, new TypeReference<List<ClickCount>>() {
+        });
         assertEquals(CLICK_COUNT_LIST, actual);
+    }
+
+    @Test
+    public void testGetWithSortingAndPagination() throws Exception {
+        long page = 2;
+        long size = 3;
+        String orderColumnName = "date";
+        ColumnOrder columnOrder = DESC;
+
+        List<ClickCount> expected = asList(COUNTER_20180802, COUNTER_20180801, COUNTER_20180731);
+
+        when(clickCountRepository.findBetween(isNull(), isNull(), eq(SortingAndPagination.builder()
+                .offset(size * (page - 1))
+                .limit(size)
+                .orderingColumn(orderColumnName, columnOrder)
+                .build())))
+                .thenReturn(expected);
+
+        String responseContent = mockMvc.perform(get(URL + "/get")
+                .param("page", String.valueOf(page))
+                .param("size", String.valueOf(size))
+                .param("order", String.format("%s,%s", orderColumnName, columnOrder.name().toLowerCase())))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        List<ClickCount> actual = om.readValue(responseContent, new TypeReference<List<ClickCount>>() {
+        });
+
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testGetBetweenDates() throws Exception {
+        LocalDate start = LocalDate.of(2018, 7, 27);
+        LocalDate end = LocalDate.of(2018, 7, 29);
+
+        List<ClickCount> expected = asList(COUNTER_20180727, COUNTER_20180728, COUNTER_20180729);
+
+        when(clickCountRepository.findBetween(eq(start), eq(end), eq(SortingAndPagination.builder()
+                .offset(0)
+                .limit(0)
+                .build())))
+                .thenReturn(expected);
+
+        String responseContent = mockMvc.perform(get(URL + "/get")
+                .param("start", start.format(DateTimeFormatter.ISO_DATE))
+                .param("end", end.format(DateTimeFormatter.ISO_DATE)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        List<ClickCount> actual = om.readValue(responseContent, new TypeReference<List<ClickCount>>() {
+        });
+
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testGetBetweenDatesWithSortingAndPagination() throws Exception {
+        LocalDate start = LocalDate.of(2018, 7, 27);
+        LocalDate end = LocalDate.of(2018, 7, 30);
+        long page = 2;
+        long size = 2;
+        String orderColumnName = "date";
+        ColumnOrder columnOrder = DESC;
+
+        List<ClickCount> expected = asList(COUNTER_20180728, COUNTER_20180727);
+
+        when(clickCountRepository.findBetween(eq(start), eq(end), eq(SortingAndPagination.builder()
+                .offset(size * (page - 1))
+                .limit(size)
+                .orderingColumn(orderColumnName, columnOrder)
+                .build())))
+                .thenReturn(expected);
+
+        String responseContent = mockMvc.perform(get(URL + "/get")
+                .param("start", start.format(DateTimeFormatter.ISO_DATE))
+                .param("end", end.format(DateTimeFormatter.ISO_DATE))
+                .param("page", String.valueOf(page))
+                .param("size", String.valueOf(size))
+                .param("order", String.format("%s,%s", orderColumnName, columnOrder.name().toLowerCase())))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        List<ClickCount> actual = om.readValue(responseContent, new TypeReference<List<ClickCount>>() {
+        });
+
+        assertEquals(expected, actual);
     }
 }
