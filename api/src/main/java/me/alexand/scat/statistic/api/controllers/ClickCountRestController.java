@@ -45,14 +45,14 @@ import static me.alexand.scat.statistic.api.utils.Constants.BASE_URL;
 @RequestMapping(ClickCountRestController.URL)
 public class ClickCountRestController {
     private static final Logger LOGGER = LoggerFactory.getLogger(ClickCountRestController.class);
-    public static final String URL = BASE_URL + "/clickcount";
+    public static final String URL = BASE_URL + "/click/count";
     private final ClickCountService clickCountService;
 
     public ClickCountRestController(ClickCountService clickCountService) {
         this.clickCountService = clickCountService;
     }
 
-    @GetMapping("get")
+    @GetMapping
     @ResponseBody
     public List<ClickCount> getAll(@RequestParam(name = "start", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
                                    @RequestParam(name = "end", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
@@ -68,7 +68,7 @@ public class ClickCountRestController {
         return clickCountService.getAll(start, end, sortingAndPagination);
     }
 
-    @GetMapping("get/{date}")
+    @GetMapping("/{date}")
     public ClickCount getOne(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
                              HttpServletRequest request) {
         LOGGER.debug("got request {} from {}:{}",

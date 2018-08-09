@@ -19,23 +19,34 @@
  * under the License.
  */
 
-package me.alexand.scat.statistic.api.service;
+package me.alexand.scat.statistic.common.data;
 
-import me.alexand.scat.statistic.common.repository.DomainRegexRepository;
-import org.springframework.stereotype.Service;
+import me.alexand.scat.statistic.common.entities.DomainRegex;
+
+import java.time.LocalDateTime;
 
 /**
+ * Экземпляры класса DomainRegex для тестов
+ *
  * @author asidorov84@gmail.com
  */
-@Service
-public class DomainRegexService {
-    private final DomainRegexRepository repository;
+public interface DomainRegexTestEntities {
+    int POPULATED_DOMAINS_COUNT = 2;
 
-    public DomainRegexService(DomainRegexRepository repository) {
-        this.repository = repository;
-    }
+    String INVALID_PATTERN = "\\\\1111\\q";
+    String VK_COM_REGEX_PATTERN = ".*vk\\.com$";
+    String MAIL_RU_REGEX_PATTERN = ".*mail\\.ru$";
+    String OK_RU_REGEX_PATTERN = ".*ok\\.ru$";
 
-    public void add(String pattern) {
-        repository.add(pattern);
-    }
+    DomainRegex TEST_VK_COM = DomainRegex.builder()
+            .id(1)
+            .pattern(VK_COM_REGEX_PATTERN)
+            .dateAdded(LocalDateTime.of(2018, 1, 1, 1, 1, 1))
+            .build();
+
+    DomainRegex TEST_MAIL_RU = DomainRegex.builder()
+            .id(2)
+            .pattern(MAIL_RU_REGEX_PATTERN)
+            .dateAdded(LocalDateTime.of(2018, 1, 1, 1, 1, 1))
+            .build();
 }

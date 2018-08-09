@@ -22,6 +22,7 @@
 package me.alexand.scat.statistic.common.repository;
 
 import me.alexand.scat.statistic.common.entities.DomainRegex;
+import me.alexand.scat.statistic.common.utils.exceptions.DomainRegexAlreadyExistsException;
 
 import java.util.List;
 import java.util.regex.PatternSyntaxException;
@@ -39,12 +40,13 @@ public interface DomainRegexRepository {
      * Перед добавлением у параметра удаляются все начальные и конечные пробельные символы
      *
      * @param pattern корректное регулярное выражение
-     * @return экземпляр класса DomainRegex, или null, если такой шаблон уже добавлен
-     * @throws PatternSyntaxException если регулярное выражение содержит синтаксическую ошибку
-     * @throws NullPointerException   если параметр null
+     * @return экземпляр класса DomainRegex
+     * @throws PatternSyntaxException            если регулярное выражение содержит синтаксическую ошибку
+     * @throws NullPointerException              если параметр null
+     * @throws DomainRegexAlreadyExistsException если такой шаблон уже присутствует
      * @see java.util.regex.Pattern
      */
-    DomainRegex add(String pattern) throws PatternSyntaxException;
+    DomainRegex add(String pattern);
 
     /**
      * Метод для удаления шаблона из хранилища
@@ -67,6 +69,6 @@ public interface DomainRegexRepository {
      * @return количество шаблонов
      */
     long getCount();
-    
+
     //TODO добавить метод get c пейджингом
 }

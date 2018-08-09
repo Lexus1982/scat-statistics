@@ -23,6 +23,7 @@ package me.alexand.scat.statistic.common.repository.impl;
 
 import me.alexand.scat.statistic.common.entities.DomainRegex;
 import me.alexand.scat.statistic.common.repository.DomainRegexRepository;
+import me.alexand.scat.statistic.common.utils.exceptions.DomainRegexAlreadyExistsException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
@@ -57,7 +58,7 @@ public class DomainRegexRepositoryImpl implements DomainRegexRepository {
 
     @Override
     @Transactional("persistenceTM")
-    public DomainRegex add(String pattern) throws PatternSyntaxException {
+    public DomainRegex add(String pattern) {
         Objects.requireNonNull(pattern);
         if (pattern.isEmpty()) {
             throw new PatternSyntaxException("pattern is empty", pattern, 0);
@@ -89,6 +90,7 @@ public class DomainRegexRepositoryImpl implements DomainRegexRepository {
                 return result;
             } else {
                 LOGGER.info("pattern '{}' already present", pattern);
+                throw new DomainRegexAlreadyExistsException();
             }
         } catch (DataAccessException e) {
             LOGGER.error(e.getMessage());

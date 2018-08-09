@@ -22,14 +22,15 @@
 package me.alexand.scat.statistic.common.repository;
 
 import me.alexand.scat.statistic.common.entities.DomainRegex;
+import me.alexand.scat.statistic.common.utils.exceptions.DomainRegexAlreadyExistsException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.regex.PatternSyntaxException;
 
+import static me.alexand.scat.statistic.common.data.DomainRegexTestEntities.*;
 import static org.junit.Assert.assertEquals;
 
 
@@ -39,24 +40,6 @@ import static org.junit.Assert.assertEquals;
  * @author asidorov84@gmail.com
  */
 public class DomainRegexRepositoryTests extends AbstractCommonTests {
-    private static final long POPULATED_DOMAINS_COUNT = 2;
-
-    private static final String VK_COM_REGEX_PATTERN = ".*vk\\.com$";
-    private static final String MAIL_RU_REGEX_PATTERN = ".*mail\\.ru$";
-    private static final String OK_RU_REGEX_PATTERN = ".*ok\\.ru$";
-
-    private static final DomainRegex TEST_VK_COM = DomainRegex.builder()
-            .id(1)
-            .pattern(VK_COM_REGEX_PATTERN)
-            .dateAdded(LocalDateTime.of(2018, 1, 1, 1, 1, 1))
-            .build();
-
-    private static final DomainRegex TEST_MAIL_RU = DomainRegex.builder()
-            .id(2)
-            .pattern(MAIL_RU_REGEX_PATTERN)
-            .dateAdded(LocalDateTime.of(2018, 1, 1, 1, 1, 1))
-            .build();
-
 
     @Autowired
     private DomainRegexRepository repository;
@@ -84,11 +67,9 @@ public class DomainRegexRepositoryTests extends AbstractCommonTests {
         assertEquals(0, repository.getCount());
     }
 
-    @Test
+    @Test(expected = DomainRegexAlreadyExistsException.class)
     public void testAddDuplicate() {
-        DomainRegex actual = repository.add(MAIL_RU_REGEX_PATTERN);
-        Assert.assertNull(actual);
-        assertEquals(POPULATED_DOMAINS_COUNT, repository.getCount());
+        repository.add(MAIL_RU_REGEX_PATTERN);
     }
 
     @Test
@@ -113,7 +94,7 @@ public class DomainRegexRepositoryTests extends AbstractCommonTests {
 
     @Test(expected = PatternSyntaxException.class)
     public void testAddWithInvalidSyntax() {
-        repository.add("\\\\1111\\q");
+        repository.add(INVALID_PATTERN);
     }
 
     @Test(expected = NullPointerException.class)

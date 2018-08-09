@@ -19,23 +19,10 @@
  * under the License.
  */
 
-package me.alexand.scat.statistic.api.service;
-
-import me.alexand.scat.statistic.common.repository.DomainRegexRepository;
-import org.springframework.stereotype.Service;
+package me.alexand.scat.statistic.common.utils.exceptions;
 
 /**
  * @author asidorov84@gmail.com
  */
-@Service
-public class DomainRegexService {
-    private final DomainRegexRepository repository;
-
-    public DomainRegexService(DomainRegexRepository repository) {
-        this.repository = repository;
-    }
-
-    public void add(String pattern) {
-        repository.add(pattern);
-    }
+public class DomainRegexAlreadyExistsException extends RuntimeException {
 }
