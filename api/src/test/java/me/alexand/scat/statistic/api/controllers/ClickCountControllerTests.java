@@ -32,6 +32,7 @@ import org.springframework.http.MediaType;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.Arrays.asList;
@@ -141,6 +142,35 @@ public class ClickCountControllerTests extends AbstractControllerTests {
     }
 
     @Test
+    public void testGetBetweenDatesWithEmpty() throws Exception {
+        LocalDate start = LocalDate.of(2999, 7, 27);
+        LocalDate end = LocalDate.of(2999, 7, 29);
+
+        List<ClickCount> expected = new ArrayList<>();
+
+        when(clickCountRepository.findBetween(eq(start), eq(end), eq(SortingAndPagination.builder()
+                .offset(0)
+                .limit(0)
+                .build())))
+                .thenReturn(expected);
+
+        String responseContent = mockMvc.perform(get(URL + "/get")
+                .param("start", start.format(DateTimeFormatter.ISO_DATE))
+                .param("end", end.format(DateTimeFormatter.ISO_DATE)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        List<ClickCount> actual = om.readValue(responseContent, new TypeReference<List<ClickCount>>() {
+        });
+
+        assertEquals(expected, actual);
+    }
+
+    @Test
     public void testGetBetweenDatesWithSortingAndPagination() throws Exception {
         LocalDate start = LocalDate.of(2018, 7, 27);
         LocalDate end = LocalDate.of(2018, 7, 30);
@@ -175,5 +205,39 @@ public class ClickCountControllerTests extends AbstractControllerTests {
         });
 
         assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testGetOne() throws Exception {
+        LocalDate date = LocalDate.of(2018, 8, 1);
+
+        when(clickCountRepository.findByDate(date))
+                .thenReturn(COUNTER_20180801);
+
+        String responseContent = mockMvc.perform(get(URL + "/get/{date}", date))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        ClickCount actual = om.readValue(responseContent, new TypeReference<ClickCount>() {
+        });
+
+        assertEquals(COUNTER_20180801, actual);
+    }
+
+    @Test
+    public void testGetOneNotFound() throws Exception {
+        LocalDate date = LocalDate.of(2999, 8, 1);
+
+        when(clickCountRepository.findByDate(date))
+                .thenReturn(null);
+
+        mockMvc.perform(get(URL + "/get/{date}", date))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+        ;
     }
 }

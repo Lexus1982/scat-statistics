@@ -21,6 +21,7 @@
 
 package me.alexand.scat.statistic.api.service;
 
+import me.alexand.scat.statistic.api.utils.exceptions.ResourceNotFoundException;
 import me.alexand.scat.statistic.common.entities.ClickCount;
 import me.alexand.scat.statistic.common.repository.ClickCountRepository;
 import me.alexand.scat.statistic.common.utils.SortingAndPagination;
@@ -42,7 +43,13 @@ public class ClickCountService {
         this.repository = repository;
     }
 
-    public List<ClickCount> get(LocalDate start, LocalDate end, SortingAndPagination sortingAndPagination) {
+    public List<ClickCount> getAll(LocalDate start, LocalDate end, SortingAndPagination sortingAndPagination) {
         return repository.findBetween(start, end, sortingAndPagination);
+    }
+
+    public ClickCount getOne(LocalDate date) {
+        ClickCount result = repository.findByDate(date);
+        if (result == null) throw new ResourceNotFoundException();
+        return result;
     }
 }

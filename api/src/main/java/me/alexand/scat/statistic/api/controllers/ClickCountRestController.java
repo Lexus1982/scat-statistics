@@ -54,10 +54,10 @@ public class ClickCountRestController {
 
     @GetMapping("get")
     @ResponseBody
-    public List<ClickCount> get(@RequestParam(name = "start", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
-                                @RequestParam(name = "end", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
-                                @SPRequestParam SortingAndPagination sortingAndPagination,
-                                HttpServletRequest request) {
+    public List<ClickCount> getAll(@RequestParam(name = "start", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+                                   @RequestParam(name = "end", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
+                                   @SPRequestParam SortingAndPagination sortingAndPagination,
+                                   HttpServletRequest request) {
         LOGGER.debug("got request {} from {}:{} with parameters: start='{}', end='{}', sap='{}'",
                 request.getPathInfo(),
                 request.getRemoteAddr(),
@@ -65,6 +65,17 @@ public class ClickCountRestController {
                 start,
                 end,
                 sortingAndPagination);
-        return clickCountService.get(start, end, sortingAndPagination);
+        return clickCountService.getAll(start, end, sortingAndPagination);
+    }
+
+    @GetMapping("get/{date}")
+    public ClickCount getOne(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+                             HttpServletRequest request) {
+        LOGGER.debug("got request {} from {}:{}",
+                request.getPathInfo(),
+                request.getRemoteAddr(),
+                request.getRemotePort(),
+                date);
+        return clickCountService.getOne(date);
     }
 }
