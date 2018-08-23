@@ -66,7 +66,7 @@ public class ClickCountControllerTests extends AbstractControllerTests {
                 .build())))
                 .thenReturn(CLICK_COUNT_LIST);
 
-        String responseContent = mockMvc.perform(get(URL))
+        String responseContent = mockMvc.perform(get(URL + "/all"))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
@@ -95,7 +95,7 @@ public class ClickCountControllerTests extends AbstractControllerTests {
                 .build())))
                 .thenReturn(expected);
 
-        String responseContent = mockMvc.perform(get(URL)
+        String responseContent = mockMvc.perform(get(URL + "/all")
                 .param("page", String.valueOf(page))
                 .param("size", String.valueOf(size))
                 .param("order", String.format("%s,%s", orderColumnName, columnOrder.name().toLowerCase())))
@@ -125,7 +125,7 @@ public class ClickCountControllerTests extends AbstractControllerTests {
                 .build())))
                 .thenReturn(expected);
 
-        String responseContent = mockMvc.perform(get(URL)
+        String responseContent = mockMvc.perform(get(URL + "/all")
                 .param("start", start.format(DateTimeFormatter.ISO_DATE))
                 .param("end", end.format(DateTimeFormatter.ISO_DATE)))
                 .andDo(print())
@@ -154,7 +154,7 @@ public class ClickCountControllerTests extends AbstractControllerTests {
                 .build())))
                 .thenReturn(expected);
 
-        String responseContent = mockMvc.perform(get(URL)
+        String responseContent = mockMvc.perform(get(URL + "/all")
                 .param("start", start.format(DateTimeFormatter.ISO_DATE))
                 .param("end", end.format(DateTimeFormatter.ISO_DATE)))
                 .andDo(print())
@@ -188,7 +188,7 @@ public class ClickCountControllerTests extends AbstractControllerTests {
                 .build())))
                 .thenReturn(expected);
 
-        String responseContent = mockMvc.perform(get(URL)
+        String responseContent = mockMvc.perform(get(URL + "/all")
                 .param("start", start.format(DateTimeFormatter.ISO_DATE))
                 .param("end", end.format(DateTimeFormatter.ISO_DATE))
                 .param("page", String.valueOf(page))

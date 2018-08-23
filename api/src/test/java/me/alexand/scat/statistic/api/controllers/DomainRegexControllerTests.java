@@ -21,19 +21,30 @@
 
 package me.alexand.scat.statistic.api.controllers;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import me.alexand.scat.statistic.common.entities.DomainRegex;
 import me.alexand.scat.statistic.common.repository.DomainRegexRepository;
+import me.alexand.scat.statistic.common.utils.ColumnOrder;
+import me.alexand.scat.statistic.common.utils.SortingAndPagination;
 import me.alexand.scat.statistic.common.utils.exceptions.DomainRegexAlreadyExistsException;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
+import java.util.List;
 import java.util.regex.PatternSyntaxException;
 
+import static java.util.Arrays.asList;
 import static me.alexand.scat.statistic.api.controllers.DomainRegexRestController.URL;
 import static me.alexand.scat.statistic.common.data.DomainRegexTestEntities.*;
+import static me.alexand.scat.statistic.common.utils.ColumnOrder.DESC;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -86,5 +97,38 @@ public class DomainRegexControllerTests extends AbstractControllerTests {
         mockMvc.perform(post(URL))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void testGetAll() throws Exception {
+        long page = 1;
+        long size = 2;
+        String orderColumnName = "date_added";
+        ColumnOrder columnOrder = DESC;
+
+        List<DomainRegex> expected = asList(TEST_VK_COM, TEST_MAIL_RU);
+
+        when(domainRegexRepository.getAll(eq(SortingAndPagination.builder()
+                .offset(size * (page - 1))
+                .limit(size)
+                .orderingColumn(orderColumnName, columnOrder)
+                .build())))
+                .thenReturn(expected);
+
+        String responseContent = mockMvc.perform(get(URL + "/all")
+                .param("page", String.valueOf(page))
+                .param("size", String.valueOf(size))
+                .param("order", String.format("%s,%s", orderColumnName, columnOrder.name().toLowerCase())))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        List<DomainRegex> actual = om.readValue(responseContent, new TypeReference<List<DomainRegex>>() {
+        });
+
+        assertEquals(expected, actual);
     }
 }

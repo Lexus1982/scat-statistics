@@ -21,8 +21,12 @@
 
 package me.alexand.scat.statistic.api.service;
 
+import me.alexand.scat.statistic.common.entities.DomainRegex;
 import me.alexand.scat.statistic.common.repository.DomainRegexRepository;
+import me.alexand.scat.statistic.common.utils.SortingAndPagination;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /**
  * @author asidorov84@gmail.com
@@ -37,5 +41,9 @@ public class DomainRegexService {
 
     public void add(String pattern) {
         repository.add(pattern);
+    }
+
+    public List<DomainRegex> getAll(SortingAndPagination sortingAndPagination) {
+        return repository.getAll(sortingAndPagination);
     }
 }

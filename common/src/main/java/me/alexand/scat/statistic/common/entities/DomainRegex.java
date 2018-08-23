@@ -21,6 +21,11 @@
 
 package me.alexand.scat.statistic.common.entities;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import me.alexand.scat.statistic.common.utils.Constants;
+
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -33,9 +38,12 @@ import java.util.Objects;
  * @author asidorov84@gmail.com
  * @see java.util.regex.Pattern
  */
+@JsonDeserialize(builder = DomainRegex.Builder.class)
 public final class DomainRegex {
     private final long id;
     private final String pattern;
+    
+    @JsonFormat(pattern = Constants.DATE_TIME_PATTERN)
     private final LocalDateTime dateAdded;
 
     private DomainRegex(DomainRegex.Builder builder) {
@@ -84,9 +92,12 @@ public final class DomainRegex {
                 '}';
     }
 
+    @JsonPOJOBuilder(withPrefix = "")
     public static class Builder {
         private long id;
         private String pattern;
+        
+        @JsonFormat(pattern = Constants.DATE_TIME_PATTERN)
         private LocalDateTime dateAdded;
 
         private Builder() {

@@ -51,7 +51,7 @@ public class ClickCountRestController {
         this.clickCountService = clickCountService;
     }
 
-    @GetMapping
+    @GetMapping("/all")
     public List<ClickCount> getAll(@RequestParam(name = "start", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
                                    @RequestParam(name = "end", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
                                    @SPRequestParam SortingAndPagination sortingAndPagination) {

@@ -26,4 +26,5 @@ package me.alexand.scat.statistic.common.utils;
  */
 public interface Constants {
     String DATE_PATTERN = "yyyy-MM-dd";
+    String DATE_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
 }

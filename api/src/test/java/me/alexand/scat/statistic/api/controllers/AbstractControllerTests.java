@@ -22,6 +22,7 @@
 package me.alexand.scat.statistic.api.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import me.alexand.scat.statistic.api.config.RequestLoggingFilter;
 import me.alexand.scat.statistic.api.config.TestConfig;
 import me.alexand.scat.statistic.api.config.WebConfig;
 import org.junit.runner.RunWith;
@@ -63,7 +64,7 @@ public abstract class AbstractControllerTests {
     private void postConstruct() {
         mockMvc = MockMvcBuilders
                 .webAppContextSetup(webApplicationContext)
-                .addFilter(CHARACTER_ENCODING_FILTER)
+                .addFilters(CHARACTER_ENCODING_FILTER, new RequestLoggingFilter())
                 .build();
     }
 }

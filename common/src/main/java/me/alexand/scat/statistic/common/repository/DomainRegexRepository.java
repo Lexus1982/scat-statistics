@@ -22,6 +22,7 @@
 package me.alexand.scat.statistic.common.repository;
 
 import me.alexand.scat.statistic.common.entities.DomainRegex;
+import me.alexand.scat.statistic.common.utils.SortingAndPagination;
 import me.alexand.scat.statistic.common.utils.exceptions.DomainRegexAlreadyExistsException;
 
 import java.util.List;
@@ -58,10 +59,19 @@ public interface DomainRegexRepository {
 
     /**
      * Метод для получения списка всех шаблонов доменных имен
+     * Список отсортирован по дате добавления по убыванию.
      *
      * @return список шаблонов
      */
     List<DomainRegex> getAll();
+
+    /**
+     * Метод для получения списка всех шаблонов доменных имен с параметрами сортировки и пейджинга
+     *
+     * @param sortingAndPagination параметры сортировки и пейджинга (необязательный)
+     * @return список шаблонов
+     */
+    List<DomainRegex> getAll(SortingAndPagination sortingAndPagination);
 
     /**
      * Метод для получения количества шаблонов доменных имен
@@ -69,6 +79,4 @@ public interface DomainRegexRepository {
      * @return количество шаблонов
      */
     long getCount();
-
-    //TODO добавить метод get c пейджингом
 }

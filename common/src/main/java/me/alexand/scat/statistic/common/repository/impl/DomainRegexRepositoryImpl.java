@@ -23,6 +23,7 @@ package me.alexand.scat.statistic.common.repository.impl;
 
 import me.alexand.scat.statistic.common.entities.DomainRegex;
 import me.alexand.scat.statistic.common.repository.DomainRegexRepository;
+import me.alexand.scat.statistic.common.utils.SortingAndPagination;
 import me.alexand.scat.statistic.common.utils.exceptions.DomainRegexAlreadyExistsException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +42,8 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import static me.alexand.scat.statistic.common.utils.ColumnOrder.DESC;
+
 /**
  * Реализация хранилища шаблонов доменных имен на основе JDBC
  *
@@ -50,6 +53,10 @@ import java.util.regex.PatternSyntaxException;
  */
 public class DomainRegexRepositoryImpl implements DomainRegexRepository {
     private static final Logger LOGGER = LoggerFactory.getLogger(DomainRegexRepositoryImpl.class);
+    private static final SortingAndPagination DEFAULT_SORTING_PARAM = SortingAndPagination.builder()
+            .orderingColumn("date_added", DESC)
+            .build();
+    
     private final JdbcTemplate jdbcTemplate;
 
     public DomainRegexRepositoryImpl(JdbcTemplate jdbcTemplate) {
@@ -113,8 +120,19 @@ public class DomainRegexRepositoryImpl implements DomainRegexRepository {
     @Override
     @Transactional(value = "persistenceTM", readOnly = true)
     public List<DomainRegex> getAll() {
+        return getAll(DEFAULT_SORTING_PARAM);
+    }
+
+    @Override
+    @Transactional(value = "persistenceTM", readOnly = true)
+    public List<DomainRegex> getAll(SortingAndPagination sortingAndPagination) {
+        String suffix = sortingAndPagination != null ? sortingAndPagination.formSQLSuffix() : "";
+        String query = String.format("SELECT id, pattern, date_added FROM domain_regex %s", suffix);
+        
+        LOGGER.debug("executing query: [{}]", query);
+        
         try {
-            return jdbcTemplate.query("SELECT id, pattern, date_added FROM domain_regex",
+            return jdbcTemplate.query(query,
                     (rs, rowNum) -> DomainRegex.builder()
                             .id(rs.getLong(1))
                             .pattern(rs.getString(2))

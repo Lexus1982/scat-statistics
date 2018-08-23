@@ -23,6 +23,8 @@ package me.alexand.scat.statistic.api.config;
 
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
+import javax.servlet.Filter;
+
 /**
  * Инициализатор DispatcherServlet
  *
@@ -42,5 +44,10 @@ public class DispatcherServletInitializer extends AbstractAnnotationConfigDispat
     @Override
     protected String[] getServletMappings() {
         return new String[]{"/"};
+    }
+
+    @Override
+    protected Filter[] getServletFilters() {
+        return new Filter[]{new RequestLoggingFilter()};
     }
 }

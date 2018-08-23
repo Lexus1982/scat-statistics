@@ -22,10 +22,14 @@
 package me.alexand.scat.statistic.api.controllers;
 
 import me.alexand.scat.statistic.api.service.DomainRegexService;
+import me.alexand.scat.statistic.api.utils.SPRequestParam;
+import me.alexand.scat.statistic.common.entities.DomainRegex;
+import me.alexand.scat.statistic.common.utils.SortingAndPagination;
 import me.alexand.scat.statistic.common.utils.exceptions.DomainRegexAlreadyExistsException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.regex.PatternSyntaxException;
 
 import static me.alexand.scat.statistic.api.utils.Constants.BASE_URL;
@@ -52,7 +56,10 @@ public class DomainRegexRestController {
         domainRegexService.add(pattern);
     }
 
-    //TODO нужен метод для получения всех паттернов с сортировкой и пейджингом
+    @GetMapping("/all")
+    public List<DomainRegex> getAll(@SPRequestParam SortingAndPagination sortingAndPagination) {
+        return domainRegexService.getAll(sortingAndPagination);
+    }
 
     @ExceptionHandler(PatternSyntaxException.class)
     @ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "invalid pattern syntax")
