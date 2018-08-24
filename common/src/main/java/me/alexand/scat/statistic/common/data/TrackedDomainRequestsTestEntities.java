@@ -19,13 +19,27 @@
  * under the License.
  */
 
-package me.alexand.scat.statistic.common.utils;
+package me.alexand.scat.statistic.common.data;
+
+import me.alexand.scat.statistic.common.entities.TrackedDomainRequests;
+
+import java.math.BigInteger;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 /**
+ * Экземпляры класса TrackedDomainRequests для тестов
+ *
  * @author asidorov84@gmail.com
  */
-public interface Constants {
-    String DATE_PATTERN = "yyyy-MM-dd";
-    String DATE_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
-    String TIME_PATTERN = "HH:mm:ss";
+public interface TrackedDomainRequestsTestEntities {
+    TrackedDomainRequests TEST = TrackedDomainRequests.builder()
+            .date(LocalDate.of(2018, 4, 1))
+            .domainRegex(DomainRegexTestEntities.TEST_VK_COM)
+            .address("176.221.0.224")
+            .login("polyakov_al@setka.ru")
+            .firstTime(LocalTime.of(17, 6, 17))
+            .lastTime(LocalTime.of(17, 6, 19))
+            .count(BigInteger.valueOf(3))
+            .build();
 }

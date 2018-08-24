@@ -74,7 +74,9 @@ public class Sampling {
         LOGGER.info("start tracking domains...");
         LocalDateTime endDateTime = lastTimeTrackDomains.plusSeconds(30);
 
-        List<String> domainRegexPatterns = domainRegexRepository.getAll().stream()
+        List<DomainRegex> domainRegexps = domainRegexRepository.getAll();
+
+        List<String> domainRegexPatterns = domainRegexps.stream()
                 .map(DomainRegex::getPattern)
                 .collect(toList());
 
@@ -83,7 +85,7 @@ public class Sampling {
                 getFormattedDateTime(endDateTime));
         LOGGER.info("\tlist of domain regex patterns which must be tracked: {}", domainRegexPatterns);
 
-        List<TrackedDomainRequests> results = transitionalBufferRepository.getTrackedDomainRequests(domainRegexPatterns,
+        List<TrackedDomainRequests> results = transitionalBufferRepository.getTrackedDomainRequests(domainRegexps,
                 lastTimeTrackDomains,
                 endDateTime);
 

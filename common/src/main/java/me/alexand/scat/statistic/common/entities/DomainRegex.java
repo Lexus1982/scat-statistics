@@ -45,11 +45,13 @@ public final class DomainRegex {
     
     @JsonFormat(pattern = Constants.DATE_TIME_PATTERN)
     private final LocalDateTime dateAdded;
+    private final boolean isActive;
 
     private DomainRegex(DomainRegex.Builder builder) {
         this.id = builder.id;
         this.pattern = builder.pattern;
         this.dateAdded = builder.dateAdded;
+        this.isActive = builder.isActive;
     }
 
     public static DomainRegex.Builder builder() {
@@ -68,19 +70,24 @@ public final class DomainRegex {
         return dateAdded;
     }
 
+    public boolean isActive() {
+        return isActive;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         DomainRegex that = (DomainRegex) o;
         return id == that.id &&
+                isActive == that.isActive &&
                 Objects.equals(pattern, that.pattern) &&
                 Objects.equals(dateAdded, that.dateAdded);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, pattern, dateAdded);
+        return Objects.hash(id, pattern, dateAdded, isActive);
     }
 
     @Override
@@ -89,6 +96,7 @@ public final class DomainRegex {
                 "id=" + id +
                 ", pattern='" + pattern + '\'' +
                 ", dateAdded=" + dateAdded +
+                ", isActive=" + isActive +
                 '}';
     }
 
@@ -99,6 +107,7 @@ public final class DomainRegex {
         
         @JsonFormat(pattern = Constants.DATE_TIME_PATTERN)
         private LocalDateTime dateAdded;
+        private boolean isActive;
 
         private Builder() {
         }
@@ -115,6 +124,11 @@ public final class DomainRegex {
 
         public Builder dateAdded(LocalDateTime dateAdded) {
             this.dateAdded = dateAdded;
+            return this;
+        }
+
+        public Builder isActive(boolean isActive) {
+            this.isActive = isActive;
             return this;
         }
 

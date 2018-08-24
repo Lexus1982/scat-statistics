@@ -1,6 +1,6 @@
-INSERT INTO domain_regex (id, pattern, date_added) VALUES
-  (1, '.*vk\.com$', '2018-01-01 01:01:01.000000'),
-  (2, '.*mail\.ru$', '2018-01-01 01:01:01.000000');
+INSERT INTO domain_regex (id, pattern, date_added, is_active) VALUES
+  (1, '.*vk\.com$', '2018-01-01 01:01:01.000000', TRUE),
+  (2, '.*mail\.ru$', '2018-01-01 01:01:01.000000', TRUE);
 
 INSERT INTO click_count (date, count) VALUES
   ('2018-07-25', 20180725),

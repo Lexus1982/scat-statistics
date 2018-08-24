@@ -48,8 +48,8 @@ import static java.sql.Types.BIGINT;
 public class TrackedDomainRequestsRepositoryImpl implements TrackedDomainRequestsRepository {
     private static final Logger LOGGER = LoggerFactory.getLogger(TrackedDomainRequestsRepositoryImpl.class);
 
-    private static final String INSERT_QUERY = "INSERT INTO tracked_domain_requests AS tdr (date, pattern, address, login, first_time, last_time, count) " +
-            " VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT (date, pattern, address, login) DO UPDATE SET " +
+    private static final String INSERT_QUERY = "INSERT INTO tracked_domain_requests AS tdr (date, domain_id, address, login, first_time, last_time, count) " +
+            " VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT (date, domain_id, address, login) DO UPDATE SET " +
             "last_time = EXCLUDED.last_time, " +
             "count = tdr.count + EXCLUDED.count";
 
@@ -69,7 +69,7 @@ public class TrackedDomainRequestsRepositoryImpl implements TrackedDomainRequest
                 @Override
                 public void setValues(PreparedStatement ps, int i) throws SQLException {
                     ps.setObject(1, entities.get(i).getDate());
-                    ps.setString(2, entities.get(i).getPattern());
+                    ps.setObject(2, entities.get(i).getDomainRegex().getId());
                     ps.setString(3, entities.get(i).getAddress());
                     ps.setString(4, entities.get(i).getLogin());
                     ps.setObject(5, entities.get(i).getFirstTime());
@@ -97,7 +97,7 @@ public class TrackedDomainRequestsRepositoryImpl implements TrackedDomainRequest
         try {
             return jdbcTemplate.update(INSERT_QUERY, ps -> {
                 ps.setObject(1, entity.getDate());
-                ps.setString(2, entity.getPattern());
+                ps.setObject(2, entity.getDomainRegex().getId());
                 ps.setString(3, entity.getAddress());
                 ps.setString(4, entity.getLogin());
                 ps.setObject(5, entity.getFirstTime());

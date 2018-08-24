@@ -21,6 +21,11 @@
 
 package me.alexand.scat.statistic.common.entities;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import me.alexand.scat.statistic.common.utils.Constants;
+
 import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -31,18 +36,24 @@ import java.util.Objects;
  *
  * @author asidorov84@gmail.com
  */
+@JsonDeserialize(builder = TrackedDomainRequests.Builder.class)
 public final class TrackedDomainRequests {
+    @JsonFormat(pattern = Constants.DATE_PATTERN)
     private final LocalDate date;
-    private final String pattern;
+    private final DomainRegex domainRegex;
     private final String address;
     private final String login;
+
+    @JsonFormat(pattern = Constants.TIME_PATTERN)
     private final LocalTime firstTime;
+
+    @JsonFormat(pattern = Constants.DATE_PATTERN)
     private final LocalTime lastTime;
     private final BigInteger count;
 
     private TrackedDomainRequests(TrackedDomainRequests.Builder builder) {
         this.date = builder.date;
-        this.pattern = builder.pattern;
+        this.domainRegex = builder.domainRegex;
         this.address = builder.address;
         this.login = builder.login;
         this.firstTime = builder.firstTime;
@@ -58,8 +69,8 @@ public final class TrackedDomainRequests {
         return date;
     }
 
-    public String getPattern() {
-        return pattern;
+    public DomainRegex getDomainRegex() {
+        return domainRegex;
     }
 
     public String getAddress() {
@@ -88,7 +99,7 @@ public final class TrackedDomainRequests {
         if (o == null || getClass() != o.getClass()) return false;
         TrackedDomainRequests that = (TrackedDomainRequests) o;
         return Objects.equals(date, that.date) &&
-                Objects.equals(pattern, that.pattern) &&
+                Objects.equals(domainRegex, that.domainRegex) &&
                 Objects.equals(address, that.address) &&
                 Objects.equals(login, that.login) &&
                 Objects.equals(firstTime, that.firstTime) &&
@@ -98,14 +109,14 @@ public final class TrackedDomainRequests {
 
     @Override
     public int hashCode() {
-        return Objects.hash(date, pattern, address, login, firstTime, lastTime, count);
+        return Objects.hash(date, domainRegex, address, login, firstTime, lastTime, count);
     }
 
     @Override
     public String toString() {
         return "TrackedDomainRequests{" +
                 "date=" + date +
-                ", pattern='" + pattern + '\'' +
+                ", domainRegex=" + domainRegex +
                 ", address='" + address + '\'' +
                 ", login='" + login + '\'' +
                 ", firstTime=" + firstTime +
@@ -114,12 +125,18 @@ public final class TrackedDomainRequests {
                 '}';
     }
 
+    @JsonPOJOBuilder(withPrefix = "")
     public static class Builder {
+        @JsonFormat(pattern = Constants.DATE_PATTERN)
         private LocalDate date;
-        private String pattern;
+        private DomainRegex domainRegex;
         private String address;
         private String login;
+
+        @JsonFormat(pattern = Constants.TIME_PATTERN)
         private LocalTime firstTime;
+
+        @JsonFormat(pattern = Constants.TIME_PATTERN)
         private LocalTime lastTime;
         private BigInteger count;
 
@@ -131,8 +148,8 @@ public final class TrackedDomainRequests {
             return this;
         }
 
-        public Builder pattern(String pattern) {
-            this.pattern = pattern;
+        public Builder domainRegex(DomainRegex domainRegex) {
+            this.domainRegex = domainRegex;
             return this;
         }
 

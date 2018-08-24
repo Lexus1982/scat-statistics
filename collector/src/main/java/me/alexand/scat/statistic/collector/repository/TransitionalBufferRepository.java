@@ -24,6 +24,7 @@ package me.alexand.scat.statistic.collector.repository;
 import me.alexand.scat.statistic.collector.model.IPFIXDataRecord;
 import me.alexand.scat.statistic.collector.model.TemplateType;
 import me.alexand.scat.statistic.common.entities.ClickCount;
+import me.alexand.scat.statistic.common.entities.DomainRegex;
 import me.alexand.scat.statistic.common.entities.TrackedDomainRequests;
 
 import java.time.LocalDateTime;
@@ -73,12 +74,12 @@ public interface TransitionalBufferRepository {
     /**
      * Получить агрегированные данные об указанных посещенных доменах за указанный период
      *
-     * @param domainPatterns список строк, где каждая строка является регулярным выражением (обязательный)
-     * @param start          начальная отметка времени (>=) (обязательный)
-     * @param end            конечная отметка времени (<) (обязательный)
+     * @param domainRegexps список шаблонов доменных имен (обязательный)
+     * @param start         начальная отметка времени (>=) (обязательный)
+     * @param end           конечная отметка времени (<) (обязательный)
      * @return список результатов об отслеженных доменах
      */
-    List<TrackedDomainRequests> getTrackedDomainRequests(List<String> domainPatterns, LocalDateTime start, LocalDateTime end);
+    List<TrackedDomainRequests> getTrackedDomainRequests(List<DomainRegex> domainRegexps, LocalDateTime start, LocalDateTime end);
 
     /**
      * Получить минимальную отметку времени у записей данного типа, находящихся в буфере

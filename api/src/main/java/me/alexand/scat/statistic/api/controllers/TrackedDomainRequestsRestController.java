@@ -37,5 +37,11 @@ public class TrackedDomainRequestsRestController {
         this.trackedDomainRequestsService = trackedDomainRequestsService;
     }
 
-    //TODO
+    //TODO нужны методы для получения с фильтрами
+    // 1. по дате (от и/или до)
+    // 2. по id шаблона домена
+    // 3. по адресу (like)
+    // 4. по логину (like)
+    
+    
 }

@@ -26,6 +26,7 @@ import me.alexand.scat.statistic.collector.model.IPFIXFieldValue;
 import me.alexand.scat.statistic.collector.model.TemplateType;
 import me.alexand.scat.statistic.collector.repository.TransitionalBufferRepository;
 import me.alexand.scat.statistic.common.entities.ClickCount;
+import me.alexand.scat.statistic.common.entities.DomainRegex;
 import me.alexand.scat.statistic.common.entities.TrackedDomainRequests;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +46,7 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -227,36 +229,59 @@ public class TransitionalBufferRepositoryImpl implements TransitionalBufferRepos
 
     @Override
     @Transactional(value = "bufferTM", readOnly = true)
-    public List<TrackedDomainRequests> getTrackedDomainRequests(List<String> domainPatterns, LocalDateTime start, LocalDateTime end) {
-        Objects.requireNonNull(domainPatterns);
+    public List<TrackedDomainRequests> getTrackedDomainRequests(List<DomainRegex> domainRegexps, LocalDateTime start, LocalDateTime end) {
+        Objects.requireNonNull(domainRegexps);
         Objects.requireNonNull(start);
         Objects.requireNonNull(end);
 
-        if (domainPatterns.isEmpty()) {
+        String values = domainRegexps.stream()
+                .filter(DomainRegex::isActive)
+                .map(domainRegex -> String.format("(cast(%d AS BIGINT), cast('%s' AS VARCHAR(8000)), TIMESTAMP '%s')",
+                        domainRegex.getId(),
+                        domainRegex.getPattern().toLowerCase().trim(),
+                        domainRegex.getDateAdded().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
+                .collect(Collectors.joining(", "));
+
+        if (values.isEmpty()) {
             return new ArrayList<>();
         }
 
         StringBuilder querySB = new StringBuilder();
 
-        querySB.append("SELECT ")
-                .append(" cast(cs.event_time AS DATE) AS date, ")
-                .append(" trim(BOTH FROM td.pattern) AS pattern, ")
-                .append(" cs.ip_src, ")
-                .append(" cs.login, ")
-                .append(" cast(min(cs.event_time) AS TIME) AS first_time, ")
-                .append(" cast(max(cs.event_time) AS TIME) AS last_time, ")
-                .append(" count(*) AS cnt ")
-                .append("FROM cs_req AS cs INNER JOIN (VALUES ");
-
-        String values = domainPatterns.stream()
-                .map(pattern -> String.format("('%s')", pattern.toLowerCase()))
-                .collect(Collectors.joining(", "));
-
-        querySB.append(values)
-                .append(") as td (pattern) ")
-                .append("ON REGEXP_MATCHES(lower(cs.hostname), trim(BOTH FROM td.pattern)) ")
+        querySB.append("WITH dr AS ( ")
+                .append(" SELECT")
+                .append("  d.id, ")
+                .append("  d.pattern, ")
+                .append("  d.date_added, ")
+                .append("  TRUE AS is_active ")
+                .append("  FROM (VALUES ")
+                .append(values)
+                .append(") AS d(id, pattern, date_added) ")
+                .append("), tdr AS ( ")
+                .append(" SELECT ")
+                .append("  cast(cs.event_time AS DATE) AS date, ")
+                .append("  dr.id AS domain_id, ")
+                .append("  cs.ip_src, ")
+                .append("  cs.login, ")
+                .append("  cast(min(cs.event_time) AS TIME) AS first_time, ")
+                .append("  cast(max(cs.event_time) AS TIME) AS last_time, ")
+                .append("  count(*) AS cnt ")
+                .append(" FROM cs_req AS cs INNER JOIN dr ON REGEXP_MATCHES(lower(cs.hostname), dr.pattern) ")
                 .append("WHERE cs.event_time >= ? AND cs.event_time < ? ")
-                .append("GROUP BY cast(cs.event_time AS DATE), td.pattern, cs.ip_src, cs.login");
+                .append("GROUP BY cast(cs.event_time AS DATE), dr.id, cs.ip_src, cs.login ")
+                .append(" ) ")
+                .append(" SELECT ")
+                .append("  tdr.date, ")
+                .append("  dr.id, ")
+                .append("  dr.pattern, ")
+                .append("  dr.date_added, ")
+                .append("  dr.is_active, ")
+                .append("  tdr.ip_src, ")
+                .append("  tdr.login, ")
+                .append("  tdr.first_time, ")
+                .append("  tdr.last_time, ")
+                .append("  tdr.cnt ")
+                .append(" FROM tdr INNER JOIN dr ON tdr.domain_id = dr.id ");
 
         try {
             return jdbcTemplate.query(querySB.toString(),
@@ -266,12 +291,17 @@ public class TransitionalBufferRepositoryImpl implements TransitionalBufferRepos
                     },
                     (rs, rowNum) -> TrackedDomainRequests.builder()
                             .date(rs.getObject(1, LocalDate.class))
-                            .pattern(rs.getString(2))
-                            .address(rs.getString(3))
-                            .login(rs.getString(4))
-                            .firstTime(rs.getObject(5, LocalTime.class))
-                            .lastTime(rs.getObject(6, LocalTime.class))
-                            .count(rs.getBigDecimal(7).toBigInteger())
+                            .domainRegex(DomainRegex.builder()
+                                    .id(rs.getLong(2))
+                                    .pattern(rs.getString(3))
+                                    .dateAdded(rs.getTimestamp(4).toLocalDateTime())
+                                    .isActive(rs.getBoolean(5))
+                                    .build())
+                            .address(rs.getString(6))
+                            .login(rs.getString(7))
+                            .firstTime(rs.getObject(8, LocalTime.class))
+                            .lastTime(rs.getObject(9, LocalTime.class))
+                            .count(rs.getBigDecimal(10).toBigInteger())
                             .build());
         } catch (DataAccessException e) {
             LOGGER.error(e.getMessage());

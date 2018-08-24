@@ -127,7 +127,7 @@ public class DomainRegexRepositoryImpl implements DomainRegexRepository {
     @Transactional(value = "persistenceTM", readOnly = true)
     public List<DomainRegex> getAll(SortingAndPagination sortingAndPagination) {
         String suffix = sortingAndPagination != null ? sortingAndPagination.formSQLSuffix() : "";
-        String query = String.format("SELECT id, pattern, date_added FROM domain_regex %s", suffix);
+        String query = String.format("SELECT id, pattern, date_added, is_active FROM domain_regex %s", suffix);
         
         LOGGER.debug("executing query: [{}]", query);
         
@@ -137,6 +137,7 @@ public class DomainRegexRepositoryImpl implements DomainRegexRepository {
                             .id(rs.getLong(1))
                             .pattern(rs.getString(2))
                             .dateAdded(rs.getTimestamp(3).toLocalDateTime())
+                            .isActive(rs.getBoolean(4))
                             .build());
         } catch (DataAccessException e) {
             LOGGER.error(e.getMessage());

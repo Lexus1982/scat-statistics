@@ -21,15 +21,13 @@
 
 package me.alexand.scat.statistic.common.repository;
 
-import me.alexand.scat.statistic.common.entities.TrackedDomainRequests;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.math.BigInteger;
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.Collections;
+
+import static me.alexand.scat.statistic.common.data.TrackedDomainRequestsTestEntities.TEST;
 
 /**
  * Тесты для проверки хранилища сущностей TrackedDomainRequests
@@ -37,16 +35,6 @@ import java.util.Collections;
  * @author asidorov84@gmail.com
  */
 public class TrackedDomainRequestsRepositoryTests extends AbstractCommonTests {
-    private static final TrackedDomainRequests TEST = TrackedDomainRequests.builder()
-            .date(LocalDate.of(2018, 4, 1))
-            .pattern(".*vk\\.com$")
-            .address("176.221.0.224")
-            .login("polyakov_al@setka.ru")
-            .firstTime(LocalTime.of(17, 6, 17))
-            .lastTime(LocalTime.of(17, 6, 19))
-            .count(BigInteger.valueOf(3))
-            .build();
-
     @Autowired
     private TrackedDomainRequestsRepository repository;
 

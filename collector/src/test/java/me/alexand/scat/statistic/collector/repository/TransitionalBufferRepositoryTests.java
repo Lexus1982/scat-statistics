@@ -43,6 +43,8 @@ import static me.alexand.scat.statistic.collector.entities.DataRecordsTestEntiti
 import static me.alexand.scat.statistic.collector.model.TemplateType.*;
 import static me.alexand.scat.statistic.common.data.ClickCountTestEntities.COUNTER_20180401;
 import static me.alexand.scat.statistic.common.data.ClickCountTestEntities.COUNTER_20180402;
+import static me.alexand.scat.statistic.common.data.DomainRegexTestEntities.TEST_MAIL_RU;
+import static me.alexand.scat.statistic.common.data.DomainRegexTestEntities.TEST_VK_COM;
 import static org.junit.Assert.*;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TEST_METHOD;
@@ -93,7 +95,7 @@ public class TransitionalBufferRepositoryTests {
     @Test
     public void testGetTrackedResults() {
         List<TrackedDomainRequests> actual = repository.getTrackedDomainRequests(
-                asList(".*mail\\.ru$", ".*vk\\.com$"),
+                asList(TEST_MAIL_RU, TEST_VK_COM),
                 LocalDateTime.parse("2018-04-01T17:06:10"),
                 LocalDateTime.parse("2018-04-01T17:07:09"));
 
