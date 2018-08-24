@@ -22,8 +22,11 @@
 package me.alexand.scat.statistic.common.repository;
 
 import me.alexand.scat.statistic.common.entities.TrackedDomainRequests;
+import me.alexand.scat.statistic.common.utils.SortingAndPagination;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Интерфейс для работы с хранилищем сущностей TrackedDomainRequests
@@ -37,6 +40,10 @@ public interface TrackedDomainRequestsRepository {
 
     //TODO добавить javadoc
     int save(TrackedDomainRequests result);
-    
-    //TODO добавить методы getAll, getCount, get с фильтрами и пейджингом 
+
+    //TODO добавить javadoc
+    List<TrackedDomainRequests> findBetween(LocalDate from,
+                                            LocalDate to,
+                                            Map<String, String> filters,
+                                            SortingAndPagination sortingAndPagination);
 }

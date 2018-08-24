@@ -47,7 +47,7 @@ public final class TrackedDomainRequests {
     @JsonFormat(pattern = Constants.TIME_PATTERN)
     private final LocalTime firstTime;
 
-    @JsonFormat(pattern = Constants.DATE_PATTERN)
+    @JsonFormat(pattern = Constants.TIME_PATTERN)
     private final LocalTime lastTime;
     private final BigInteger count;
 

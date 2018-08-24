@@ -42,13 +42,13 @@ public interface DomainRegexTestEntities {
             .id(1)
             .pattern(VK_COM_REGEX_PATTERN)
             .dateAdded(LocalDateTime.of(2018, 1, 1, 1, 1, 1))
-            .isActive(true)
+            .active(true)
             .build();
 
     DomainRegex TEST_MAIL_RU = DomainRegex.builder()
             .id(2)
             .pattern(MAIL_RU_REGEX_PATTERN)
             .dateAdded(LocalDateTime.of(2018, 1, 1, 1, 1, 1))
-            .isActive(true)
+            .active(true)
             .build();
 }

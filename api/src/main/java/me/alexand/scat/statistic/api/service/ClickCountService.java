@@ -43,8 +43,8 @@ public class ClickCountService {
         this.repository = repository;
     }
 
-    public List<ClickCount> getAll(LocalDate start, LocalDate end, SortingAndPagination sortingAndPagination) {
-        return repository.findBetween(start, end, sortingAndPagination);
+    public List<ClickCount> getPerDay(LocalDate from, LocalDate to, SortingAndPagination sortingAndPagination) {
+        return repository.findBetween(from, to, sortingAndPagination);
     }
 
     public ClickCount getOne(LocalDate date) {

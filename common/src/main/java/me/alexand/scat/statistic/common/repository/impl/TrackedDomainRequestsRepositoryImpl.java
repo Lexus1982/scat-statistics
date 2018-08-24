@@ -21,8 +21,10 @@
 
 package me.alexand.scat.statistic.common.repository.impl;
 
+import me.alexand.scat.statistic.common.entities.DomainRegex;
 import me.alexand.scat.statistic.common.entities.TrackedDomainRequests;
 import me.alexand.scat.statistic.common.repository.TrackedDomainRequestsRepository;
+import me.alexand.scat.statistic.common.utils.SortingAndPagination;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
@@ -32,8 +34,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import static java.sql.Types.BIGINT;
@@ -109,5 +114,64 @@ public class TrackedDomainRequestsRepositoryImpl implements TrackedDomainRequest
         }
 
         return 0;
+    }
+
+    @Override
+    @Transactional(value = "persistenceTM", readOnly = true)
+    public List<TrackedDomainRequests> findBetween(LocalDate from,
+                                                   LocalDate to,
+                                                   Map<String, String> filters,
+                                                   SortingAndPagination sortingAndPagination) {
+        String suffix = sortingAndPagination != null ? sortingAndPagination.formSQLSuffix() : "";
+        String sqlFilters = "";
+
+        if (from != null && to != null) {
+            if (from.equals(to)) {
+                sqlFilters = String.format(" WHERE date = '%s' ", from.format(DateTimeFormatter.ISO_DATE));
+            } else {
+                sqlFilters = String.format(" WHERE date BETWEEN '%s' AND '%s' ",
+                        from.format(DateTimeFormatter.ISO_DATE),
+                        to.format(DateTimeFormatter.ISO_DATE));
+            }
+        }
+
+        if (from != null && to == null) {
+            sqlFilters = String.format(" WHERE date >= '%s' ", from.format(DateTimeFormatter.ISO_DATE));
+        }
+
+        if (from == null && to != null) {
+            sqlFilters = String.format(" WHERE date <= '%s' ", to.format(DateTimeFormatter.ISO_DATE));
+        }
+
+        String query = String.format("SELECT " +
+                "  tdr.date, " +
+                "  dr.id, " +
+                "  dr.pattern, " +
+                "  dr.date_added, " +
+                "  dr.is_active, " +
+                "  tdr.address, " +
+                "  tdr.login, " +
+                "  tdr.first_time, " +
+                "  tdr.last_time, " +
+                "  tdr.count " +
+                "FROM tracked_domain_requests tdr INNER JOIN domain_regex dr ON tdr.domain_id = dr.id %s %s", sqlFilters, suffix);
+
+        LOGGER.debug("executing query: [{}]", query);
+
+        return jdbcTemplate.query(query,
+                (rs, rowNum) -> TrackedDomainRequests.builder()
+                        .date(rs.getTimestamp(1).toLocalDateTime().toLocalDate())
+                        .domainRegex(DomainRegex.builder()
+                                .id(rs.getLong(2))
+                                .pattern(rs.getString(3))
+                                .dateAdded(rs.getTimestamp(4).toLocalDateTime())
+                                .active(rs.getBoolean(5))
+                                .build())
+                        .address(rs.getString(6))
+                        .login(rs.getString(7))
+                        .firstTime(rs.getTime(8).toLocalTime())
+                        .lastTime(rs.getTime(9).toLocalTime())
+                        .count(rs.getBigDecimal(10).toBigInteger())
+                        .build());
     }
 }

@@ -25,8 +25,6 @@ import me.alexand.scat.statistic.api.service.ClickCountService;
 import me.alexand.scat.statistic.api.utils.SPRequestParam;
 import me.alexand.scat.statistic.common.entities.ClickCount;
 import me.alexand.scat.statistic.common.utils.SortingAndPagination;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,22 +41,21 @@ import static me.alexand.scat.statistic.api.utils.Constants.BASE_URL;
 @RestController
 @RequestMapping(ClickCountRestController.URL)
 public class ClickCountRestController {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ClickCountRestController.class);
-    public static final String URL = BASE_URL + "/click/count";
+    public static final String URL = BASE_URL + "/total/requests";
     private final ClickCountService clickCountService;
 
     public ClickCountRestController(ClickCountService clickCountService) {
         this.clickCountService = clickCountService;
     }
 
-    @GetMapping("/all")
-    public List<ClickCount> getAll(@RequestParam(name = "start", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
-                                   @RequestParam(name = "end", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
-                                   @SPRequestParam SortingAndPagination sortingAndPagination) {
-        return clickCountService.getAll(start, end, sortingAndPagination);
+    @GetMapping("/per/day")
+    public List<ClickCount> getPerDay(@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+                                      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+                                      @SPRequestParam SortingAndPagination sortingAndPagination) {
+        return clickCountService.getPerDay(from, to, sortingAndPagination);
     }
 
-    @GetMapping("/{date}")
+    @GetMapping("/for/{date}")
     public ClickCount getOne(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         return clickCountService.getOne(date);
     }

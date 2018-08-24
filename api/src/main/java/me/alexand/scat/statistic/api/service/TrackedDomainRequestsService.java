@@ -21,8 +21,15 @@
 
 package me.alexand.scat.statistic.api.service;
 
+import me.alexand.scat.statistic.common.entities.TrackedDomainRequests;
 import me.alexand.scat.statistic.common.repository.TrackedDomainRequestsRepository;
+import me.alexand.scat.statistic.common.utils.SortingAndPagination;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author asidorov84@gmail.com
@@ -35,5 +42,26 @@ public class TrackedDomainRequestsService {
         this.repository = repository;
     }
 
-    //TODO
+    public List<TrackedDomainRequests> get(LocalDate from,
+                                           LocalDate to,
+                                           Integer domainId,
+                                           String address,
+                                           String login,
+                                           SortingAndPagination sortingAndPagination) {
+        Map<String, String> filters = new HashMap<>();
+
+        if (domainId != null && domainId > 0) {
+            filters.put("domain_id", domainId.toString());
+        }
+
+        if (address != null && !address.isEmpty()) {
+            filters.put("address", address);
+        }
+
+        if (login != null && !login.isEmpty()) {
+            filters.put("login", login);
+        }
+
+        return repository.findBetween(from, to, filters, sortingAndPagination);
+    }
 }

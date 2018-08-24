@@ -295,7 +295,7 @@ public class TransitionalBufferRepositoryImpl implements TransitionalBufferRepos
                                     .id(rs.getLong(2))
                                     .pattern(rs.getString(3))
                                     .dateAdded(rs.getTimestamp(4).toLocalDateTime())
-                                    .isActive(rs.getBoolean(5))
+                                    .active(rs.getBoolean(5))
                                     .build())
                             .address(rs.getString(6))
                             .login(rs.getString(7))

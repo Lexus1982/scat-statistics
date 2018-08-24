@@ -66,7 +66,7 @@ public class ClickCountControllerTests extends AbstractControllerTests {
                 .build())))
                 .thenReturn(CLICK_COUNT_LIST);
 
-        String responseContent = mockMvc.perform(get(URL + "/all"))
+        String responseContent = mockMvc.perform(get(URL + "/per/day"))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
@@ -95,7 +95,7 @@ public class ClickCountControllerTests extends AbstractControllerTests {
                 .build())))
                 .thenReturn(expected);
 
-        String responseContent = mockMvc.perform(get(URL + "/all")
+        String responseContent = mockMvc.perform(get(URL + "/per/day")
                 .param("page", String.valueOf(page))
                 .param("size", String.valueOf(size))
                 .param("order", String.format("%s,%s", orderColumnName, columnOrder.name().toLowerCase())))
@@ -125,9 +125,9 @@ public class ClickCountControllerTests extends AbstractControllerTests {
                 .build())))
                 .thenReturn(expected);
 
-        String responseContent = mockMvc.perform(get(URL + "/all")
-                .param("start", start.format(DateTimeFormatter.ISO_DATE))
-                .param("end", end.format(DateTimeFormatter.ISO_DATE)))
+        String responseContent = mockMvc.perform(get(URL + "/per/day")
+                .param("from", start.format(DateTimeFormatter.ISO_DATE))
+                .param("to", end.format(DateTimeFormatter.ISO_DATE)))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
@@ -154,9 +154,9 @@ public class ClickCountControllerTests extends AbstractControllerTests {
                 .build())))
                 .thenReturn(expected);
 
-        String responseContent = mockMvc.perform(get(URL + "/all")
-                .param("start", start.format(DateTimeFormatter.ISO_DATE))
-                .param("end", end.format(DateTimeFormatter.ISO_DATE)))
+        String responseContent = mockMvc.perform(get(URL + "/per/day")
+                .param("from", start.format(DateTimeFormatter.ISO_DATE))
+                .param("to", end.format(DateTimeFormatter.ISO_DATE)))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
@@ -188,9 +188,9 @@ public class ClickCountControllerTests extends AbstractControllerTests {
                 .build())))
                 .thenReturn(expected);
 
-        String responseContent = mockMvc.perform(get(URL + "/all")
-                .param("start", start.format(DateTimeFormatter.ISO_DATE))
-                .param("end", end.format(DateTimeFormatter.ISO_DATE))
+        String responseContent = mockMvc.perform(get(URL + "/per/day")
+                .param("from", start.format(DateTimeFormatter.ISO_DATE))
+                .param("to", end.format(DateTimeFormatter.ISO_DATE))
                 .param("page", String.valueOf(page))
                 .param("size", String.valueOf(size))
                 .param("order", String.format("%s,%s", orderColumnName, columnOrder.name().toLowerCase())))
@@ -214,7 +214,7 @@ public class ClickCountControllerTests extends AbstractControllerTests {
         when(clickCountRepository.findByDate(date))
                 .thenReturn(COUNTER_20180801);
 
-        String responseContent = mockMvc.perform(get(URL + "/{date}", date))
+        String responseContent = mockMvc.perform(get(URL + "/for/{date}", date))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
@@ -235,7 +235,7 @@ public class ClickCountControllerTests extends AbstractControllerTests {
         when(clickCountRepository.findByDate(date))
                 .thenReturn(null);
 
-        mockMvc.perform(get(URL + "/{date}", date))
+        mockMvc.perform(get(URL + "/for/{date}", date))
                 .andDo(print())
                 .andExpect(status().isNotFound())
         ;

@@ -64,21 +64,21 @@ public interface ClickCountRepository {
     /**
      * Метод для получения ClickCount из базы данных за указанный период
      *
-     * @param start начальная дата (необязательный, включительно)
-     * @param end   конечная дата (необязательный, включительно)
+     * @param from начальная дата (необязательный, включительно)
+     * @param to   конечная дата (необязательный, включительно)
      * @return список ClickCount
      */
-    List<ClickCount> findBetween(LocalDate start, LocalDate end);
+    List<ClickCount> findBetween(LocalDate from, LocalDate to);
 
     /**
      * Метод для получения ClickCount из базы данных за указанный период с параметрами сортировки и пейджинга
      *
-     * @param start                начальная дата (необязательный, включительно)
-     * @param end                  конечная дата (необязательный, включительно)
+     * @param from                начальная дата (необязательный, включительно)
+     * @param to                  конечная дата (необязательный, включительно)
      * @param sortingAndPagination параметры сортировки и пейджинга (необязательный)
      * @return список ClickCount
      */
-    List<ClickCount> findBetween(LocalDate start, LocalDate end, SortingAndPagination sortingAndPagination);
+    List<ClickCount> findBetween(LocalDate from, LocalDate to, SortingAndPagination sortingAndPagination);
 
     /**
      * Метод для получения ClickCount за указанную дату

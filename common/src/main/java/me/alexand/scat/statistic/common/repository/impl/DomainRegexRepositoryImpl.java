@@ -137,7 +137,7 @@ public class DomainRegexRepositoryImpl implements DomainRegexRepository {
                             .id(rs.getLong(1))
                             .pattern(rs.getString(2))
                             .dateAdded(rs.getTimestamp(3).toLocalDateTime())
-                            .isActive(rs.getBoolean(4))
+                            .active(rs.getBoolean(4))
                             .build());
         } catch (DataAccessException e) {
             LOGGER.error(e.getMessage());

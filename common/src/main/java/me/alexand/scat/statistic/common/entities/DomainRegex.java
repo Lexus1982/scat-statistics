@@ -45,13 +45,13 @@ public final class DomainRegex {
     
     @JsonFormat(pattern = Constants.DATE_TIME_PATTERN)
     private final LocalDateTime dateAdded;
-    private final boolean isActive;
+    private final boolean active;
 
     private DomainRegex(DomainRegex.Builder builder) {
         this.id = builder.id;
         this.pattern = builder.pattern;
         this.dateAdded = builder.dateAdded;
-        this.isActive = builder.isActive;
+        this.active = builder.active;
     }
 
     public static DomainRegex.Builder builder() {
@@ -71,7 +71,7 @@ public final class DomainRegex {
     }
 
     public boolean isActive() {
-        return isActive;
+        return active;
     }
 
     @Override
@@ -80,14 +80,14 @@ public final class DomainRegex {
         if (o == null || getClass() != o.getClass()) return false;
         DomainRegex that = (DomainRegex) o;
         return id == that.id &&
-                isActive == that.isActive &&
+                active == that.active &&
                 Objects.equals(pattern, that.pattern) &&
                 Objects.equals(dateAdded, that.dateAdded);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, pattern, dateAdded, isActive);
+        return Objects.hash(id, pattern, dateAdded, active);
     }
 
     @Override
@@ -96,7 +96,7 @@ public final class DomainRegex {
                 "id=" + id +
                 ", pattern='" + pattern + '\'' +
                 ", dateAdded=" + dateAdded +
-                ", isActive=" + isActive +
+                ", active=" + active +
                 '}';
     }
 
@@ -107,7 +107,7 @@ public final class DomainRegex {
         
         @JsonFormat(pattern = Constants.DATE_TIME_PATTERN)
         private LocalDateTime dateAdded;
-        private boolean isActive;
+        private boolean active;
 
         private Builder() {
         }
@@ -127,8 +127,8 @@ public final class DomainRegex {
             return this;
         }
 
-        public Builder isActive(boolean isActive) {
-            this.isActive = isActive;
+        public Builder active(boolean active) {
+            this.active = active;
             return this;
         }
 

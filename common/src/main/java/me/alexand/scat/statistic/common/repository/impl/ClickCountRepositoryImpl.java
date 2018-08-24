@@ -104,29 +104,29 @@ public class ClickCountRepositoryImpl implements ClickCountRepository {
 
     @Override
     @Transactional(value = "persistenceTM", readOnly = true)
-    public List<ClickCount> findBetween(LocalDate start, LocalDate end) {
-        return findBetween(start, end, DEFAULT_SORTING_PARAM);
+    public List<ClickCount> findBetween(LocalDate from, LocalDate to) {
+        return findBetween(from, to, DEFAULT_SORTING_PARAM);
     }
 
     @Override
     @Transactional(value = "persistenceTM", readOnly = true)
-    public List<ClickCount> findBetween(LocalDate start, LocalDate end, SortingAndPagination sortingAndPagination) {
+    public List<ClickCount> findBetween(LocalDate from, LocalDate to, SortingAndPagination sortingAndPagination) {
         String suffix = sortingAndPagination != null ? sortingAndPagination.formSQLSuffix() : "";
         String filters = "";
 
-        if (start != null && end != null) {
-            if (start.equals(end)) {
+        if (from != null && to != null) {
+            if (from.equals(to)) {
                 filters = " WHERE date = ? ";
             } else {
                 filters = " WHERE date BETWEEN ? AND ? ";
             }
         }
 
-        if (start != null && end == null) {
+        if (from != null && to == null) {
             filters = " WHERE date >= ? ";
         }
 
-        if (start == null && end != null) {
+        if (from == null && to != null) {
             filters = " WHERE date <= ? ";
         }
 
@@ -137,8 +137,8 @@ public class ClickCountRepositoryImpl implements ClickCountRepository {
         return jdbcTemplate.query(query,
                 ps -> {
                     int paramNumber = 1;
-                    if (start != null) ps.setObject(paramNumber++, start);
-                    if (end != null && !end.equals(start)) ps.setObject(paramNumber, end);
+                    if (from != null) ps.setObject(paramNumber++, from);
+                    if (to != null && !to.equals(from)) ps.setObject(paramNumber, to);
                 },
                 (rs, rowNum) -> ClickCount.builder()
                         .date(rs.getTimestamp(1).toLocalDateTime().toLocalDate())

@@ -22,5 +22,5 @@
 package me.alexand.scat.statistic.api.utils;
 
 public interface Constants {
-    String BASE_URL = "/api";
+    String BASE_URL = "";
 }

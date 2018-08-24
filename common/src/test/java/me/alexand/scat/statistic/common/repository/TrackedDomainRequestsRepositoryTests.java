@@ -21,13 +21,17 @@
 
 package me.alexand.scat.statistic.common.repository;
 
-import org.junit.Assert;
+import me.alexand.scat.statistic.common.entities.TrackedDomainRequests;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.time.LocalDate;
 import java.util.Collections;
+import java.util.List;
 
-import static me.alexand.scat.statistic.common.data.TrackedDomainRequestsTestEntities.TEST;
+import static me.alexand.scat.statistic.common.data.TrackedDomainRequestsTestEntities.TEST_1;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Тесты для проверки хранилища сущностей TrackedDomainRequests
@@ -40,17 +44,23 @@ public class TrackedDomainRequestsRepositoryTests extends AbstractCommonTests {
 
     @Test
     public void testSave() {
-        Assert.assertEquals(1, repository.save(TEST));
+        assertEquals(1, repository.save(TEST_1));
     }
 
     @Test
     public void testSaveDuplicate() {
-        Assert.assertEquals(1, repository.save(TEST));
-        Assert.assertEquals(1, repository.save(TEST));
+        assertEquals(1, repository.save(TEST_1));
+        assertEquals(1, repository.save(TEST_1));
     }
 
     @Test
     public void testSaveAll() {
-        Assert.assertEquals(1, repository.saveAll(Collections.singletonList(TEST)));
+        assertEquals(1, repository.saveAll(Collections.singletonList(TEST_1)));
+    }
+
+    @Test
+    public void testFindByAddress() {
+        List<TrackedDomainRequests> actual = repository.findBetween(LocalDate.of(2018, 8, 1), LocalDate.of(2018, 8, 1), null, null);
+        assertNotNull(actual);
     }
 }

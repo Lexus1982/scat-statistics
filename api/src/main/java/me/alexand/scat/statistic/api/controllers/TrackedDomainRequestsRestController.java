@@ -22,26 +22,45 @@
 package me.alexand.scat.statistic.api.controllers;
 
 import me.alexand.scat.statistic.api.service.TrackedDomainRequestsService;
+import me.alexand.scat.statistic.api.utils.SPRequestParam;
+import me.alexand.scat.statistic.common.entities.TrackedDomainRequests;
+import me.alexand.scat.statistic.common.utils.SortingAndPagination;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.time.LocalDate;
+import java.util.List;
+
+import static me.alexand.scat.statistic.api.utils.Constants.BASE_URL;
 
 /**
  * @author asidorov84@gmail.com
  */
 @RestController
-@RequestMapping("api/tracked/domain/requests")//TODO подумать над адресами
+@RequestMapping(TrackedDomainRequestsRestController.URL)
 public class TrackedDomainRequestsRestController {
+    public static final String URL = BASE_URL + "/tracked/requests/statistics";
     private final TrackedDomainRequestsService trackedDomainRequestsService;
 
     public TrackedDomainRequestsRestController(TrackedDomainRequestsService trackedDomainRequestsService) {
         this.trackedDomainRequestsService = trackedDomainRequestsService;
     }
 
-    //TODO нужны методы для получения с фильтрами
-    // 1. по дате (от и/или до)
-    // 2. по id шаблона домена
-    // 3. по адресу (like)
-    // 4. по логину (like)
-    
-    
+    @GetMapping
+    public List<TrackedDomainRequests> get(@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+                                           @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+                                           @RequestParam(required = false) Integer domainId,
+                                           @RequestParam(required = false) String address,
+                                           @RequestParam(required = false) String login,
+                                           @SPRequestParam SortingAndPagination sortingAndPagination) {
+        return trackedDomainRequestsService.get(from,
+                to,
+                domainId,
+                address,
+                login,
+                sortingAndPagination);
+    }
 }
