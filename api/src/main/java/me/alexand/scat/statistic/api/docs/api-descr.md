@@ -22,15 +22,15 @@ GET http://localhost/api/total/requests/per/day
 
  Пример запроса со всеми параметрами:
  
- http://localhost/api/total/requests/per/day?from=2018-08-05&to=2018-08-15&order=date,desc&page=1&size=5
+ http://89.207.64.42/api/total/requests/per/day?from=2018-08-05&to=2018-08-15&order=date,desc&page=1&size=5
 
 ##### 1.2. Данные за конкретный день
  
- GET http://localhost/api/total/requests/for/*{date}*
+ GET http://localhost/api/total/requests/for/{date}
  
  где вместо *{date}* указывается конкретная дата, например:
  
- http://localhost/api/total/requests/for/2018-08-15
+ http://89.207.64.42/api/total/requests/for/2018-08-15
  
 #### 2. Методы для отслеживаемых доменов
 
@@ -38,7 +38,7 @@ GET http://localhost/api/total/requests/per/day
 
  POST http://localhost/api/tracked/domain
 
- Шаблон - это **регулярное выражение**, обязательный параметр pattern типа **String** передается в теле запроса.
+ Шаблон - это **регулярное выражение**, обязательный параметр **pattern** типа String передается в теле запроса.
  Если добавление пройдет успешно, то вернется 201 ответ.
 
 ##### 2.2. Список всех шаблонов
