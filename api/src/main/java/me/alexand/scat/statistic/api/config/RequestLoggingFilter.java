@@ -25,6 +25,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.filter.AbstractRequestLoggingFilter;
 
 import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 /**
  * Фильтр для логирования всех http-запросов API
@@ -53,9 +55,10 @@ public class RequestLoggingFilter extends AbstractRequestLoggingFilter {
             msg.append("?").append(queryString);
         }
         
-        return String.format("got %s-request %s from %s:%d",
+        return String.format("got %s-request %s at %s from %s:%d",
                 request.getMethod(),
                 msg.toString(),
+                LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
                 request.getRemoteAddr(),
                 request.getRemotePort());
     }
