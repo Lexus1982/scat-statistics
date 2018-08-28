@@ -72,7 +72,7 @@ public interface TrackedDomainRequestsTestEntities {
             .address("127.0.0.3")
             .login("login3")
             .firstTime(LocalTime.of(0, 41, 34))
-            .lastTime(LocalTime.of(23, 29, 20))
+            .lastTime(LocalTime.of(23, 39, 20))
             .count(BigInteger.valueOf(143))
             .build();
 

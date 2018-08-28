@@ -41,7 +41,63 @@ public interface TrackedDomainRequestsRepository {
     //TODO добавить javadoc
     int save(TrackedDomainRequests result);
 
-    //TODO добавить javadoc
+    /**
+     * Метод для получения результатов трекинга доменов.
+     *
+     * @param from начальная дата (обязательный)
+     * @param to   конечная дата (обязательный)
+     * @return список экземпляров класса TrackedDomainRequests
+     */
+    List<TrackedDomainRequests> findBetween(LocalDate from,
+                                            LocalDate to);
+
+    /**
+     * Метод для получения результатов трекинга доменов.
+     * Фильтры представляют собой список пар вида: имя_фильтруемого_поля -> значение
+     * Возможные варианты фильтров:
+     * <ul>
+     * <li>domain_id равен значению</li>
+     * <li>address like значение</li>
+     * <li>login like значение</li>
+     * </ul>
+     *
+     * @param from    начальная дата (обязательный)
+     * @param to      конечная дата (обязательный)
+     * @param filters фильтры
+     * @return список экземпляров класса TrackedDomainRequests
+     */
+    List<TrackedDomainRequests> findBetween(LocalDate from,
+                                            LocalDate to,
+                                            Map<String, String> filters);
+
+    /**
+     * Метод для получения результатов трекинга доменов.
+     *
+     * @param from                 начальная дата (обязательный)
+     * @param to                   конечная дата (обязательный)
+     * @param sortingAndPagination параметры сортировки и пейджинга
+     * @return список экземпляров класса TrackedDomainRequests
+     */
+    List<TrackedDomainRequests> findBetween(LocalDate from,
+                                            LocalDate to,
+                                            SortingAndPagination sortingAndPagination);
+
+    /**
+     * Метод для получения результатов трекинга доменов.<br>
+     * Фильтры представляют собой список пар вида: имя_фильтруемого_поля -> значение
+     * Возможные варианты фильтров:
+     * <ul>
+     * <li>domain_id равен значению</li>
+     * <li>address like значение</li>
+     * <li>login like значение</li>
+     * </ul>
+     *
+     * @param from                 начальная дата (обязательный)
+     * @param to                   конечная дата (обязательный)
+     * @param filters              фильтры
+     * @param sortingAndPagination параметры сортировки и пейджинга
+     * @return список экземпляров класса TrackedDomainRequests
+     */
     List<TrackedDomainRequests> findBetween(LocalDate from,
                                             LocalDate to,
                                             Map<String, String> filters,

@@ -51,20 +51,11 @@ public class DomainRegexRepositoryTests extends AbstractCommonTests {
         assertEquals(actual.size(), POPULATED_DOMAINS_COUNT);
         Assert.assertTrue(actual.contains(TEST_VK_COM));
         Assert.assertTrue(actual.contains(TEST_MAIL_RU));
-
-        repository.delete(TEST_VK_COM.getId());
-        repository.delete(TEST_MAIL_RU.getId());
-        actual = repository.getAll();
-        Assert.assertNotNull(actual);
-        Assert.assertTrue(actual.isEmpty());
     }
 
     @Test
     public void testGetCount() {
         assertEquals(POPULATED_DOMAINS_COUNT, repository.getCount());
-        repository.delete(TEST_VK_COM.getId());
-        repository.delete(TEST_MAIL_RU.getId());
-        assertEquals(0, repository.getCount());
     }
 
     @Test(expected = DomainRegexAlreadyExistsException.class)

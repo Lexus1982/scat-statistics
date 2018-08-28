@@ -29,12 +29,18 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import static java.util.Arrays.asList;
 import static me.alexand.scat.statistic.api.controllers.TrackedDomainRequestsRestController.URL;
-import static me.alexand.scat.statistic.common.data.TrackedDomainRequestsTestEntities.TRACKED_DOMAIN_REQUESTS_LIST;
+import static me.alexand.scat.statistic.common.data.TrackedDomainRequestsTestEntities.*;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -45,18 +51,23 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @author asidorov84@gmail.com
  */
 public class TrackedDomainRequestsControllerTests extends AbstractControllerTests {
+    private static final LocalDate FROM = LocalDate.of(2018, 8, 1);
+    private static final LocalDate TO = LocalDate.of(2018, 8, 5);
+
     @Autowired
     private TrackedDomainRequestsRepository trackedDomainRequestsRepository;
 
     @Test
     public void testGetAll() throws Exception {
-        when(trackedDomainRequestsRepository.findBetween(isNull(), isNull(), anyMap(), eq(SortingAndPagination.builder()
+        when(trackedDomainRequestsRepository.findBetween(eq(FROM), eq(TO), anyMap(), eq(SortingAndPagination.builder()
                 .offset(0)
                 .limit(0)
                 .build())))
                 .thenReturn(TRACKED_DOMAIN_REQUESTS_LIST);
 
-        String responseContent = mockMvc.perform(get(URL))
+        String responseContent = mockMvc.perform(get(URL)
+                .param("from", FROM.format(DateTimeFormatter.ISO_DATE))
+                .param("to", TO.format(DateTimeFormatter.ISO_DATE)))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
@@ -68,5 +79,36 @@ public class TrackedDomainRequestsControllerTests extends AbstractControllerTest
         List<TrackedDomainRequests> actual = om.readValue(responseContent, new TypeReference<List<TrackedDomainRequests>>() {
         });
         assertEquals(TRACKED_DOMAIN_REQUESTS_LIST, actual);
+    }
+
+    @Test
+    public void testGetByAddress() throws Exception {
+        Map<String, String> filters = new HashMap<>();
+
+        filters.put("address", TEST_1.getAddress());
+
+        List<TrackedDomainRequests> expected = asList(TEST_1, TEST_3);
+
+        when(trackedDomainRequestsRepository.findBetween(eq(FROM), eq(TO), eq(filters), eq(SortingAndPagination.builder()
+                .offset(0)
+                .limit(0)
+                .build())))
+                .thenReturn(expected);
+
+        String responseContent = mockMvc.perform(get(URL)
+                .param("from", FROM.format(DateTimeFormatter.ISO_DATE))
+                .param("to", TO.format(DateTimeFormatter.ISO_DATE))
+                .param("address", TEST_1.getAddress()))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+
+        List<TrackedDomainRequests> actual = om.readValue(responseContent, new TypeReference<List<TrackedDomainRequests>>() {
+        });
+        assertEquals(expected, actual);
     }
 }

@@ -50,17 +50,12 @@ public class TrackedDomainRequestsRestController {
     }
 
     @GetMapping
-    public List<TrackedDomainRequests> get(@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
-                                           @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+    public List<TrackedDomainRequests> get(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+                                           @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
                                            @RequestParam(required = false) Integer domainId,
                                            @RequestParam(required = false) String address,
                                            @RequestParam(required = false) String login,
                                            @SPRequestParam SortingAndPagination sortingAndPagination) {
-        return trackedDomainRequestsService.get(from,
-                to,
-                domainId,
-                address,
-                login,
-                sortingAndPagination);
+        return trackedDomainRequestsService.get(from, to, domainId, address, login, sortingAndPagination);
     }
 }

@@ -22,14 +22,19 @@
 package me.alexand.scat.statistic.common.repository;
 
 import me.alexand.scat.statistic.common.entities.TrackedDomainRequests;
+import me.alexand.scat.statistic.common.utils.ColumnOrder;
+import me.alexand.scat.statistic.common.utils.SortingAndPagination;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDate;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import static me.alexand.scat.statistic.common.data.TrackedDomainRequestsTestEntities.TEST_1;
+import static java.util.Arrays.asList;
+import static me.alexand.scat.statistic.common.data.TrackedDomainRequestsTestEntities.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -59,8 +64,78 @@ public class TrackedDomainRequestsRepositoryTests extends AbstractCommonTests {
     }
 
     @Test
-    public void testFindByAddress() {
-        List<TrackedDomainRequests> actual = repository.findBetween(LocalDate.of(2018, 8, 1), LocalDate.of(2018, 8, 1), null, null);
+    public void testFindBetweenDates() {
+        List<TrackedDomainRequests> expected = asList(TEST_1, TEST_2);
+        List<TrackedDomainRequests> actual = repository.findBetween(LocalDate.of(2018, 8, 1), LocalDate.of(2018, 8, 1));
         assertNotNull(actual);
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testFindByDomainID() {
+        Map<String, String> filters = new HashMap<>();
+        filters.put("domain_id", "2");
+        List<TrackedDomainRequests> expected = asList(TEST_3, TEST_4);
+        List<TrackedDomainRequests> actual = repository.findBetween(LocalDate.of(2018, 8, 1), LocalDate.of(2018, 8, 5), filters);
+        assertNotNull(actual);
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testFindByAddress() {
+        Map<String, String> filters = new HashMap<>();
+        filters.put("address", "127.0.0");
+        List<TrackedDomainRequests> actual = repository.findBetween(LocalDate.of(2018, 8, 1), LocalDate.of(2018, 8, 5), filters);
+        assertNotNull(actual);
+        assertEquals(TRACKED_DOMAIN_REQUESTS_LIST, actual);
+    }
+
+    @Test
+    public void testFindByLogin() {
+        Map<String, String> filters = new HashMap<>();
+        filters.put("login", "login");
+        List<TrackedDomainRequests> expected = asList(TEST_1, TEST_2, TEST_3, TEST_4);
+        List<TrackedDomainRequests> actual = repository.findBetween(LocalDate.of(2018, 8, 1), LocalDate.of(2018, 8, 5), filters);
+        assertNotNull(actual);
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testFindWithSortingAndPagination() {
+        SortingAndPagination sortingAndPagination = SortingAndPagination.builder()
+                .offset(0)
+                .limit(2)
+                .orderingColumn("date", ColumnOrder.DESC)
+                .build();
+
+        List<TrackedDomainRequests> expected = asList(TEST_5, TEST_4);
+        List<TrackedDomainRequests> actual = repository.findBetween(LocalDate.of(2018, 8, 1), LocalDate.of(2018, 8, 5), sortingAndPagination);
+        assertNotNull(actual);
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testFindWithAllParameters() {
+        Map<String, String> filters = new HashMap<>();
+        filters.put("domain_id", "1");
+        filters.put("address", "0.2");
+        filters.put("login", "login");
+
+        SortingAndPagination sortingAndPagination = SortingAndPagination.builder()
+                .offset(0)
+                .limit(2)
+                .orderingColumn("date", ColumnOrder.DESC)
+                .build();
+
+        List<TrackedDomainRequests> expected = Collections.singletonList(TEST_2);
+
+        List<TrackedDomainRequests> actual = repository.findBetween(
+                LocalDate.of(2018, 8, 1),
+                LocalDate.of(2018, 8, 5),
+                filters,
+                sortingAndPagination);
+
+        assertNotNull(actual);
+        assertEquals(expected, actual);
     }
 }

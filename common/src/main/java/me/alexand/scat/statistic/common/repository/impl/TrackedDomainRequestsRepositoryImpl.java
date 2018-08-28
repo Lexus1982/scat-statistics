@@ -35,7 +35,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -118,29 +117,52 @@ public class TrackedDomainRequestsRepositoryImpl implements TrackedDomainRequest
 
     @Override
     @Transactional(value = "persistenceTM", readOnly = true)
+    public List<TrackedDomainRequests> findBetween(LocalDate from, LocalDate to) {
+        return findBetween(from, to, null, null);
+    }
+
+    @Override
+    @Transactional(value = "persistenceTM", readOnly = true)
+    public List<TrackedDomainRequests> findBetween(LocalDate from, LocalDate to, Map<String, String> filters) {
+        return findBetween(from, to, filters, null);
+    }
+
+    @Override
+    @Transactional(value = "persistenceTM", readOnly = true)
+    public List<TrackedDomainRequests> findBetween(LocalDate from, LocalDate to, SortingAndPagination sortingAndPagination) {
+        return findBetween(from, to, null, sortingAndPagination);
+    }
+
+    @Override
+    @Transactional(value = "persistenceTM", readOnly = true)
     public List<TrackedDomainRequests> findBetween(LocalDate from,
                                                    LocalDate to,
                                                    Map<String, String> filters,
                                                    SortingAndPagination sortingAndPagination) {
+        Objects.requireNonNull(from);
+        Objects.requireNonNull(to);
+
         String suffix = sortingAndPagination != null ? sortingAndPagination.formSQLSuffix() : "";
-        String sqlFilters = "";
+        StringBuilder sqlFilters = new StringBuilder();
 
-        if (from != null && to != null) {
-            if (from.equals(to)) {
-                sqlFilters = String.format(" WHERE date = '%s' ", from.format(DateTimeFormatter.ISO_DATE));
-            } else {
-                sqlFilters = String.format(" WHERE date BETWEEN '%s' AND '%s' ",
-                        from.format(DateTimeFormatter.ISO_DATE),
-                        to.format(DateTimeFormatter.ISO_DATE));
+        if (filters != null) {
+            String domainId = filters.get("domain_id");
+
+            if (domainId != null) {
+                sqlFilters.append(String.format(" AND domain_id = %s", domainId));
             }
-        }
 
-        if (from != null && to == null) {
-            sqlFilters = String.format(" WHERE date >= '%s' ", from.format(DateTimeFormatter.ISO_DATE));
-        }
+            String address = filters.get("address");
 
-        if (from == null && to != null) {
-            sqlFilters = String.format(" WHERE date <= '%s' ", to.format(DateTimeFormatter.ISO_DATE));
+            if (address != null) {
+                sqlFilters.append(String.format(" AND address LIKE '%s'", "%" + address + "%"));
+            }
+
+            String login = filters.get("login");
+
+            if (login != null) {
+                sqlFilters.append(String.format(" AND login LIKE '%s'", "%" + login + "%"));
+            }
         }
 
         String query = String.format("SELECT " +
@@ -154,11 +176,17 @@ public class TrackedDomainRequestsRepositoryImpl implements TrackedDomainRequest
                 "  tdr.first_time, " +
                 "  tdr.last_time, " +
                 "  tdr.count " +
-                "FROM tracked_domain_requests tdr INNER JOIN domain_regex dr ON tdr.domain_id = dr.id %s %s", sqlFilters, suffix);
+                "FROM tracked_domain_requests tdr INNER JOIN domain_regex dr ON tdr.domain_id = dr.id " +
+                "WHERE date BETWEEN ? AND ? " +
+                "%s %s", sqlFilters, suffix);
 
         LOGGER.debug("executing query: [{}]", query);
 
         return jdbcTemplate.query(query,
+                ps -> {
+                    ps.setObject(1, from);
+                    ps.setObject(2, to);
+                },
                 (rs, rowNum) -> TrackedDomainRequests.builder()
                         .date(rs.getTimestamp(1).toLocalDateTime().toLocalDate())
                         .domainRegex(DomainRegex.builder()

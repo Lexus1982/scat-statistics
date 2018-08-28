@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS domain_regex (
 
 CREATE TABLE IF NOT EXISTS tracked_domain_requests (
   date       DATE        NOT NULL,
-  domain_id  BIGINT REFERENCES domain_regex (id),
+  domain_id  BIGINT REFERENCES domain_regex (id) ON DELETE CASCADE,
   address    VARCHAR(15) NOT NULL,
   login      VARCHAR     NOT NULL,
   first_time TIME        NOT NULL,

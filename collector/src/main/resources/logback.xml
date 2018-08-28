@@ -69,7 +69,7 @@
         <immediateFlush>true</immediateFlush>
     </appender>
 
-    <logger name="me.alexand.scat.statistic.collector" level="debug" additivity="false">
+    <logger name="me.alexand.scat.statistic" level="debug" additivity="false">
         <appender-ref ref="common"/>
         <appender-ref ref="console"/>
     </logger>
