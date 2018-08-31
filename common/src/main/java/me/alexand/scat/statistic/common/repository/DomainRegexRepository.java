@@ -23,7 +23,7 @@ package me.alexand.scat.statistic.common.repository;
 
 import me.alexand.scat.statistic.common.entities.DomainRegex;
 import me.alexand.scat.statistic.common.utils.SortingAndPagination;
-import me.alexand.scat.statistic.common.utils.exceptions.DomainRegexAlreadyExistsException;
+import me.alexand.scat.statistic.common.utils.exceptions.DomainPatternAlreadyExistsException;
 
 import java.util.List;
 import java.util.regex.PatternSyntaxException;
@@ -36,15 +36,15 @@ import java.util.regex.PatternSyntaxException;
  */
 public interface DomainRegexRepository {
     /**
-     * Метод для добавления шаблона доменного имени.<br>
+     * Метод для добавления шаблона доменного имени в хранилище.<br>
      * В качестве параметра ожидается корректное регулярное выражение.
      * Перед добавлением у параметра удаляются все начальные и конечные пробельные символы
      *
      * @param pattern корректное регулярное выражение
      * @return экземпляр класса DomainRegex
-     * @throws PatternSyntaxException            если регулярное выражение содержит синтаксическую ошибку
-     * @throws NullPointerException              если параметр null
-     * @throws DomainRegexAlreadyExistsException если такой шаблон уже присутствует
+     * @throws PatternSyntaxException              если регулярное выражение содержит синтаксическую ошибку
+     * @throws NullPointerException                если параметр null
+     * @throws DomainPatternAlreadyExistsException если такой шаблон уже присутствует в хранилище
      * @see java.util.regex.Pattern
      */
     DomainRegex add(String pattern);
@@ -61,22 +61,22 @@ public interface DomainRegexRepository {
      * Метод для получения списка всех шаблонов доменных имен
      * Список отсортирован по дате добавления по убыванию.
      *
-     * @return список шаблонов
+     * @return список экземпляров класса DomainRegex
      */
-    List<DomainRegex> getAll();
+    List<DomainRegex> findAll();
 
     /**
      * Метод для получения списка всех шаблонов доменных имен с параметрами сортировки и пейджинга
      *
      * @param sortingAndPagination параметры сортировки и пейджинга (необязательный)
-     * @return список шаблонов
+     * @return список экземпляров класса DomainRegex
      */
-    List<DomainRegex> getAll(SortingAndPagination sortingAndPagination);
+    List<DomainRegex> findAll(SortingAndPagination sortingAndPagination);
 
     /**
-     * Метод для получения количества шаблонов доменных имен
+     * Метод для получения общего количества шаблонов доменных имен в хранилище
      *
-     * @return количество шаблонов
+     * @return общее количество шаблонов
      */
     long getCount();
 }

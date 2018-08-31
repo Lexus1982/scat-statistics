@@ -1,5 +1,4 @@
 <configuration>
-
     <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <charset>UTF-8</charset>
@@ -12,6 +11,10 @@
     </root>
 
     <logger name="me.alexand.scat.statistic.common" level="debug" additivity="false">
+        <appender-ref ref="console"/>
+    </logger>
+    
+    <logger name="org.springframework.jdbc.datasource.DataSourceTransactionManager" level="debug" additivity="false">
         <appender-ref ref="console"/>
     </logger>
 </configuration>

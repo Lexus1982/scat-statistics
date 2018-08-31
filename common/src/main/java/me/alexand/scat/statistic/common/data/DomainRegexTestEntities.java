@@ -26,7 +26,7 @@ import me.alexand.scat.statistic.common.entities.DomainRegex;
 import java.time.LocalDateTime;
 
 /**
- * Экземпляры класса DomainRegex для тестов
+ * Экземпляры класса DomainRegex для проведения тестов
  *
  * @author asidorov84@gmail.com
  */

@@ -24,7 +24,7 @@ package me.alexand.scat.statistic.common.repository.impl;
 import me.alexand.scat.statistic.common.entities.DomainRegex;
 import me.alexand.scat.statistic.common.repository.DomainRegexRepository;
 import me.alexand.scat.statistic.common.utils.SortingAndPagination;
-import me.alexand.scat.statistic.common.utils.exceptions.DomainRegexAlreadyExistsException;
+import me.alexand.scat.statistic.common.utils.exceptions.DomainPatternAlreadyExistsException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
@@ -51,15 +51,15 @@ import static me.alexand.scat.statistic.common.utils.ColumnOrder.DESC;
  * @see DomainRegex
  * @see DomainRegexRepository
  */
-public class DomainRegexRepositoryImpl implements DomainRegexRepository {
-    private static final Logger LOGGER = LoggerFactory.getLogger(DomainRegexRepositoryImpl.class);
+public class DomainRegexRepositoryJDBCImpl implements DomainRegexRepository {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DomainRegexRepositoryJDBCImpl.class);
     private static final SortingAndPagination DEFAULT_SORTING_PARAM = SortingAndPagination.builder()
             .orderingColumn("date_added", DESC)
             .build();
-    
+
     private final JdbcTemplate jdbcTemplate;
 
-    public DomainRegexRepositoryImpl(JdbcTemplate jdbcTemplate) {
+    public DomainRegexRepositoryJDBCImpl(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
@@ -73,16 +73,20 @@ public class DomainRegexRepositoryImpl implements DomainRegexRepository {
         //проверка синтаксиса регулярного выражения
         Pattern.compile(pattern);
 
-        String query = "INSERT INTO domain_regex AS td (pattern, date_added) VALUES (?, ?)" +
+        String query = "INSERT INTO domain_regex AS td (pattern, date_added, is_active) VALUES (?, ?, ?)" +
                 " ON CONFLICT (pattern) DO NOTHING ";
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         try {
             LocalDateTime dateAdded = LocalDateTime.now();
+
+            LOGGER.debug("executing update query: [{}]", query);
+
             int rowsCount = jdbcTemplate.update(con -> {
                 PreparedStatement ps = con.prepareStatement(query, new String[]{"id"});
                 ps.setString(1, pattern.trim());
                 ps.setTimestamp(2, Timestamp.valueOf(dateAdded));
+                ps.setBoolean(3, true);
                 return ps;
             }, keyHolder);
 
@@ -97,10 +101,10 @@ public class DomainRegexRepositoryImpl implements DomainRegexRepository {
                 return result;
             } else {
                 LOGGER.info("pattern '{}' already present", pattern);
-                throw new DomainRegexAlreadyExistsException();
+                throw new DomainPatternAlreadyExistsException(pattern);
             }
         } catch (DataAccessException e) {
-            LOGGER.error(e.getMessage());
+            LOGGER.error("exception while adding domain pattern: {}", e.getMessage());
         }
         return null;
     }
@@ -108,54 +112,64 @@ public class DomainRegexRepositoryImpl implements DomainRegexRepository {
     @Override
     @Transactional("persistenceTM")
     public boolean delete(long id) {
+        boolean result = false;
+
         try {
-            return jdbcTemplate.update("DELETE FROM domain_regex WHERE id = ?", id) == 1;
+            String query = "DELETE FROM domain_regex WHERE id = ?";
+            LOGGER.debug("executing delete query: [{}]", query);
+            result = jdbcTemplate.update(query, id) == 1;
+            LOGGER.debug("pattern deleted: {}", result);
         } catch (DataAccessException e) {
-            LOGGER.error(e.getMessage());
+            LOGGER.error("exception while deleting domain pattern: {}", e.getMessage());
         }
 
-        return false;
+        return result;
     }
 
     @Override
     @Transactional(value = "persistenceTM", readOnly = true)
-    public List<DomainRegex> getAll() {
-        return getAll(DEFAULT_SORTING_PARAM);
+    public List<DomainRegex> findAll() {
+        return findAll(DEFAULT_SORTING_PARAM);
     }
 
     @Override
     @Transactional(value = "persistenceTM", readOnly = true)
-    public List<DomainRegex> getAll(SortingAndPagination sortingAndPagination) {
+    public List<DomainRegex> findAll(SortingAndPagination sortingAndPagination) {
         String suffix = sortingAndPagination != null ? sortingAndPagination.formSQLSuffix() : "";
         String query = String.format("SELECT id, pattern, date_added, is_active FROM domain_regex %s", suffix);
-        
-        LOGGER.debug("executing query: [{}]", query);
-        
+        List<DomainRegex> result = null;
+
         try {
-            return jdbcTemplate.query(query,
+            LOGGER.debug("executing query: [{}]", query);
+            result = jdbcTemplate.query(query,
                     (rs, rowNum) -> DomainRegex.builder()
                             .id(rs.getLong(1))
                             .pattern(rs.getString(2))
                             .dateAdded(rs.getTimestamp(3).toLocalDateTime())
                             .active(rs.getBoolean(4))
                             .build());
+            LOGGER.debug("entities found: {}", result.size());
         } catch (DataAccessException e) {
-            LOGGER.error(e.getMessage());
+            LOGGER.error("exception while finding DomainRegex: {}", e.getMessage());
         }
 
-        return new ArrayList<>();
+        return result != null ? result : new ArrayList<>();
     }
 
     @Override
     @Transactional(value = "persistenceTM", readOnly = true)
     public long getCount() {
-        try {
-            Long count = jdbcTemplate.queryForObject("SELECT count(*) AS cnt FROM domain_regex", Long.class);
-            return count != null ? count : 0;
-        } catch (DataAccessException e) {
-            LOGGER.error(e.getMessage());
-        }
+        long result = 0;
 
-        return 0;
+        try {
+            String query = "SELECT count(*) AS cnt FROM domain_regex";
+            LOGGER.debug("executing query: [{}]", query);
+            Long count = jdbcTemplate.queryForObject(query, Long.class);
+            result = count != null ? count : 0;
+            LOGGER.debug("patterns count: {}", count);
+        } catch (DataAccessException e) {
+            LOGGER.error("exception while get count: {}", e.getMessage());
+        }
+        return result;
     }
 }

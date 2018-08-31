@@ -24,5 +24,8 @@ package me.alexand.scat.statistic.common.utils.exceptions;
 /**
  * @author asidorov84@gmail.com
  */
-public class DomainRegexAlreadyExistsException extends RuntimeException {
+public class DomainPatternAlreadyExistsException extends RuntimeException {
+    public DomainPatternAlreadyExistsException(String message) {
+        super(message);
+    }
 }

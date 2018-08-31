@@ -29,7 +29,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Экземпляры класса ClickCount для тестов
+ * Экземпляры класса ClickCount для проведения тестов
  *
  * @author asidorov84@gmail.com
  */

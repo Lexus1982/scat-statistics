@@ -74,7 +74,7 @@ public class Sampling {
         LOGGER.info("start tracking domains...");
         LocalDateTime endDateTime = lastTimeTrackDomains.plusSeconds(30);
 
-        List<DomainRegex> domainRegexps = domainRegexRepository.getAll();
+        List<DomainRegex> domainRegexps = domainRegexRepository.findAll();
 
         List<String> domainRegexPatterns = domainRegexps.stream()
                 .map(DomainRegex::getPattern)

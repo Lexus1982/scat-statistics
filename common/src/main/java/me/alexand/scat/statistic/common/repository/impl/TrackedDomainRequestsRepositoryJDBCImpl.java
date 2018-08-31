@@ -35,10 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import static java.sql.Types.BIGINT;
 
@@ -49,8 +46,8 @@ import static java.sql.Types.BIGINT;
  * @see TrackedDomainRequests
  * @see TrackedDomainRequestsRepository
  */
-public class TrackedDomainRequestsRepositoryImpl implements TrackedDomainRequestsRepository {
-    private static final Logger LOGGER = LoggerFactory.getLogger(TrackedDomainRequestsRepositoryImpl.class);
+public class TrackedDomainRequestsRepositoryJDBCImpl implements TrackedDomainRequestsRepository {
+    private static final Logger LOGGER = LoggerFactory.getLogger(TrackedDomainRequestsRepositoryJDBCImpl.class);
 
     private static final String INSERT_QUERY = "INSERT INTO tracked_domain_requests AS tdr (date, domain_id, address, login, first_time, last_time, count) " +
             " VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT (date, domain_id, address, login) DO UPDATE SET " +
@@ -59,7 +56,7 @@ public class TrackedDomainRequestsRepositoryImpl implements TrackedDomainRequest
 
     private final JdbcTemplate jdbcTemplate;
 
-    public TrackedDomainRequestsRepositoryImpl(JdbcTemplate jdbcTemplate) {
+    public TrackedDomainRequestsRepositoryJDBCImpl(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
@@ -67,9 +64,12 @@ public class TrackedDomainRequestsRepositoryImpl implements TrackedDomainRequest
     @Transactional("persistenceTM")
     public int saveAll(List<TrackedDomainRequests> entities) {
         Objects.requireNonNull(entities);
+        int result = 0;
 
         try {
-            int[] rows = jdbcTemplate.batchUpdate(INSERT_QUERY, new BatchPreparedStatementSetter() {
+            LOGGER.debug("executing query: [{}]", INSERT_QUERY);
+
+            result = Arrays.stream(jdbcTemplate.batchUpdate(INSERT_QUERY, new BatchPreparedStatementSetter() {
                 @Override
                 public void setValues(PreparedStatement ps, int i) throws SQLException {
                     ps.setObject(1, entities.get(i).getDate());
@@ -85,21 +85,25 @@ public class TrackedDomainRequestsRepositoryImpl implements TrackedDomainRequest
                 public int getBatchSize() {
                     return entities.size();
                 }
-            });
+            })).sum();
 
-            return Arrays.stream(rows).sum();
+            LOGGER.debug("entities saved: {}", result);
         } catch (DataAccessException e) {
-            LOGGER.error(e.getMessage());
+            LOGGER.error("exception while saving: {}", e.getMessage());
         }
 
-        return 0;
+        return result;
     }
 
     @Override
     @Transactional("persistenceTM")
-    public int save(TrackedDomainRequests entity) {
+    public boolean save(TrackedDomainRequests entity) {
+        boolean result = false;
+
         try {
-            return jdbcTemplate.update(INSERT_QUERY, ps -> {
+            LOGGER.debug("executing query: [{}]", INSERT_QUERY);
+
+            result = jdbcTemplate.update(INSERT_QUERY, ps -> {
                 ps.setObject(1, entity.getDate());
                 ps.setObject(2, entity.getDomainRegex().getId());
                 ps.setString(3, entity.getAddress());
@@ -107,12 +111,14 @@ public class TrackedDomainRequestsRepositoryImpl implements TrackedDomainRequest
                 ps.setObject(5, entity.getFirstTime());
                 ps.setObject(6, entity.getLastTime());
                 ps.setObject(7, entity.getCount(), BIGINT);
-            });
+            }) == 1;
+
+            LOGGER.debug("entity saved: {}", result);
         } catch (DataAccessException e) {
-            LOGGER.error(e.getMessage());
+            LOGGER.error("exception while saving: {}", e.getMessage());
         }
 
-        return 0;
+        return result;
     }
 
     @Override
@@ -180,26 +186,36 @@ public class TrackedDomainRequestsRepositoryImpl implements TrackedDomainRequest
                 "WHERE date BETWEEN ? AND ? " +
                 "%s %s", sqlFilters, suffix);
 
-        LOGGER.debug("executing query: [{}]", query);
+        List<TrackedDomainRequests> result = null;
 
-        return jdbcTemplate.query(query,
-                ps -> {
-                    ps.setObject(1, from);
-                    ps.setObject(2, to);
-                },
-                (rs, rowNum) -> TrackedDomainRequests.builder()
-                        .date(rs.getTimestamp(1).toLocalDateTime().toLocalDate())
-                        .domainRegex(DomainRegex.builder()
-                                .id(rs.getLong(2))
-                                .pattern(rs.getString(3))
-                                .dateAdded(rs.getTimestamp(4).toLocalDateTime())
-                                .active(rs.getBoolean(5))
-                                .build())
-                        .address(rs.getString(6))
-                        .login(rs.getString(7))
-                        .firstTime(rs.getTime(8).toLocalTime())
-                        .lastTime(rs.getTime(9).toLocalTime())
-                        .count(rs.getBigDecimal(10).toBigInteger())
-                        .build());
+        try {
+            LOGGER.debug("executing query: [{}]", query);
+
+            result = jdbcTemplate.query(query,
+                    ps -> {
+                        ps.setObject(1, from);
+                        ps.setObject(2, to);
+                    },
+                    (rs, rowNum) -> TrackedDomainRequests.builder()
+                            .date(rs.getTimestamp(1).toLocalDateTime().toLocalDate())
+                            .domainRegex(DomainRegex.builder()
+                                    .id(rs.getLong(2))
+                                    .pattern(rs.getString(3))
+                                    .dateAdded(rs.getTimestamp(4).toLocalDateTime())
+                                    .active(rs.getBoolean(5))
+                                    .build())
+                            .address(rs.getString(6))
+                            .login(rs.getString(7))
+                            .firstTime(rs.getTime(8).toLocalTime())
+                            .lastTime(rs.getTime(9).toLocalTime())
+                            .count(rs.getBigDecimal(10).toBigInteger())
+                            .build());
+
+            LOGGER.debug("entities found: {}", result.size());
+        } catch (DataAccessException e) {
+            LOGGER.error("exception while finding: {}", e.getMessage());
+        }
+
+        return result != null ? result : new ArrayList<>();
     }
 }

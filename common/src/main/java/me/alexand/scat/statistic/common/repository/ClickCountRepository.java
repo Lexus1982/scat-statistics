@@ -36,55 +36,58 @@ import java.util.List;
 public interface ClickCountRepository {
 
     /**
-     * Метод для сохранения общего количества веб-запросов в базе данных.
-     * Если данные для указанного дня уже имеются, то производится суммирование старого значения с новым.
-     * Иначе создается новая запись на указанный день с соответствующим количеством запросов.
+     * Метод для сохранения списка экземпляров ClickCount в хранилище.
+     * Если данные для какого-либо дня уже имеются в хранилище, то производится суммирование
+     * старого значения счетчика с новым.
      *
-     * @param entities список сущностей типа ClickCount (обязательный)
-     * @return количество успешно обновленных записей
+     * @param entities список ClickCount (обязательный)
+     * @return количество успешно сохраненных экземпляров
+     * @throws NullPointerException если параметр null
      */
     int saveAll(List<ClickCount> entities);
 
     /**
-     * Метод для получения всех ClickCount из базы данных.
+     * Метод для получения всех экземпляров класса ClickCount из хранилища.
      * Список отсортирован по дате по убыванию.
      *
-     * @return список ClickCount
+     * @return список экземпляров класса ClickCount
      */
     List<ClickCount> findAll();
 
     /**
-     * Метод для получения ClickCount из базы данных c параметрами сортировки и пейджинга.
+     * Метод для получения экземпляров класса ClickCount из хранилища c параметрами сортировки и пейджинга.
      *
      * @param sortingAndPagination параметры сортировки и пейджинга (необязательный)
-     * @return список ClickCount
+     * @return список экземпляров класса ClickCount
      */
     List<ClickCount> findAll(SortingAndPagination sortingAndPagination);
 
     /**
-     * Метод для получения ClickCount из базы данных за указанный период
+     * Метод для получения экземпляров класса ClickCount из хранилища за указанный период.
      *
      * @param from начальная дата (необязательный, включительно)
      * @param to   конечная дата (необязательный, включительно)
-     * @return список ClickCount
+     * @return список экземпляров класса ClickCount
      */
     List<ClickCount> findBetween(LocalDate from, LocalDate to);
 
     /**
-     * Метод для получения ClickCount из базы данных за указанный период с параметрами сортировки и пейджинга
+     * Метод для получения экземпляров класса ClickCount из хранилища за указанный период
+     * с параметрами сортировки и пейджинга.
      *
-     * @param from                начальная дата (необязательный, включительно)
-     * @param to                  конечная дата (необязательный, включительно)
+     * @param from                 начальная дата (необязательный, включительно)
+     * @param to                   конечная дата (необязательный, включительно)
      * @param sortingAndPagination параметры сортировки и пейджинга (необязательный)
-     * @return список ClickCount
+     * @return список экземпляров класса ClickCount
      */
     List<ClickCount> findBetween(LocalDate from, LocalDate to, SortingAndPagination sortingAndPagination);
 
     /**
-     * Метод для получения ClickCount за указанную дату
+     * Метод для получения экземпляра класса ClickCount за указанную дату.
      *
      * @param date дата (обязательный)
      * @return экземпляр класса ClickCount, либо null - если за указанную дату нет данных
+     * @throws NullPointerException если параметр null
      */
     ClickCount findByDate(LocalDate date);
 }

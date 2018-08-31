@@ -44,6 +44,6 @@ public class DomainRegexService {
     }
 
     public List<DomainRegex> getAll(SortingAndPagination sortingAndPagination) {
-        return repository.getAll(sortingAndPagination);
+        return repository.findAll(sortingAndPagination);
     }
 }

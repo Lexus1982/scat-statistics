@@ -22,7 +22,7 @@
 package me.alexand.scat.statistic.common.repository;
 
 import me.alexand.scat.statistic.common.entities.DomainRegex;
-import me.alexand.scat.statistic.common.utils.exceptions.DomainRegexAlreadyExistsException;
+import me.alexand.scat.statistic.common.utils.exceptions.DomainPatternAlreadyExistsException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +46,7 @@ public class DomainRegexRepositoryTests extends AbstractCommonTests {
 
     @Test
     public void testGetAll() {
-        List<DomainRegex> actual = repository.getAll();
+        List<DomainRegex> actual = repository.findAll();
         Assert.assertNotNull(actual);
         assertEquals(actual.size(), POPULATED_DOMAINS_COUNT);
         Assert.assertTrue(actual.contains(TEST_VK_COM));
@@ -58,7 +58,7 @@ public class DomainRegexRepositoryTests extends AbstractCommonTests {
         assertEquals(POPULATED_DOMAINS_COUNT, repository.getCount());
     }
 
-    @Test(expected = DomainRegexAlreadyExistsException.class)
+    @Test(expected = DomainPatternAlreadyExistsException.class)
     public void testAddDuplicate() {
         repository.add(MAIL_RU_REGEX_PATTERN);
     }
@@ -69,7 +69,7 @@ public class DomainRegexRepositoryTests extends AbstractCommonTests {
         Assert.assertNotNull(actual);
         assertEquals(OK_RU_REGEX_PATTERN, actual.getPattern());
 
-        List<DomainRegex> domainRegexList = repository.getAll();
+        List<DomainRegex> domainRegexList = repository.findAll();
         Assert.assertNotNull(domainRegexList);
 
         Assert.assertTrue(domainRegexList.stream()

@@ -26,6 +26,7 @@ import me.alexand.scat.statistic.common.repository.ClickCountRepository;
 import me.alexand.scat.statistic.common.utils.SortingAndPagination;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -47,15 +49,15 @@ import static me.alexand.scat.statistic.common.utils.ColumnOrder.DESC;
  * @see ClickCount
  * @see ClickCountRepository
  */
-public class ClickCountRepositoryImpl implements ClickCountRepository {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ClickCountRepositoryImpl.class);
+public class ClickCountRepositoryJDBCImpl implements ClickCountRepository {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ClickCountRepositoryJDBCImpl.class);
     private static final SortingAndPagination DEFAULT_SORTING_PARAM = SortingAndPagination.builder()
             .orderingColumn("date", DESC)
             .build();
 
     private final JdbcTemplate jdbcTemplate;
 
-    public ClickCountRepositoryImpl(JdbcTemplate jdbcTemplate) {
+    public ClickCountRepositoryJDBCImpl(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
@@ -63,31 +65,34 @@ public class ClickCountRepositoryImpl implements ClickCountRepository {
     @Transactional("persistenceTM")
     public int saveAll(List<ClickCount> entities) {
         Objects.requireNonNull(entities);
-        if (entities.isEmpty()) {
-            return 0;
+        int recordsAffected = 0;
+
+        if (!entities.isEmpty()) {
+            try {
+                String query = "INSERT INTO click_count AS cc (date, count) VALUES (?, ?)" +
+                        " ON CONFLICT (date) DO UPDATE SET count = cc.count + EXCLUDED.count";
+
+                LOGGER.debug("executing batch update query: [{}]", query);
+
+                recordsAffected = Arrays.stream(jdbcTemplate.batchUpdate(query, new BatchPreparedStatementSetter() {
+                    @Override
+                    public void setValues(PreparedStatement ps, int i) throws SQLException {
+                        ps.setObject(1, entities.get(i).getDate());
+                        ps.setObject(2, entities.get(i).getCount(), BIGINT);
+                    }
+
+                    @Override
+                    public int getBatchSize() {
+                        return entities.size();
+                    }
+                })).sum();
+            } catch (DataAccessException e) {
+                LOGGER.error("exception while saving ClickCount: {}", e.getMessage());
+            }
         }
 
-        String query = "INSERT INTO click_count AS cc (date, count) VALUES (?, ?) ON CONFLICT (date) DO UPDATE SET " +
-                "count = cc.count + EXCLUDED.count";
-
-        LOGGER.debug("executing batch update: [{}]", query);
-
-        int[] rows = jdbcTemplate.batchUpdate(query, new BatchPreparedStatementSetter() {
-            @Override
-            public void setValues(PreparedStatement ps, int i) throws SQLException {
-                ps.setObject(1, entities.get(i).getDate());
-                ps.setObject(2, entities.get(i).getCount(), BIGINT);
-            }
-
-            @Override
-            public int getBatchSize() {
-                return entities.size();
-            }
-        });
-
-        int recordsInserted = Arrays.stream(rows).sum();
-        LOGGER.debug("records successfully inserted: {}", recordsInserted);
-        return recordsInserted;
+        LOGGER.debug("records successfully affected: {}", recordsAffected);
+        return recordsAffected;
     }
 
     @Override
@@ -131,19 +136,28 @@ public class ClickCountRepositoryImpl implements ClickCountRepository {
         }
 
         String query = String.format("SELECT date, count FROM click_count %s %s", filters, suffix);
+        List<ClickCount> result = null;
 
-        LOGGER.debug("executing query: [{}]", query);
+        try {
+            LOGGER.debug("executing query: [{}]", query);
 
-        return jdbcTemplate.query(query,
-                ps -> {
-                    int paramNumber = 1;
-                    if (from != null) ps.setObject(paramNumber++, from);
-                    if (to != null && !to.equals(from)) ps.setObject(paramNumber, to);
-                },
-                (rs, rowNum) -> ClickCount.builder()
-                        .date(rs.getTimestamp(1).toLocalDateTime().toLocalDate())
-                        .count(rs.getBigDecimal(2).toBigInteger())
-                        .build());
+            result = jdbcTemplate.query(query,
+                    ps -> {
+                        int paramNumber = 1;
+                        if (from != null) ps.setObject(paramNumber++, from);
+                        if (to != null && !to.equals(from)) ps.setObject(paramNumber, to);
+                    },
+                    (rs, rowNum) -> ClickCount.builder()
+                            .date(rs.getTimestamp(1).toLocalDateTime().toLocalDate())
+                            .count(rs.getBigDecimal(2).toBigInteger())
+                            .build());
+
+            LOGGER.debug("entities found: {}", result.size());
+        } catch (DataAccessException e) {
+            LOGGER.error("exception while select ClickCount: {}", e.getMessage());
+        }
+
+        return result != null ? result : new ArrayList<>();
     }
 
     @Override

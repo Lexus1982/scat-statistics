@@ -25,7 +25,7 @@ import me.alexand.scat.statistic.api.service.DomainRegexService;
 import me.alexand.scat.statistic.api.utils.SPRequestParam;
 import me.alexand.scat.statistic.common.entities.DomainRegex;
 import me.alexand.scat.statistic.common.utils.SortingAndPagination;
-import me.alexand.scat.statistic.common.utils.exceptions.DomainRegexAlreadyExistsException;
+import me.alexand.scat.statistic.common.utils.exceptions.DomainPatternAlreadyExistsException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -66,7 +66,7 @@ public class DomainRegexRestController {
     private void patternFormatError() {
     }
 
-    @ExceptionHandler(DomainRegexAlreadyExistsException.class)
+    @ExceptionHandler(DomainPatternAlreadyExistsException.class)
     @ResponseStatus(value = HttpStatus.CONFLICT, reason = "pattern already exists")
     private void domainRegexExistsError() {
     }

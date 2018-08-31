@@ -39,7 +39,8 @@ public class SortingAndPaginationTests {
                 .orderingColumn("column1", ColumnOrder.DESC)
                 .orderingColumn("column2", ColumnOrder.ASC)
                 .orderingColumn("column3")
-                .build().formSQLSuffix();
+                .build()
+                .formSQLSuffix();
 
         assertEquals("ORDER BY column1 DESC, column2 ASC, column3 ASC OFFSET 0 LIMIT 10", suffix);
     }
@@ -70,7 +71,8 @@ public class SortingAndPaginationTests {
         String suffix = SortingAndPagination.builder()
                 .offset(0)
                 .limit(10)
-                .build().formSQLSuffix();
+                .build()
+                .formSQLSuffix();
 
         assertEquals(" OFFSET 0 LIMIT 10", suffix);
     }
@@ -81,7 +83,8 @@ public class SortingAndPaginationTests {
                 .orderingColumn("column1", ColumnOrder.DESC)
                 .orderingColumn("column2", ColumnOrder.ASC)
                 .orderingColumn("column3")
-                .build().formSQLSuffix();
+                .build()
+                .formSQLSuffix();
 
         assertEquals("ORDER BY column1 DESC, column2 ASC, column3 ASC OFFSET 0 LIMIT ALL", suffix);
     }

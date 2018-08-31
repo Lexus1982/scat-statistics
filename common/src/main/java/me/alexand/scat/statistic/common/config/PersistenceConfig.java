@@ -24,9 +24,9 @@ package me.alexand.scat.statistic.common.config;
 import me.alexand.scat.statistic.common.repository.ClickCountRepository;
 import me.alexand.scat.statistic.common.repository.DomainRegexRepository;
 import me.alexand.scat.statistic.common.repository.TrackedDomainRequestsRepository;
-import me.alexand.scat.statistic.common.repository.impl.ClickCountRepositoryImpl;
-import me.alexand.scat.statistic.common.repository.impl.DomainRegexRepositoryImpl;
-import me.alexand.scat.statistic.common.repository.impl.TrackedDomainRequestsRepositoryImpl;
+import me.alexand.scat.statistic.common.repository.impl.ClickCountRepositoryJDBCImpl;
+import me.alexand.scat.statistic.common.repository.impl.DomainRegexRepositoryJDBCImpl;
+import me.alexand.scat.statistic.common.repository.impl.TrackedDomainRequestsRepositoryJDBCImpl;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -42,7 +42,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import static me.alexand.scat.statistic.common.utils.DBUtils.databasePopulator;
 
 /**
- * Конфигурация контейнера Spring для работы в базой данных PostgreSQL
+ * Конфигурация контейнера Spring для работы с базой данных
  *
  * @author asidorov84@gmail.com
  */
@@ -85,16 +85,16 @@ public class PersistenceConfig {
 
     @Bean
     public ClickCountRepository clickCountRepository() {
-        return new ClickCountRepositoryImpl(persistenceJdbcTemplate());
+        return new ClickCountRepositoryJDBCImpl(persistenceJdbcTemplate());
     }
 
     @Bean
     public DomainRegexRepository domainRegexRepository() {
-        return new DomainRegexRepositoryImpl(persistenceJdbcTemplate());
+        return new DomainRegexRepositoryJDBCImpl(persistenceJdbcTemplate());
     }
 
     @Bean
     public TrackedDomainRequestsRepository trackedDomainRequestsRepository() {
-        return new TrackedDomainRequestsRepositoryImpl(persistenceJdbcTemplate());
+        return new TrackedDomainRequestsRepositoryJDBCImpl(persistenceJdbcTemplate());
     }
 }

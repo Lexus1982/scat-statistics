@@ -35,11 +35,22 @@ import java.util.Map;
  * @see TrackedDomainRequests
  */
 public interface TrackedDomainRequestsRepository {
-    //TODO добавить javadoc
+    /**
+     * Метод для сохранения списка с результатами трекинга доменов.
+     *
+     * @param results список с результатами
+     * @return количество успешно сохраненных результатов
+     */
     int saveAll(List<TrackedDomainRequests> results);
 
-    //TODO добавить javadoc
-    int save(TrackedDomainRequests result);
+
+    /**
+     * Метод для сохранения результата трекинга доменов.
+     *
+     * @param result результат
+     * @return true - если сохранение прошло успешно, иначе false
+     */
+    boolean save(TrackedDomainRequests result);
 
     /**
      * Метод для получения результатов трекинга доменов.

@@ -35,8 +35,7 @@ import java.util.Map;
 
 import static java.util.Arrays.asList;
 import static me.alexand.scat.statistic.common.data.TrackedDomainRequestsTestEntities.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 /**
  * Тесты для проверки хранилища сущностей TrackedDomainRequests
@@ -49,13 +48,13 @@ public class TrackedDomainRequestsRepositoryTests extends AbstractCommonTests {
 
     @Test
     public void testSave() {
-        assertEquals(1, repository.save(TEST_1));
+        assertTrue(repository.save(TEST_1));
     }
 
     @Test
     public void testSaveDuplicate() {
-        assertEquals(1, repository.save(TEST_1));
-        assertEquals(1, repository.save(TEST_1));
+        assertTrue(repository.save(TEST_1));
+        assertTrue(repository.save(TEST_1));
     }
 
     @Test

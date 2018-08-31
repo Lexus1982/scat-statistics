@@ -26,7 +26,7 @@ import me.alexand.scat.statistic.common.entities.DomainRegex;
 import me.alexand.scat.statistic.common.repository.DomainRegexRepository;
 import me.alexand.scat.statistic.common.utils.ColumnOrder;
 import me.alexand.scat.statistic.common.utils.SortingAndPagination;
-import me.alexand.scat.statistic.common.utils.exceptions.DomainRegexAlreadyExistsException;
+import me.alexand.scat.statistic.common.utils.exceptions.DomainPatternAlreadyExistsException;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -71,7 +71,7 @@ public class DomainRegexControllerTests extends AbstractControllerTests {
     @Test
     public void testAddDuplicate() throws Exception {
         when(domainRegexRepository.add(VK_COM_REGEX_PATTERN))
-                .thenThrow(DomainRegexAlreadyExistsException.class);
+                .thenThrow(DomainPatternAlreadyExistsException.class);
 
         mockMvc.perform(post(URL)
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
@@ -108,7 +108,7 @@ public class DomainRegexControllerTests extends AbstractControllerTests {
 
         List<DomainRegex> expected = asList(TEST_VK_COM, TEST_MAIL_RU);
 
-        when(domainRegexRepository.getAll(eq(SortingAndPagination.builder()
+        when(domainRegexRepository.findAll(eq(SortingAndPagination.builder()
                 .offset(size * (page - 1))
                 .limit(size)
                 .orderingColumn(orderColumnName, columnOrder)

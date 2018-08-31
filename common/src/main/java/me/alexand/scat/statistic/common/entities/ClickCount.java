@@ -31,7 +31,7 @@ import java.time.LocalDate;
 import java.util.Objects;
 
 /**
- * Общее количество веб-запросов, совершенных абонентами в указанную дату
+ * Общее количество любых веб-запросов, совершенных любыми абонентами в указанную дату
  *
  * @author asidorov84@gmail.com
  */
@@ -81,7 +81,8 @@ public final class ClickCount {
     }
 
     @JsonPOJOBuilder(withPrefix = "")
-    public static class Builder {
+    public static final class Builder {
+        @JsonFormat(pattern = Constants.DATE_PATTERN)
         private LocalDate date;
         private BigInteger count;
 

@@ -32,7 +32,11 @@ import java.time.LocalTime;
 import java.util.Objects;
 
 /**
- * Класс, описывающий совершенные абонентами веб-запросы на доменые имена, заданные шаблоном
+ * Агрегированные данные о совершенных абонентами веб-запросах на доменные имена.
+ * <p>
+ * Для данного абонента, характеризующегося парой адрес-логин, указывается количество
+ * совершенных веб-запросов на указанный шаблон доменного имени за определенную дату,
+ * а также время первого и последнего запроса в данную дату.
  *
  * @author asidorov84@gmail.com
  */
@@ -126,7 +130,7 @@ public final class TrackedDomainRequests {
     }
 
     @JsonPOJOBuilder(withPrefix = "")
-    public static class Builder {
+    public static final class Builder {
         @JsonFormat(pattern = Constants.DATE_PATTERN)
         private LocalDate date;
         private DomainRegex domainRegex;

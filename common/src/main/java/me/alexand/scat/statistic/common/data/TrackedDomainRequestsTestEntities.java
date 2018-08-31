@@ -31,7 +31,7 @@ import java.util.List;
 import static java.util.Arrays.asList;
 
 /**
- * Экземпляры класса TrackedDomainRequests для тестов
+ * Экземпляры класса TrackedDomainRequests для проведения тестов
  *
  * @author asidorov84@gmail.com
  */
