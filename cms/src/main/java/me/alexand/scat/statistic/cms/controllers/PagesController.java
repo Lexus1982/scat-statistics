@@ -29,9 +29,38 @@ import org.springframework.web.bind.annotation.GetMapping;
  */
 @Controller
 public class PagesController {
-
     @GetMapping("/")
     public String indexPage() {
-        return "index";
+        return "redirect:status";
+    }
+
+    @GetMapping("/login")
+    public String loginPage() {
+        return "login-page";
+    }
+
+    @GetMapping("/admin/users")
+    public String usersPage() {
+        return "users-page";
+    }
+
+    @GetMapping("/status")
+    public String statusPage() {
+        return "status-page";
+    }
+
+    @GetMapping("/admin/domains")
+    public String domainsPage() {
+        return "domains-page";
+    }
+
+    @GetMapping("/reports/click/count")
+    public String clickCountPage() {
+        return "click-count-page";
+    }
+
+    @GetMapping("/reports/tracked/requests")
+    public String trackedRequestsPage() {
+        return "tracked-requests-page";
     }
 }

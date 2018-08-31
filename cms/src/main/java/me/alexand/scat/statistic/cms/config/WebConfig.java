@@ -24,11 +24,15 @@ package me.alexand.scat.statistic.cms.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.JstlView;
+import org.springframework.web.servlet.view.UrlBasedViewResolver;
+import org.springframework.web.servlet.view.tiles3.TilesConfigurer;
+import org.springframework.web.servlet.view.tiles3.TilesView;
 
 /**
  * Web-контекст приложения
@@ -39,12 +43,26 @@ import org.springframework.web.servlet.view.JstlView;
 @EnableWebMvc
 @ComponentScan(basePackages = "me.alexand.scat.statistic.cms.controllers")
 public class WebConfig implements WebMvcConfigurer {
-
-
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/css/**").addResourceLocations("/css/");
         registry.addResourceHandler("/img/**").addResourceLocations("/img/");
+        registry.addResourceHandler("/webjars/**").addResourceLocations("/webjars/");
+    }
+
+    @Bean
+    public TilesConfigurer tilesConfigurer() {
+        TilesConfigurer tilesConfigurer = new TilesConfigurer();
+        tilesConfigurer.setDefinitions("/WEB-INF/tiles.xml");
+        return tilesConfigurer;
+    }
+
+    @Bean
+    public UrlBasedViewResolver tilesViewResolver() {
+        UrlBasedViewResolver tilesViewResolver = new UrlBasedViewResolver();
+        tilesViewResolver.setViewClass(TilesView.class);
+        tilesViewResolver.setOrder(0);
+        return tilesViewResolver;
     }
 
     @Bean
@@ -55,5 +73,13 @@ public class WebConfig implements WebMvcConfigurer {
         internalResourceViewResolver.setSuffix(".jsp");
         internalResourceViewResolver.setOrder(1);
         return internalResourceViewResolver;
+    }
+
+    @Bean(name = "messageSource")
+    public ReloadableResourceBundleMessageSource messageSource() {
+        ReloadableResourceBundleMessageSource resource = new ReloadableResourceBundleMessageSource();
+        resource.setBasenames("classpath:messages");
+        resource.setDefaultEncoding("UTF-8");
+        return resource;
     }
 }
