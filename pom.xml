@@ -26,6 +26,7 @@
         <module>common</module>
         <module>collector</module>
         <module>api</module>
+        <module>cms</module>
     </modules>
     
     <dependencies>
