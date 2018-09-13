@@ -25,68 +25,81 @@ import me.alexand.scat.statistic.collector.model.TemplateType;
 import me.alexand.scat.statistic.collector.repository.TransitionalBufferRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.concurrent.TimeUnit;
 
-import static me.alexand.scat.statistic.collector.utils.Constants.INTERIM_BUFFER_CLEANER_RUN_FREQUENCY;
-import static me.alexand.scat.statistic.collector.utils.Constants.INTERIM_BUFFER_DEPTH;
 import static me.alexand.scat.statistic.collector.utils.DateTimeUtils.DATE_TIME_FORMATTER;
-import static me.alexand.scat.statistic.collector.utils.DateTimeUtils.getFormattedDateTime;
 
 /**
  * Класс для очистки буфера от старых IPFIX-записей
- * Единственный метод
+ * При создании экземпляра запускает отдельный поток, который периодически с интервалом в runInterval секунд
+ * удаляет записи из всех таблиц внутреннего буфера. Глубина буфера соответствует bufferDepth, заданном
+ * в минутах. Работа класса основано на показаниях системных часов.
  *
  * @author asidorov84@gmail.com
  */
 
 @Service
-public class TransitionalBufferCleaner {
+public class TransitionalBufferCleaner implements Runnable {
     private static final Logger LOGGER = LoggerFactory.getLogger(TransitionalBufferCleaner.class);
 
-    private TransitionalBufferRepository transitionalBufferRepository;
-    
-    private LocalDateTime afterEventTime = LocalDateTime.now().minusMinutes(INTERIM_BUFFER_DEPTH);
+    private final TransitionalBufferRepository bufferRepository;
+    private final Thread cleaner;
+    private final long runInterval;//в секундах
+    private final long bufferDepth;//в минутах
+    private LocalDateTime startEventTime;
 
-    @Autowired
-    public TransitionalBufferCleaner(TransitionalBufferRepository transitionalBufferRepository) {
-        this.transitionalBufferRepository = transitionalBufferRepository;
+    public TransitionalBufferCleaner(TransitionalBufferRepository transitionalBufferRepository,
+                                     @Value("${transitional.buffer.cleaner.interval}") long runInterval,
+                                     @Value("${transitional.buffer.depth}") long bufferDepth) {
+        if (runInterval <= 0) {
+            throw new IllegalArgumentException("Illegal run interval specified");
+        }
+        
+        if (bufferDepth <= 0) {
+            throw new IllegalArgumentException("Illegal buffer depth specified");
+        }
 
+        this.bufferRepository = transitionalBufferRepository;
+        this.runInterval = runInterval;
+        this.bufferDepth = bufferDepth;
+        this.startEventTime = LocalDateTime.now().minusMinutes(bufferDepth);
+
+        cleaner = new Thread(this, "transitional-buffer-cleaner-thread");
+        cleaner.setDaemon(true);
+        cleaner.start();
     }
 
-    @Scheduled(fixedRate = INTERIM_BUFFER_CLEANER_RUN_FREQUENCY, initialDelay = INTERIM_BUFFER_CLEANER_RUN_FREQUENCY)
-    public void clean() {
-        LOGGER.info("Start cleaner...");
-        LocalDateTime beforeEventTime = LocalDateTime.now().minusMinutes(INTERIM_BUFFER_DEPTH);
+    @Override
+    public void run() {
+        LOGGER.info("[Cleaner thread started]");
+        LOGGER.info("cleaner interval is {} seconds", runInterval);
+        LOGGER.info("buffer depth is {} minute", bufferDepth);
 
-        LOGGER.info("\tdeleting all records of all types in buffer between {} and {}",
-                afterEventTime.format(DATE_TIME_FORMATTER),
-                beforeEventTime.format(DATE_TIME_FORMATTER));
+        while (!cleaner.isInterrupted()) {
+            try {
+                Thread.sleep(TimeUnit.SECONDS.toMillis(runInterval));
+                LocalDateTime endEventTime = LocalDateTime.now().minusMinutes(bufferDepth);
+                long totalRecordsDeleted = 0;
 
-        long totalRecordsDeleted = 0;
+                for (TemplateType type : TemplateType.values()) {
+                    totalRecordsDeleted += bufferRepository.deleteBetween(type, startEventTime, endEventTime);
+                }
 
-        for (TemplateType type : TemplateType.values()) {
-            long recordsDeleted = transitionalBufferRepository.deleteBetween(type, afterEventTime, beforeEventTime);
-            totalRecordsDeleted += recordsDeleted;
-
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("\t-------------------------------------------------------");
-                LOGGER.debug("\tdeleted records from {}: {}", type, recordsDeleted);
-                LOGGER.debug("\trecords in {} is now: {}", type, transitionalBufferRepository.getCount(type));
-                LOGGER.debug("\tminimum event time in {}: {}", type, getFormattedDateTime(transitionalBufferRepository.getMinEventTime(type)));
-                LOGGER.debug("\tmaximum event time in {}: {}", type, getFormattedDateTime(transitionalBufferRepository.getMaxEventTime(type)));
+                LOGGER.debug("{} records of all types in buffer between {} and {} deleted",
+                        totalRecordsDeleted,
+                        startEventTime.format(DATE_TIME_FORMATTER),
+                        endEventTime.format(DATE_TIME_FORMATTER));
+                
+                startEventTime = endEventTime;
+            } catch (Exception e) {
+                LOGGER.error(e.getMessage());
             }
         }
-        
-        afterEventTime = beforeEventTime;
-        
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("\t-------------------------------------------------------");
-        }
-        LOGGER.info("\ttotal records deleted: {}", totalRecordsDeleted);
-        LOGGER.info("Stop cleaner\n");
+
+        LOGGER.info("[Cleaner thread stopped]");
     }
 }

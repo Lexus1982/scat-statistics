@@ -27,8 +27,5 @@ package me.alexand.scat.statistic.collector.utils;
 public interface Constants {
     int TCP_LISTEN_BACKLOG = 10;
     
-    int INTERIM_BUFFER_CLEANER_RUN_FREQUENCY = 30000;
-    int INTERIM_BUFFER_DEPTH = 15;
-    
     int SAMPLING_RUN_FREQUENCY = 30000;
 }

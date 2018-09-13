@@ -7,45 +7,18 @@
         </encoder>
     </appender>
 
-    <appender name="common" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${log.dir:-.}/common.log</file>
+    <appender name="collector" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log.dir:-.}/collector.log</file>
 
         <encoder>
             <charset>UTF-8</charset>
-            <pattern>%date %-5level %logger{0}: <!--[%file:%line]--> %msg%n</pattern>
+            <pattern>%date %-5level %logger{0}: %msg%n</pattern>
         </encoder>
 
-        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-            <fileNamePattern>${log.dir:-.}/common%i.log.gz</fileNamePattern>
-            <minIndex>1</minIndex>
-            <maxIndex>5</maxIndex>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log.dir:-.}/collector.%d.log.gz</fileNamePattern>
+            <maxHistory>7</maxHistory>
         </rollingPolicy>
-
-        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
-            <maxFileSize>1MB</maxFileSize>
-        </triggeringPolicy>
-
-    </appender>
-
-    <appender name="cleaner" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${log.dir:-.}/cleaner.log</file>
-
-        <encoder>
-            <charset>UTF-8</charset>
-            <pattern>%date %-5level %logger{0}: <!--[%file:%line]--> %msg%n</pattern>
-        </encoder>
-
-        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-            <fileNamePattern>${log.dir:-.}/cleaner%i.log.gz</fileNamePattern>
-            <minIndex>1</minIndex>
-            <maxIndex>5</maxIndex>
-        </rollingPolicy>
-
-        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
-            <maxFileSize>1MB</maxFileSize>
-        </triggeringPolicy>
-
-        <immediateFlush>true</immediateFlush>
     </appender>
 
     <appender name="sampling" class="ch.qos.logback.core.rolling.RollingFileAppender">
@@ -56,27 +29,21 @@
             <pattern>%date %-5level %logger{0}: <!--[%file:%line]--> %msg%n</pattern>
         </encoder>
 
-        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-            <fileNamePattern>${log.dir:-.}/sampling%i.log.gz</fileNamePattern>
-            <minIndex>1</minIndex>
-            <maxIndex>5</maxIndex>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log.dir:-.}/sampling.%d.log.gz</fileNamePattern>
+            <maxHistory>7</maxHistory>
         </rollingPolicy>
-
-        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
-            <maxFileSize>1MB</maxFileSize>
-        </triggeringPolicy>
 
         <immediateFlush>true</immediateFlush>
     </appender>
 
     <logger name="me.alexand.scat.statistic" level="debug" additivity="false">
-        <appender-ref ref="common"/>
+        <appender-ref ref="collector"/>
         <appender-ref ref="console"/>
     </logger>
 
-    <logger name="me.alexand.scat.statistic.collector.service.TransitionalBufferCleaner" level="info"
-            additivity="false">
-        <appender-ref ref="cleaner"/>
+    <logger name="me.alexand.scat.statistic.collector.service.TransitionalBufferCleaner" level="debug" additivity="false">
+        <appender-ref ref="collector"/>
     </logger>
 
     <logger name="me.alexand.scat.statistic.collector.service.Sampling" level="debug" additivity="false">
@@ -84,7 +51,7 @@
     </logger>
 
     <root level="info">
-        <appender-ref ref="common"/>
+        <appender-ref ref="collector"/>
         <appender-ref ref="console"/>
     </root>
 </configuration>
