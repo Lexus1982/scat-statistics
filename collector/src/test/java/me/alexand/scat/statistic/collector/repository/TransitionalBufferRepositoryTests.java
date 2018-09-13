@@ -70,6 +70,7 @@ import static org.springframework.test.context.jdbc.SqlConfig.TransactionMode.IS
 public class TransitionalBufferRepositoryTests {
     private static final Logger LOGGER = LoggerFactory.getLogger(TransitionalBufferRepositoryTests.class);
     private static final long EXPECTED_CS_REQ_RECORDS_COUNT = 22;
+    private static final LocalDateTime DELETE_AFTER_DATE_TIME = LocalDateTime.parse("2010-04-01T17:06:10");
     private static final LocalDateTime DELETE_BEFORE_DATE_TIME = LocalDateTime.parse("2018-04-01T17:06:10");
     private static final long EXPECTED_DELETED_RECORDS_COUNT = 6;
 
@@ -88,8 +89,8 @@ public class TransitionalBufferRepositoryTests {
 
     @Test
     public void testDeleteBetween() {
-        assertEquals(EXPECTED_DELETED_RECORDS_COUNT, repository.delete(CS_REQ, DELETE_BEFORE_DATE_TIME));
-        assertEquals(0, repository.delete(CS_REQ, LocalDateTime.parse("2017-04-01T17:06:10")));
+        assertEquals(EXPECTED_DELETED_RECORDS_COUNT, repository.deleteBetween(CS_REQ, DELETE_AFTER_DATE_TIME, DELETE_BEFORE_DATE_TIME));
+        assertEquals(0, repository.deleteBetween(CS_REQ, DELETE_AFTER_DATE_TIME, LocalDateTime.parse("2017-04-01T17:06:10")));
     }
 
     @Test

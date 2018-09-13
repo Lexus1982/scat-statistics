@@ -63,13 +63,14 @@ public interface TransitionalBufferRepository {
     boolean save(IPFIXDataRecord record);
 
     /**
-     * Удалить записи указанного типа старее указанной отметки времени, включительно
+     * Удалить записи указанного типа за указанный период времени
      *
      * @param type            тип записей (обязательный)
-     * @param beforeEventTime отметка времени (обязательный)
+     * @param afterEventTime  нижняя граница (обязательный, включительно)                        
+     * @param beforeEventTime верхняя граница (обязательный, невключительно)
      * @return суммарное количество удаленных записей
      */
-    long delete(TemplateType type, LocalDateTime beforeEventTime);
+    long deleteBetween(TemplateType type, LocalDateTime afterEventTime, LocalDateTime beforeEventTime);
 
     /**
      * Получить агрегированные данные об указанных посещенных доменах за указанный период

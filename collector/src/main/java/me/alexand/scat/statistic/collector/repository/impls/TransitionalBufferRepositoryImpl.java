@@ -67,13 +67,13 @@ public class TransitionalBufferRepositoryImpl implements TransitionalBufferRepos
             " path, refer, user_agent, cookie, session_id, locked, host_type, method)" +
             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-    private static final String CS_REQ_DELETE = "DELETE FROM cs_req WHERE event_time <= ?";
+    private static final String CS_REQ_DELETE = "DELETE FROM cs_req WHERE event_time >= ? AND event_time < ?";
 
     private static final String CS_RESP_INSERT = "INSERT INTO cs_resp(event_time, login, ip_src, ip_dst," +
             " result_code, content_length, content_type, session_id) " +
             "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
-    private static final String CS_RESP_DELETE = "DELETE FROM cs_resp WHERE event_time <= ?";
+    private static final String CS_RESP_DELETE = "DELETE FROM cs_resp WHERE event_time >= ? AND event_time < ?";
 
     private static final String GENERIC_INSERT = "INSERT INTO generic(octet_delta_count, packet_delta_count," +
             " protocol_identifier, ip_class_of_service, source_transport_port, source_ipv4_address," +
@@ -82,7 +82,7 @@ public class TransitionalBufferRepositoryImpl implements TransitionalBufferRepos
             " http_host, dpi_protocol, login, post_nat_source_ipv4_address, post_nat_source_transport_port) " +
             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-    private static final String GENERIC_DELETE = "DELETE FROM generic WHERE flow_end_millisecond <= ?";
+    private static final String GENERIC_DELETE = "DELETE FROM generic WHERE flow_end_millisecond >= ? AND flow_end_millisecond < ?";
 
     private JdbcTemplate jdbcTemplate;
 
@@ -207,18 +207,19 @@ public class TransitionalBufferRepositoryImpl implements TransitionalBufferRepos
 
     @Override
     @Transactional("bufferTM")
-    public long delete(TemplateType type, LocalDateTime beforeEventTime) {
+    public long deleteBetween(TemplateType type, LocalDateTime afterEventTime, LocalDateTime beforeEventTime) {
         Objects.requireNonNull(type);
+        Objects.requireNonNull(afterEventTime);
         Objects.requireNonNull(beforeEventTime);
 
         try {
             switch (type) {
                 case CS_REQ:
-                    return jdbcTemplate.update(CS_REQ_DELETE, beforeEventTime);
+                    return jdbcTemplate.update(CS_REQ_DELETE, afterEventTime, beforeEventTime);
                 case CS_RESP:
-                    return jdbcTemplate.update(CS_RESP_DELETE, beforeEventTime);
+                    return jdbcTemplate.update(CS_RESP_DELETE, afterEventTime, beforeEventTime);
                 case GENERIC:
-                    return jdbcTemplate.update(GENERIC_DELETE, beforeEventTime);
+                    return jdbcTemplate.update(GENERIC_DELETE, afterEventTime, beforeEventTime);
             }
         } catch (DataAccessException e) {
             LOGGER.error(e.getMessage());

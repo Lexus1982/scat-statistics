@@ -48,6 +48,8 @@ public class TransitionalBufferCleaner {
     private static final Logger LOGGER = LoggerFactory.getLogger(TransitionalBufferCleaner.class);
 
     private TransitionalBufferRepository transitionalBufferRepository;
+    
+    private LocalDateTime afterEventTime = LocalDateTime.now().minusMinutes(INTERIM_BUFFER_DEPTH);
 
     @Autowired
     public TransitionalBufferCleaner(TransitionalBufferRepository transitionalBufferRepository) {
@@ -60,12 +62,14 @@ public class TransitionalBufferCleaner {
         LOGGER.info("Start cleaner...");
         LocalDateTime beforeEventTime = LocalDateTime.now().minusMinutes(INTERIM_BUFFER_DEPTH);
 
-        LOGGER.info("\tdeleting all records of all types in buffer before {}", beforeEventTime.format(DATE_TIME_FORMATTER));
+        LOGGER.info("\tdeleting all records of all types in buffer between {} and {}",
+                afterEventTime.format(DATE_TIME_FORMATTER),
+                beforeEventTime.format(DATE_TIME_FORMATTER));
 
         long totalRecordsDeleted = 0;
 
         for (TemplateType type : TemplateType.values()) {
-            long recordsDeleted = transitionalBufferRepository.delete(type, beforeEventTime);
+            long recordsDeleted = transitionalBufferRepository.deleteBetween(type, afterEventTime, beforeEventTime);
             totalRecordsDeleted += recordsDeleted;
 
             if (LOGGER.isDebugEnabled()) {
@@ -76,7 +80,9 @@ public class TransitionalBufferCleaner {
                 LOGGER.debug("\tmaximum event time in {}: {}", type, getFormattedDateTime(transitionalBufferRepository.getMaxEventTime(type)));
             }
         }
-
+        
+        afterEventTime = beforeEventTime;
+        
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("\t-------------------------------------------------------");
         }
