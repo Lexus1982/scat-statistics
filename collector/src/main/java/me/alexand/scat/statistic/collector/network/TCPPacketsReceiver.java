@@ -228,6 +228,7 @@ public final class TCPPacketsReceiver implements PacketsReceiver {
                         //для беззнакового 4-х байтового типа (2^32)
                         if (currentSequenceNumber < prevSequenceNumber) {
                             exportedRecordsCounter = MAX_SEQUENCE_NUMBER - prevSequenceNumber + currentSequenceNumber;
+                            LOGGER.debug("sequence number overflow detect (session id = {})", id);
                         } else {
                             exportedRecordsCounter = currentSequenceNumber - prevSequenceNumber;
                         }
@@ -242,12 +243,13 @@ public final class TCPPacketsReceiver implements PacketsReceiver {
                     //И копируем его в буфер
                     if (!packetsBuffer.offer(copyOf(packetBuffer, fullMessageLength))) {
                         statCollector.registerInputBufferOverflow();
+                        LOGGER.debug("receive buffer overflow detected");
                     }
                 }
 
                 socket.close();
                 LOGGER.debug("Socket of session (id = {}) closed", id);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 LOGGER.error(e.getMessage());
             }
 

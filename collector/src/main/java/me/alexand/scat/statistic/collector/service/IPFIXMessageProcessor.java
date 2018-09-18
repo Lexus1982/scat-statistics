@@ -105,11 +105,9 @@ public final class IPFIXMessageProcessor implements Runnable {
             }
 
             try {
-                long t0 = System.nanoTime();
                 IPFIXMessage message = parser.parse(rawPacket);
-                long t1 = System.nanoTime();
 
-                statCollector.registerProcessedPacket(processorId, t1 - t0);
+                statCollector.registerProcessedPacket(processorId);
                 long processedRecordsNumber = 0;
 
                 for (IPFIXSet set : message.getSets()) {

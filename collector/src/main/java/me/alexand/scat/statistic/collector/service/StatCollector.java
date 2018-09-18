@@ -51,7 +51,6 @@ public class StatCollector {
     private final Map<TemplateType, Integer> recorderBuffersOverflowCounter;
     private final Map<Integer, Long> receivedPacketsCounter = new ConcurrentHashMap<>();
     private final Map<Integer, Long> processedPacketsCounter = new ConcurrentHashMap<>();
-    private final Map<Integer, Long> processedPacketsTotalTimeCounter = new ConcurrentHashMap<>();
     private final Map<Long, Long> recordsCounter = new ConcurrentHashMap<>();
 
     private final LocalDateTime applicationStart = LocalDateTime.now();
@@ -70,7 +69,6 @@ public class StatCollector {
         activeProcessorsCounter.incrementAndGet();
         receivedPacketsCounter.put(processorId, 0L);
         processedPacketsCounter.put(processorId, 0L);
-        processedPacketsTotalTimeCounter.put(processorId, 0L);
     }
 
     public void unregisterProcessorThread() {
@@ -93,9 +91,8 @@ public class StatCollector {
         recordsCounter.merge(domainID, exportedRecordsNumber, (oldValue, newValue) -> oldValue + newValue);
     }
 
-    public void registerProcessedPacket(int processorId, long time) {
+    public void registerProcessedPacket(int processorId) {
         processedPacketsCounter.merge(processorId, 1L, (oldValue, newValue) -> oldValue + newValue);
-        processedPacketsTotalTimeCounter.merge(processorId, time, (oldValue, newValue) -> oldValue + newValue);
     }
 
     public void registerProcessedRecords(long domainID, long processedRecordsNumber) {
@@ -113,9 +110,6 @@ public class StatCollector {
 
         List<Map.Entry<Integer, Long>> processedPacketsCountersForNow = new ArrayList<>(processedPacketsCounter.entrySet());
         resetPacketsCounters(processedPacketsCounter);
-
-        List<Map.Entry<Integer, Long>> processedPacketsTotalTimeCountersForNow = new ArrayList<>(processedPacketsTotalTimeCounter.entrySet());
-        resetPacketsCounters(processedPacketsTotalTimeCounter);
 
         StringBuilder sb = new StringBuilder("\n\nStart periodical collector report....\n");
 
@@ -150,11 +144,6 @@ public class StatCollector {
         sb.append("\ttotal packets processed rates: ")
                 .append(getTotalProcessedPacketsRates(processedPacketsCountersForNow, secondsSinceLastReport))
                 .append(" pps\n\n");
-
-        sb.append("\tpackets average parse time: ")
-                .append(getProcessedPacketsAverageParseTime(processedPacketsTotalTimeCountersForNow,
-                        processedPacketsCountersForNow))
-                .append("\n\n");
 
         sb.append("\trecords that not yet processed per domain: ")
                 .append(recordsCounter.entrySet())
@@ -201,23 +190,5 @@ public class StatCollector {
         return processedPacketsCountersForNow.stream()
                 .mapToLong(Map.Entry::getValue)
                 .sum() / secondsSinceLastReport;
-    }
-
-    private String getProcessedPacketsAverageParseTime(List<Map.Entry<Integer, Long>> processedPacketsTotalTimeCountersForNow,
-                                                       List<Map.Entry<Integer, Long>> processedPacketsCountersForNow) {
-        return processedPacketsTotalTimeCountersForNow.stream()
-                .map(e -> {
-                    Long v = e.getValue();
-
-                    long processedPackets = processedPacketsCountersForNow.stream()
-                            .filter(e1 -> e1.getKey().equals(e.getKey()))
-                            .mapToLong(Map.Entry::getValue)
-                            .findFirst().orElse(0);
-
-                    long parseTime = processedPackets != 0 ? v / processedPackets : 0;
-                    return String.format("%d: %d ns", e.getKey(), parseTime);
-                })
-                .collect(toList())
-                .toString();
     }
 }

@@ -37,6 +37,7 @@ import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.PreparedStatement;
@@ -177,7 +178,7 @@ public class TransitionalBufferRepositoryImpl implements TransitionalBufferRepos
     }
 
     @Override
-    @Transactional(value = "bufferTM", readOnly = true)
+    @Transactional(value = "bufferTM", readOnly = true, isolation = Isolation.READ_COMMITTED)
     public List<ClickCount> getClickCount(LocalDateTime start, LocalDateTime end) {
         Objects.requireNonNull(start);
         Objects.requireNonNull(end);
@@ -206,7 +207,7 @@ public class TransitionalBufferRepositoryImpl implements TransitionalBufferRepos
     }
 
     @Override
-    @Transactional("bufferTM")
+    @Transactional(value = "bufferTM", isolation = Isolation.READ_COMMITTED)
     public long deleteBetween(TemplateType type, LocalDateTime afterEventTime, LocalDateTime beforeEventTime) {
         Objects.requireNonNull(type);
         Objects.requireNonNull(afterEventTime);
@@ -229,7 +230,7 @@ public class TransitionalBufferRepositoryImpl implements TransitionalBufferRepos
     }
 
     @Override
-    @Transactional(value = "bufferTM", readOnly = true)
+    @Transactional(value = "bufferTM", readOnly = true, isolation = Isolation.READ_COMMITTED)
     public List<TrackedDomainRequests> getTrackedDomainRequests(List<DomainRegex> domainRegexps, LocalDateTime start, LocalDateTime end) {
         Objects.requireNonNull(domainRegexps);
         Objects.requireNonNull(start);
