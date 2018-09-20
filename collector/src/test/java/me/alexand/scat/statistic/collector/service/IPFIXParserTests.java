@@ -29,6 +29,7 @@ import me.alexand.scat.statistic.collector.utils.BytesConvertUtils;
 import me.alexand.scat.statistic.collector.utils.exceptions.MalformedMessageException;
 import me.alexand.scat.statistic.collector.utils.exceptions.UnknownProtocolException;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -133,6 +134,7 @@ public class IPFIXParserTests {
     }
 
     @Test
+    @Ignore
     public void testParseGenericData() throws Exception {
         parser.parse(RAW_GENERIC_TEMPLATE);
 

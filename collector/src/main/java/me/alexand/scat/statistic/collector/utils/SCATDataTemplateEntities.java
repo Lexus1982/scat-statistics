@@ -26,7 +26,8 @@ import me.alexand.scat.statistic.collector.model.SCATDataTemplate;
 import java.util.List;
 
 import static java.util.Arrays.asList;
-import static me.alexand.scat.statistic.collector.model.TemplateType.*;
+import static me.alexand.scat.statistic.collector.model.TemplateType.CS_REQ;
+import static me.alexand.scat.statistic.collector.model.TemplateType.CS_RESP;
 import static me.alexand.scat.statistic.collector.utils.InfoModelEntities.*;
 
 /**
@@ -64,6 +65,7 @@ public interface SCATDataTemplateEntities {
                     SESSION_ID))
             .build();
 
+/*
     SCATDataTemplate GENERIC_TEMPLATE = SCATDataTemplate.builder()
             .type(GENERIC)
             .specifiers(asList(OCTET_DELTA_COUNT,
@@ -88,6 +90,7 @@ public interface SCATDataTemplateEntities {
                     PORT_NAT_SRC_ADDR,
                     PORT_NAT_SRC_PORT))
             .build();
+*/
 
-    List<SCATDataTemplate> DATA_TEMPLATE_LIST = asList(CS_REQ_TEMPLATE, CS_RESP_TEMPLATE, GENERIC_TEMPLATE);
+    List<SCATDataTemplate> DATA_TEMPLATE_LIST = asList(CS_REQ_TEMPLATE, CS_RESP_TEMPLATE/*, GENERIC_TEMPLATE*/);
 }
