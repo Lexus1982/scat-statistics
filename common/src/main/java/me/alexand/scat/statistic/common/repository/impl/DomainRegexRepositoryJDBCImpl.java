@@ -73,7 +73,7 @@ public class DomainRegexRepositoryJDBCImpl implements DomainRegexRepository {
         //проверка синтаксиса регулярного выражения
         Pattern.compile(pattern);
 
-        String query = "INSERT INTO domain_regex AS td (pattern, date_added, is_active) VALUES (?, ?, ?)" +
+        String query = "INSERT INTO reports.domain_regex AS td (pattern, date_added, is_active) VALUES (?, ?, ?)" +
                 " ON CONFLICT (pattern) DO NOTHING ";
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
@@ -115,7 +115,7 @@ public class DomainRegexRepositoryJDBCImpl implements DomainRegexRepository {
         boolean result = false;
 
         try {
-            String query = "DELETE FROM domain_regex WHERE id = ?";
+            String query = "DELETE FROM reports.domain_regex WHERE id = ?";
             LOGGER.debug("executing delete query: [{}]", query);
             result = jdbcTemplate.update(query, id) == 1;
             LOGGER.debug("pattern deleted: {}", result);
@@ -136,7 +136,7 @@ public class DomainRegexRepositoryJDBCImpl implements DomainRegexRepository {
     @Transactional(value = "persistenceTM", readOnly = true)
     public List<DomainRegex> findAll(SortingAndPagination sortingAndPagination) {
         String suffix = sortingAndPagination != null ? sortingAndPagination.formSQLSuffix() : "";
-        String query = String.format("SELECT id, pattern, date_added, is_active FROM domain_regex %s", suffix);
+        String query = String.format("SELECT id, pattern, date_added, is_active FROM reports.domain_regex %s", suffix);
         List<DomainRegex> result = null;
 
         try {
@@ -162,7 +162,7 @@ public class DomainRegexRepositoryJDBCImpl implements DomainRegexRepository {
         long result = 0;
 
         try {
-            String query = "SELECT count(*) AS cnt FROM domain_regex";
+            String query = "SELECT count(*) AS cnt FROM reports.domain_regex";
             LOGGER.debug("executing query: [{}]", query);
             Long count = jdbcTemplate.queryForObject(query, Long.class);
             result = count != null ? count : 0;

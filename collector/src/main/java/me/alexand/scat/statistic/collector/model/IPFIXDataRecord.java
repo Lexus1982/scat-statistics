@@ -41,9 +41,9 @@ import java.util.Objects;
  * @author asidorov84@gmail.com
  * @see <a href="https://tools.ietf.org/html/rfc7011#section-3.4.3">RFC-7011</a>
  * @see IPFIXFieldValue
- * @see IPFIXRecord
  */
-public final class IPFIXDataRecord extends IPFIXRecord {
+public final class IPFIXDataRecord {
+    private final TemplateType type;
     private final List<IPFIXFieldValue> fieldValues;
 
     public static IPFIXDataRecord.Builder builder() {

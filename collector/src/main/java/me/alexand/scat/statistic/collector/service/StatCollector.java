@@ -21,82 +21,70 @@
 
 package me.alexand.scat.statistic.collector.service;
 
-import me.alexand.scat.statistic.collector.model.TemplateType;
 import me.alexand.scat.statistic.collector.utils.DateTimeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static java.util.stream.Collectors.toList;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author asidorov84@gmail.com
  */
 
-@Service
+@Component
 public class StatCollector {
     private static final Logger LOGGER = LoggerFactory.getLogger(StatCollector.class);
 
     private final AtomicInteger activeProcessorsCounter = new AtomicInteger(0);
-    private final AtomicInteger inputBufferOverflowCounter = new AtomicInteger(0);
-    private final Map<TemplateType, Integer> recorderBuffersOverflowCounter;
-    private final Map<Integer, Long> receivedPacketsCounter = new ConcurrentHashMap<>();
-    private final Map<Integer, Long> processedPacketsCounter = new ConcurrentHashMap<>();
-    private final Map<Long, Long> recordsCounter = new ConcurrentHashMap<>();
+    private final AtomicInteger inputQueueOverflowCounter = new AtomicInteger(0);
+    private final AtomicInteger outputQueueOverflowCounter = new AtomicInteger(0);
+    private final AtomicLong receivedPacketsCounter = new AtomicLong(0);
+    private final AtomicLong processedPacketsCounter = new AtomicLong(0);
+    private final AtomicLong failedParseCounter = new AtomicLong(0);
+    
+    private final InputPacketsQueue inputPacketsQueue;
+    private final OutputRecordsQueue outputRecordsQueue;
 
     private final LocalDateTime applicationStart = LocalDateTime.now();
     private LocalDateTime lastReportDateTime;
 
-    public StatCollector() {
+    public StatCollector(InputPacketsQueue inputPacketsQueue, OutputRecordsQueue outputRecordsQueue) {
+        this.inputPacketsQueue = inputPacketsQueue;
+        this.outputRecordsQueue = outputRecordsQueue;
         lastReportDateTime = applicationStart;
-        recorderBuffersOverflowCounter = new ConcurrentHashMap<>();
-        
-        for (TemplateType templateType : TemplateType.values()) {
-            recorderBuffersOverflowCounter.put(templateType, 0);
-        }
     }
 
-    public void registerProcessorThread(int processorId) {
+    public void registerProcessorThread() {
         activeProcessorsCounter.incrementAndGet();
-        receivedPacketsCounter.put(processorId, 0L);
-        processedPacketsCounter.put(processorId, 0L);
     }
 
     public void unregisterProcessorThread() {
         activeProcessorsCounter.decrementAndGet();
     }
 
-    public void registerInputBufferOverflow() {
-        inputBufferOverflowCounter.incrementAndGet();
+    public void registerReceivedPacket() {
+        receivedPacketsCounter.incrementAndGet();
+    }
+    
+    public void registerInputQueueOverflow() {
+        inputQueueOverflowCounter.incrementAndGet();
+    }
+    
+    public void registerOutputQueueOverflow() {
+        outputQueueOverflowCounter.incrementAndGet();
     }
 
-    public void registerRecorderBufferOverflow(TemplateType type) {
-        recorderBuffersOverflowCounter.merge(type, 1, (oldValue, newValue) -> (oldValue + newValue));
+    public void registerProcessedPacket() {
+        processedPacketsCounter.incrementAndGet();
     }
 
-    public void registerReceivedPacket(int processorId) {
-        receivedPacketsCounter.merge(processorId, 1L, (oldValue, newValue) -> oldValue + newValue);
-    }
-
-    public void registerExportedRecords(long domainID, long exportedRecordsNumber) {
-        recordsCounter.merge(domainID, exportedRecordsNumber, (oldValue, newValue) -> oldValue + newValue);
-    }
-
-    public void registerProcessedPacket(int processorId) {
-        processedPacketsCounter.merge(processorId, 1L, (oldValue, newValue) -> oldValue + newValue);
-    }
-
-    public void registerProcessedRecords(long domainID, long processedRecordsNumber) {
-        recordsCounter.merge(domainID, processedRecordsNumber, (oldValue, newValue) -> oldValue - newValue);
+    public void registerParseFail() {
+        failedParseCounter.incrementAndGet();
     }
 
     @Scheduled(fixedDelay = 60_000, initialDelay = 5_000)
@@ -104,12 +92,6 @@ public class StatCollector {
         LocalDateTime currentDateTime = LocalDateTime.now();
         long secondsSinceLastReport = ChronoUnit.SECONDS.between(lastReportDateTime, currentDateTime);
         lastReportDateTime = currentDateTime;
-
-        List<Map.Entry<Integer, Long>> receivedPacketsCountersForNow = new ArrayList<>(receivedPacketsCounter.entrySet());
-        resetPacketsCounters(receivedPacketsCounter);
-
-        List<Map.Entry<Integer, Long>> processedPacketsCountersForNow = new ArrayList<>(processedPacketsCounter.entrySet());
-        resetPacketsCounters(processedPacketsCounter);
 
         StringBuilder sb = new StringBuilder("\n\nStart periodical collector report....\n");
 
@@ -121,74 +103,41 @@ public class StatCollector {
                 .append(activeProcessorsCounter.get())
                 .append("\n\n");
 
-        sb.append("\tinput buffer overflows: ")
-                .append(inputBufferOverflowCounter.get())
+        sb.append("\tpackets receive rate: ")
+                .append(receivedPacketsCounter.getAndSet(0) / secondsSinceLastReport)
+                .append(" pps\n");
+
+        sb.append("\tpackets processed rate: ")
+                .append(processedPacketsCounter.getAndSet(0) / secondsSinceLastReport)
+                .append(" pps\n");
+
+        sb.append("\tpackets parse failed rate: ")
+                .append(failedParseCounter.getAndSet(0) / secondsSinceLastReport)
+                .append(" pps\n");
+
+        sb.append("\tinput packets queue overflows: ")
+                .append(inputQueueOverflowCounter.get())
                 .append("\n");
 
-        sb.append("\trecorder buffers overflows: ")
-                .append(recorderBuffersOverflowCounter.entrySet())
-                .append("\n\n");
-
-        sb.append("\tpackets received rates per processor: ")
-                .append(getReceivedPacketsRatesPerProcessor(receivedPacketsCountersForNow, secondsSinceLastReport))
+        sb.append("\toutput records queue overflows: ")
+                .append(outputQueueOverflowCounter.get())
                 .append("\n");
 
-        sb.append("\ttotal packets received rates: ")
-                .append(getTotalReceivedPacketsRates(receivedPacketsCountersForNow, secondsSinceLastReport))
-                .append(" pps\n\n");
 
-        sb.append("\tpackets processed rates per processor: ")
-                .append(getProcessedPacketsRatesPerProcessor(processedPacketsCountersForNow, secondsSinceLastReport))
-                .append("\n");
+        sb.append("\tpackets number in input queue for now: ")
+                .append(inputPacketsQueue.getRemainingPacketsCount())
+                .append(" \n");
 
-        sb.append("\ttotal packets processed rates: ")
-                .append(getTotalProcessedPacketsRates(processedPacketsCountersForNow, secondsSinceLastReport))
-                .append(" pps\n\n");
-
-        sb.append("\trecords that not yet processed per domain: ")
-                .append(recordsCounter.entrySet())
-                .append("\n");
+        sb.append("\trecords number in output queue for now: ")
+                .append(outputRecordsQueue.getRemainingRecordsCount())
+                .append(" \n");
 
         sb.append("\n...end of periodical collector report\n");
 
         LOGGER.info(sb.toString());
     }
 
-    private void resetPacketsCounters(Map<?, Long> packetsCounter) {
-        packetsCounter.entrySet().forEach(e -> e.setValue(Long.valueOf(0L)));
-    }
-
     private String getUptime(LocalDateTime currentDateTime) {
         return DateTimeUtils.getFormattedDifferenceBetweenLocalDateTime(applicationStart, currentDateTime);
-    }
-
-    private String getReceivedPacketsRatesPerProcessor(List<Map.Entry<Integer, Long>> receivedPacketsCountersForNow,
-                                                       final long secondsSinceLastReport) {
-        return receivedPacketsCountersForNow.stream()
-                .map(e -> String.format("% d: %d pps", e.getKey(), e.getValue() / secondsSinceLastReport))
-                .collect(toList())
-                .toString();
-    }
-
-    private long getTotalReceivedPacketsRates(List<Map.Entry<Integer, Long>> receivedPacketsCountersForNow,
-                                              final long secondsSinceLastReport) {
-        return receivedPacketsCountersForNow.stream()
-                .mapToLong(Map.Entry::getValue)
-                .sum() / secondsSinceLastReport;
-    }
-
-    private String getProcessedPacketsRatesPerProcessor(List<Map.Entry<Integer, Long>> processedPacketsCountersForNow,
-                                                        final long secondsSinceLastReport) {
-        return processedPacketsCountersForNow.stream()
-                .map(e -> String.format("% d: %d pps", e.getKey(), e.getValue() / secondsSinceLastReport))
-                .collect(toList())
-                .toString();
-    }
-
-    private long getTotalProcessedPacketsRates(List<Map.Entry<Integer, Long>> processedPacketsCountersForNow,
-                                               final long secondsSinceLastReport) {
-        return processedPacketsCountersForNow.stream()
-                .mapToLong(Map.Entry::getValue)
-                .sum() / secondsSinceLastReport;
     }
 }

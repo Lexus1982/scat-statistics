@@ -19,17 +19,13 @@
  * under the License.
  */
 
-package me.alexand.scat.statistic.collector.repository;
-
-import me.alexand.scat.statistic.collector.model.SCATDataTemplate;
-
-import java.util.Collection;
+package me.alexand.scat.statistic.collector.utils.exceptions;
 
 /**
  * @author asidorov84@gmail.com
  */
-public interface SCATDataTemplateRepository {
-    Collection<SCATDataTemplate> getAll();
-
-    void save(SCATDataTemplate template);
+public class InputQueueOverflowException extends Exception {
+    public InputQueueOverflowException(String message) {
+        super(message);
+    }
 }

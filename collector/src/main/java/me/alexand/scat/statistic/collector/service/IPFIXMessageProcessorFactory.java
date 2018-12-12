@@ -21,6 +21,7 @@
 
 package me.alexand.scat.statistic.collector.service;
 
+import me.alexand.scat.statistic.collector.service.impls.IPFIXMessageProcessor;
 import org.springframework.beans.factory.annotation.Lookup;
 import org.springframework.stereotype.Component;
 

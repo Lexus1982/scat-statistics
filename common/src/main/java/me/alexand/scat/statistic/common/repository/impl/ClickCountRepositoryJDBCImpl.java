@@ -69,7 +69,7 @@ public class ClickCountRepositoryJDBCImpl implements ClickCountRepository {
 
         if (!entities.isEmpty()) {
             try {
-                String query = "INSERT INTO click_count AS cc (date, count) VALUES (?, ?)" +
+                String query = "INSERT INTO reports.click_count AS cc (date, count) VALUES (?, ?)" +
                         " ON CONFLICT (date) DO UPDATE SET count = cc.count + EXCLUDED.count";
 
                 LOGGER.debug("executing batch update query: [{}]", query);
@@ -135,7 +135,7 @@ public class ClickCountRepositoryJDBCImpl implements ClickCountRepository {
             filters = " WHERE date <= ? ";
         }
 
-        String query = String.format("SELECT date, count FROM click_count %s %s", filters, suffix);
+        String query = String.format("SELECT date, count FROM reports.click_count %s %s", filters, suffix);
         List<ClickCount> result = null;
 
         try {

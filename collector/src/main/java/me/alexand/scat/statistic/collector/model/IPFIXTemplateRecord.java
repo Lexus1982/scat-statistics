@@ -43,11 +43,11 @@ import java.util.Objects;
  *
  * @author asidorov84@gmail.com
  * @see <a href="https://tools.ietf.org/html/rfc7011#section-3.4.1">RFC-7011</a>
- * @see IPFIXRecord
  * @see IPFIXFieldSpecifier
  */
 
-public final class IPFIXTemplateRecord extends IPFIXRecord {
+public final class IPFIXTemplateRecord {
+    private final TemplateType type;
     private final int templateID;
     private final int fieldCount;
     private final long exportTime;
@@ -58,10 +58,10 @@ public final class IPFIXTemplateRecord extends IPFIXRecord {
     }
 
     private IPFIXTemplateRecord(IPFIXTemplateRecord.Builder builder) {
+        this.type = builder.type;
         this.templateID = builder.templateID;
         this.fieldCount = builder.fieldCount;
         this.exportTime = builder.exportTime;
-        this.type = builder.type;
         this.fieldSpecifiers = builder.fieldSpecifiers;
     }
 

@@ -22,10 +22,9 @@
 package me.alexand.scat.statistic.collector.config;
 
 import me.alexand.scat.statistic.common.config.PersistenceConfig;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.annotation.*;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 
 /**
@@ -34,11 +33,17 @@ import org.springframework.context.annotation.PropertySource;
  * @author asidorov84@gmail.com
  */
 @Configuration
+@EnableScheduling
 @PropertySource("app.properties")
 @PropertySource(value = "file:${conf.dir}/collector.cfg", ignoreResourceNotFound = true)
-@Import({TransitionalBufferConfig.class,
-        PersistenceConfig.class,
-        SchedulerConfig.class})
+@Import({PersistenceConfig.class})
 @ComponentScan("me.alexand.scat.statistic.collector")
 public class CollectorConfig {
+    @Bean
+    public ThreadPoolTaskScheduler threadPoolTaskScheduler() {
+        ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadPoolTaskScheduler();
+        threadPoolTaskScheduler.setPoolSize(1);
+        threadPoolTaskScheduler.setThreadNamePrefix("periodical-scheduler");
+        return threadPoolTaskScheduler;
+    }
 }

@@ -19,17 +19,19 @@
  * under the License.
  */
 
-package me.alexand.scat.statistic.collector.model;
+package me.alexand.scat.statistic.collector.service;
+
+import me.alexand.scat.statistic.collector.model.TemplateType;
+import me.alexand.scat.statistic.collector.service.impls.IPFIXRecordsWriter;
+import org.springframework.beans.factory.annotation.Lookup;
+import org.springframework.stereotype.Component;
 
 /**
- * Абстракный тип, определяющий IPFIX-запись.
- * Основа для IPFIXTemplateRecord и IPFIXDataRecord
- *
  * @author asidorov84@gmail.com
- * @see IPFIXTemplateRecord
- * @see IPFIXDataRecord
- * @see TemplateType
  */
-public abstract class IPFIXRecord {
-    protected TemplateType type;
+@Component
+public abstract class IPFIXRecordsWriterFactory {
+
+    @Lookup
+    public abstract IPFIXRecordsWriter getWriter(TemplateType type, int batchSize);
 }

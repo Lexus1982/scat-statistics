@@ -21,13 +21,12 @@
 
 package me.alexand.scat.statistic.collector.service;
 
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
 import me.alexand.scat.statistic.collector.model.*;
-import me.alexand.scat.statistic.collector.repository.InfoModelRepository;
-import me.alexand.scat.statistic.collector.utils.exceptions.IPFIXParseException;
-import me.alexand.scat.statistic.collector.utils.exceptions.MalformedMessageException;
-import me.alexand.scat.statistic.collector.utils.exceptions.UnknownDataRecordFormatException;
-import me.alexand.scat.statistic.collector.utils.exceptions.UnknownProtocolException;
-import org.springframework.beans.factory.annotation.Autowired;
+import me.alexand.scat.statistic.collector.utils.exceptions.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.math.BigInteger;
@@ -35,16 +34,15 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static java.util.Arrays.copyOfRange;
+import static java.util.stream.Collectors.toList;
 import static me.alexand.scat.statistic.collector.model.IPFIXHeader.IPFIX_MESSAGE_HEADER_LENGTH;
 import static me.alexand.scat.statistic.collector.model.IPFIXHeader.IPFIX_MESSAGE_VERSION;
 import static me.alexand.scat.statistic.collector.utils.BytesConvertUtils.*;
+import static me.alexand.scat.statistic.collector.utils.SCATDataTemplateEntities.DATA_TEMPLATE_LIST;
 
 /**
  * Класс для декодирования IPFIX-сообщений из набора байт
@@ -57,18 +55,20 @@ import static me.alexand.scat.statistic.collector.utils.BytesConvertUtils.*;
 public class IPFIXParser {
     private static final ZoneOffset ZONE_OFFSET = ZoneOffset.ofHours(3);
     private static final ZoneId ZONE_ID = ZoneId.systemDefault();
-
-    private final DataTemplateService dataTemplateService;
-    private final InfoModelRepository infoModelRepository;
+    private static final Logger LOGGER = LoggerFactory.getLogger(IPFIXParser.class);
 
     private final Map<Long, IPFIXTemplateRecord> IPFIXTemplates = new ConcurrentHashMap<>();
 
-    @Autowired
-    public IPFIXParser(DataTemplateService dataTemplateService,
-                       InfoModelRepository infoModelRepository) {
-        this.dataTemplateService = dataTemplateService;
-        this.infoModelRepository = infoModelRepository;
+    private final Table<Long, Integer, InfoModelEntity> infoModelEntityTable = HashBasedTable.create();
+    private final Map<TemplateType, ImportDataTemplate> originalTemplates = new HashMap<>();
+    {
+        //TODO временно hardcode, надо сделать ввод шаблонов из файла
+        DATA_TEMPLATE_LIST.forEach(t -> {
+            t.getSpecifiers().forEach(s -> infoModelEntityTable.put(s.getEnterpriseNumber(), s.getInformationElementId(), s));
+            originalTemplates.put(t.getType(), t);
+        });
     }
+    
 
     /**
      * Метод для декодирования IPFIX-сообщения
@@ -103,7 +103,7 @@ public class IPFIXParser {
 
         return IPFIXMessage.builder()
                 .header(header)
-                .sets(parseSets(header.getObservationDomainID(), header.getExportTime(), payload))
+                .dataRecords(parseSets(header.getObservationDomainID(), header.getExportTime(), payload))
                 .build();
     }
 
@@ -165,17 +165,17 @@ public class IPFIXParser {
      * @param observationDomainID домен экспортера
      * @param exportTime          время экспорта
      * @param payload             массив байт, содержащий сообщение
-     * @return список сетов
+     * @return список IPFIXDataRecord
      * @throws IPFIXParseException в случае ошибки при декодировании
      */
-    private List<IPFIXSet> parseSets(long observationDomainID,
+    private List<IPFIXDataRecord> parseSets(long observationDomainID,
                                      long exportTime,
                                      byte[] payload) throws IPFIXParseException {
         if (payload == null) {
             throw new NullPointerException("Payload must not be NULL");
         }
 
-        List<IPFIXSet> sets = new ArrayList<>();
+        List<IPFIXDataRecord> records = new ArrayList<>();
 
         int offset = IPFIX_MESSAGE_HEADER_LENGTH;
 
@@ -189,21 +189,13 @@ public class IPFIXParser {
 
                 byte[] recordsPayload = copyOfRange(payload, offset, offset + length);
 
-                List<? extends IPFIXRecord> records = null;
-
                 if (setID == 2) {
-                    records = parseTemplateRecords(observationDomainID, exportTime, recordsPayload);
+                    parseTemplateRecords(observationDomainID, exportTime, recordsPayload);
                 }
 
                 if (setID >= 256 && setID <= 65535) {
-                    records = parseDataRecords(observationDomainID, setID, exportTime, recordsPayload);
+                    records.addAll(parseDataRecords(observationDomainID, setID, exportTime, recordsPayload));
                 }
-
-                sets.add(IPFIXSet.builder()
-                        .setID(setID)
-                        .length(length)
-                        .records(records)
-                        .build());
 
                 offset += (length - 4);
             }
@@ -211,17 +203,15 @@ public class IPFIXParser {
             throw new MalformedMessageException(e);
         }
 
-        return sets;
+        return records;
     }
 
-    private List<IPFIXTemplateRecord> parseTemplateRecords(long observationDomainID,
+    private void parseTemplateRecords(long observationDomainID,
                                                            long exportTime,
                                                            byte[] payload) throws IPFIXParseException {
         if (payload == null) {
             throw new NullPointerException("Payload must not be NULL");
         }
-
-        List<IPFIXTemplateRecord> records = new ArrayList<>();
 
         int minTemplateRecordLength = 8;
         int offset = 0;
@@ -264,7 +254,7 @@ public class IPFIXParser {
                     fieldSpecifiers.add(fs);
                 }
 
-                TemplateType type = dataTemplateService.getTypeByIPFIXSpecifiers(fieldSpecifiers);
+                TemplateType type = getTypeByIPFIXSpecifiers(fieldSpecifiers);
 
                 IPFIXTemplateRecord templateRecord = IPFIXTemplateRecord.builder()
                         .templateID(templateID)
@@ -276,13 +266,10 @@ public class IPFIXParser {
 
                 minTemplateRecordLength = Math.min(minTemplateRecordLength, currentRecordLength);
                 registerTemplateRecord(observationDomainID, templateRecord);
-                records.add(templateRecord);
             }
         } catch (ArrayIndexOutOfBoundsException e) {
             throw new MalformedMessageException(e);
         }
-
-        return records;
     }
 
     private List<IPFIXDataRecord> parseDataRecords(long observationDomainID,
@@ -295,7 +282,6 @@ public class IPFIXParser {
         IPFIXTemplateRecord templateRecord = getTemplateRecord(observationDomainID, setID);
 
         if (templateRecord == null || templateRecord.getExportTime() > exportTime) {
-            //statCollector.registerUnknownDataFormatPacket();
             throw new UnknownDataRecordFormatException(
                     String.format("Can't find template for ObservationDomainID: %d and Data Record ID: %d",
                             observationDomainID,
@@ -315,11 +301,7 @@ public class IPFIXParser {
                 int informationElementIdentifier = specifier.getInformationElementIdentifier();
                 int fieldLength = specifier.getFieldLength();
 
-                InfoModelEntity entity = infoModelRepository.getByEnterpriseNumberAndInformationElementIdentifier(
-                        enterpriseNumber,
-                        informationElementIdentifier
-                );
-
+                InfoModelEntity entity = infoModelEntityTable.get(enterpriseNumber, informationElementIdentifier);
                 Object value = null;
 
                 switch (entity.getType()) {
@@ -395,12 +377,47 @@ public class IPFIXParser {
         return records;
     }
 
-    private void registerTemplateRecord(long observationDomainID,
-                                        IPFIXTemplateRecord record) {
-        Long registrationID = getRegistrationID(observationDomainID, record.getTemplateID());
 
-        IPFIXTemplates.merge(registrationID, record,
+    private TemplateType getTypeByIPFIXSpecifiers(List<IPFIXFieldSpecifier> fieldSpecifiers)
+            throws UnknownInfoModelException, UnknownTemplateTypeException {
+        List<InfoModelEntity> infoModelEntities;
+
+        try {
+            infoModelEntities = fieldSpecifiers.stream()
+                    .map(specifier -> {
+                        InfoModelEntity entity = infoModelEntityTable.get(
+                                specifier.getEnterpriseNumber(),
+                                specifier.getInformationElementIdentifier()
+                        );
+
+                        if (entity == null) {
+                            throw new RuntimeException();
+                        }
+
+                        return entity;
+                    })
+                    .collect(toList());
+        } catch (RuntimeException e) {
+            throw new UnknownInfoModelException(e.getMessage());
+        }
+
+        return originalTemplates.values().stream()
+                .filter(template -> Objects.equals(template.getSpecifiers(), infoModelEntities))
+                .map(ImportDataTemplate::getType)
+                .findFirst()
+                .orElseThrow(() -> new UnknownTemplateTypeException("Unknown template type"));
+
+    }
+
+
+    private void registerTemplateRecord(long observationDomainID,
+                                        IPFIXTemplateRecord templateRecord) {
+        Long registrationID = getRegistrationID(observationDomainID, templateRecord.getTemplateID());
+        
+        IPFIXTemplates.merge(registrationID, templateRecord,
                 (oldRecord, newRecord) -> oldRecord.getExportTime() < newRecord.getExportTime() ? newRecord : oldRecord);
+        
+        LOGGER.info("register received IPFIX template: {}", templateRecord);
     }
 
     private IPFIXTemplateRecord getTemplateRecord(long observationDomainID, int templateID) {

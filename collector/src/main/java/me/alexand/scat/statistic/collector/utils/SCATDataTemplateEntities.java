@@ -21,12 +21,13 @@
 
 package me.alexand.scat.statistic.collector.utils;
 
-import me.alexand.scat.statistic.collector.model.SCATDataTemplate;
+import me.alexand.scat.statistic.collector.model.ImportDataTemplate;
 
 import java.util.List;
 
 import static java.util.Arrays.asList;
-import static me.alexand.scat.statistic.collector.model.TemplateType.*;
+import static me.alexand.scat.statistic.collector.model.TemplateType.CS_REQ;
+import static me.alexand.scat.statistic.collector.model.TemplateType.CS_RESP;
 import static me.alexand.scat.statistic.collector.utils.InfoModelEntities.*;
 
 /**
@@ -35,7 +36,7 @@ import static me.alexand.scat.statistic.collector.utils.InfoModelEntities.*;
  * @author asidorov84@gmail.com
  */
 public interface SCATDataTemplateEntities {
-    SCATDataTemplate CS_REQ_TEMPLATE = SCATDataTemplate.builder()
+    ImportDataTemplate CS_REQ_TEMPLATE = ImportDataTemplate.builder()
             .type(CS_REQ)
             .specifiers(asList(TIMESTAMP,
                     LOGIN,
@@ -52,7 +53,7 @@ public interface SCATDataTemplateEntities {
                     METHOD))
             .build();
 
-    SCATDataTemplate CS_RESP_TEMPLATE = SCATDataTemplate.builder()
+    ImportDataTemplate CS_RESP_TEMPLATE = ImportDataTemplate.builder()
             .type(CS_RESP)
             .specifiers(asList(TIMESTAMP,
                     LOGIN,
@@ -63,8 +64,8 @@ public interface SCATDataTemplateEntities {
                     CONTENT_TYPE,
                     SESSION_ID))
             .build();
-
-    SCATDataTemplate GENERIC_TEMPLATE = SCATDataTemplate.builder()
+/*
+    ImportDataTemplate GENERIC_TEMPLATE = ImportDataTemplate.builder()
             .type(GENERIC)
             .specifiers(asList(OCTET_DELTA_COUNT,
                     PACKET_DELTA_COUNT,
@@ -88,6 +89,7 @@ public interface SCATDataTemplateEntities {
                     PORT_NAT_SRC_ADDR,
                     PORT_NAT_SRC_PORT))
             .build();
+*/
 
-    List<SCATDataTemplate> DATA_TEMPLATE_LIST = asList(CS_REQ_TEMPLATE, CS_RESP_TEMPLATE, GENERIC_TEMPLATE);
+    List<ImportDataTemplate> DATA_TEMPLATE_LIST = asList(CS_REQ_TEMPLATE, CS_RESP_TEMPLATE);
 }

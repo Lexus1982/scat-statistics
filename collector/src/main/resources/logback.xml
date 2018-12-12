@@ -21,33 +21,9 @@
         </rollingPolicy>
     </appender>
 
-    <appender name="sampling" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${log.dir:-.}/sampling.log</file>
-
-        <encoder>
-            <charset>UTF-8</charset>
-            <pattern>%date %-5level %logger{0}: <!--[%file:%line]--> %msg%n</pattern>
-        </encoder>
-
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${log.dir:-.}/sampling.%d.log.gz</fileNamePattern>
-            <maxHistory>7</maxHistory>
-        </rollingPolicy>
-
-        <immediateFlush>true</immediateFlush>
-    </appender>
-
     <logger name="me.alexand.scat.statistic.collector" level="debug" additivity="false">
         <appender-ref ref="collector"/>
         <appender-ref ref="console"/>
-    </logger>
-
-    <logger name="me.alexand.scat.statistic.collector.service.TransitionalBufferCleaner" level="debug" additivity="false">
-        <appender-ref ref="collector"/>
-    </logger>
-
-    <logger name="me.alexand.scat.statistic.collector.service.Sampling" level="debug" additivity="false">
-        <appender-ref ref="sampling"/>
     </logger>
 
     <root level="info">

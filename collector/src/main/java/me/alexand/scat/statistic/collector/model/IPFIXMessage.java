@@ -44,11 +44,10 @@ import java.util.Objects;
  * @author asidorov84@gmail.com
  * @see <a href="https://tools.ietf.org/html/rfc7011#section-3">RFC-7011</a>
  * @see IPFIXHeader
- * @see IPFIXSet
  */
 public final class IPFIXMessage {
     private final IPFIXHeader header;
-    private final List<IPFIXSet> sets;
+    private final List<IPFIXDataRecord> dataRecords;
 
     public static IPFIXMessage.Builder builder() {
         return new IPFIXMessage.Builder();
@@ -56,15 +55,15 @@ public final class IPFIXMessage {
 
     private IPFIXMessage(IPFIXMessage.Builder builder) {
         this.header = builder.header;
-        this.sets = builder.sets;
+        this.dataRecords = builder.dataRecords;
     }
 
     public IPFIXHeader getHeader() {
         return header;
     }
 
-    public List<IPFIXSet> getSets() {
-        return sets;
+    public List<IPFIXDataRecord> getDataRecords() {
+        return dataRecords;
     }
 
     @Override
@@ -73,25 +72,25 @@ public final class IPFIXMessage {
         if (o == null || getClass() != o.getClass()) return false;
         IPFIXMessage that = (IPFIXMessage) o;
         return Objects.equals(header, that.header) &&
-                Objects.equals(sets, that.sets);
+                Objects.equals(dataRecords, that.dataRecords);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(header, sets);
+        return Objects.hash(header, dataRecords);
     }
 
     @Override
     public String toString() {
         return "IPFIXMessage{" +
                 "header=" + header +
-                ", sets=" + sets +
+                ", dataRecords=" + dataRecords +
                 '}';
     }
 
     public static class Builder {
         private IPFIXHeader header;
-        private List<IPFIXSet> sets = new ArrayList<>();
+        private List<IPFIXDataRecord> dataRecords = new ArrayList<>();
 
         private Builder() {
         }
@@ -101,8 +100,8 @@ public final class IPFIXMessage {
             return this;
         }
 
-        public Builder sets(List<IPFIXSet> sets) {
-            this.sets = sets;
+        public Builder dataRecords(List<IPFIXDataRecord> dataRecords) {
+            this.dataRecords = dataRecords;
             return this;
         }
 

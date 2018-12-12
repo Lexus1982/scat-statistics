@@ -23,12 +23,9 @@ package me.alexand.scat.statistic.collector.service;
 
 import me.alexand.scat.statistic.collector.TestConfig;
 import me.alexand.scat.statistic.collector.model.IPFIXMessage;
-import me.alexand.scat.statistic.collector.repository.InfoModelRepository;
-import me.alexand.scat.statistic.collector.repository.SCATDataTemplateRepository;
 import me.alexand.scat.statistic.collector.utils.BytesConvertUtils;
 import me.alexand.scat.statistic.collector.utils.exceptions.MalformedMessageException;
 import me.alexand.scat.statistic.collector.utils.exceptions.UnknownProtocolException;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -45,7 +42,6 @@ import java.time.ZoneId;
 import static me.alexand.scat.statistic.collector.entities.IPFIXMessageTestEntities.IPFIX_MESSAGE_WITH_CS_REQ_DATA;
 import static me.alexand.scat.statistic.collector.entities.IPFIXMessageTestEntities.IPFIX_MESSAGE_WITH_CS_REQ_TEMPLATE;
 import static me.alexand.scat.statistic.collector.entities.RawPacketsEntities.*;
-import static me.alexand.scat.statistic.collector.utils.SCATDataTemplateEntities.DATA_TEMPLATE_LIST;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -62,20 +58,6 @@ public class IPFIXParserTests {
 
     @Autowired
     private IPFIXParser parser;
-
-    @Autowired
-    private SCATDataTemplateRepository SCATDataTemplateRepository;
-
-    @Autowired
-    private InfoModelRepository infoModelRepository;
-
-    @Before
-    public void before() {
-        DATA_TEMPLATE_LIST.forEach(dataTemplate -> {
-            SCATDataTemplateRepository.save(dataTemplate);
-            dataTemplate.getSpecifiers().forEach(infoModelRepository::save);
-        });
-    }
 
     //+
     @Test(expected = NullPointerException.class)

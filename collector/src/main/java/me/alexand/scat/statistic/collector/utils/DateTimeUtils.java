@@ -34,10 +34,6 @@ public interface DateTimeUtils {
     int SECONDS_PER_HOUR = 60 * SECONDS_PER_MINUTE;
     int SECONDS_PER_DAY = 24 * SECONDS_PER_HOUR;
 
-    static String getFormattedDateTime(LocalDateTime dateTime) {
-        return dateTime != null ? dateTime.format(DATE_TIME_FORMATTER) : "N/A";
-    }
-
     static String getFormattedDifferenceBetweenLocalDateTime(LocalDateTime start, LocalDateTime end) {
         Duration duration = Duration.between(start, end);
 

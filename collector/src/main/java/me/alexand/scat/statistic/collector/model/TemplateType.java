@@ -27,17 +27,26 @@ package me.alexand.scat.statistic.collector.model;
  * @author asidorov84@gmail.com
  */
 public enum TemplateType {
-    GENERIC("generic"),
-    CS_REQ("cs_req"),
-    CS_RESP("cs_resp");
+    CS_REQ("cs_req", "INSERT INTO ipfix_data.cs_req(event_datetime, login, ip_src, ip_dst, hostname, " +
+            " path, refer, user_agent, cookie, session_id, locked, host_type, method) " +
+            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"),
+    CS_RESP("cs_resp", "INSERT INTO ipfix_data.cs_resp(event_datetime, login, ip_src, ip_dst, result_code, " +
+            " content_length, content_type, session_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
+    /*GENERIC("generic", "")*/;
 
     private String name;
+    private String insertStatement;
 
-    TemplateType(String name) {
+    TemplateType(String name, String insertStatement) {
         this.name = name;
+        this.insertStatement = insertStatement;
     }
 
     public String getName() {
         return name;
+    }
+
+    public String getInsertStatement() {
+        return insertStatement;
     }
 }

@@ -78,7 +78,7 @@ public class PersistenceConfig {
         return new JdbcTemplate(persistenceDataSource());
     }
 
-    @Bean("persistenceTM")
+    @Bean
     public PlatformTransactionManager persistenceTransactionManager() {
         return new DataSourceTransactionManager(persistenceDataSource());
     }

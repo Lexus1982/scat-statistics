@@ -26,18 +26,12 @@ import org.junit.Test;
 
 import java.time.LocalDateTime;
 
-import static me.alexand.scat.statistic.collector.utils.DateTimeUtils.getFormattedDateTime;
 import static me.alexand.scat.statistic.collector.utils.DateTimeUtils.getFormattedDifferenceBetweenLocalDateTime;
 import static org.junit.Assert.assertEquals;
 
 public class DateTimeUtilsTests {
     private static final LocalDateTime LOCAL_DATE_TIME_1 = LocalDateTime.of(2018, 3, 1, 12, 30, 45);
     private static final LocalDateTime LOCAL_DATE_TIME_2 = LocalDateTime.of(2018, 7, 20, 16, 38, 27);
-
-    @Test
-    public void testGetFormattedDateTime() {
-        assertEquals("12:30:45 01/03/2018", getFormattedDateTime(LOCAL_DATE_TIME_1));
-    }
 
     @Test
     public void testGetFormattedDifferenceBetweenLocalDateTime() {

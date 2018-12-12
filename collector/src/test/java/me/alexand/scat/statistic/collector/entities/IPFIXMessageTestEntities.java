@@ -26,6 +26,7 @@ import me.alexand.scat.statistic.collector.model.*;
 import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 
 import static java.util.Arrays.asList;
 import static me.alexand.scat.statistic.collector.model.IANAAbstractDataTypes.*;
@@ -54,24 +55,6 @@ public interface IPFIXMessageTestEntities {
                     convertFromInfoModelEntity(LOCKED),
                     convertFromInfoModelEntity(HOST_TYPE),
                     convertFromInfoModelEntity(METHOD)))
-            .build();
-
-    IPFIXHeader IPFIX_HEADER_WITH_CS_REQ_TEMPLATE = IPFIXHeader.builder()
-            .length(128)
-            .exportTime(LocalDateTime.of(2017, 10, 16, 13, 52, 12).toEpochSecond(ZoneOffset.ofHours(3)))
-            .sequenceNumber(47_108_922)
-            .observationDomainID(1)
-            .build();
-
-    IPFIXSet IPFIX_SET_WITH_CS_REQ_TEMPLATE = IPFIXSet.builder()
-            .setID(2)
-            .length(112)
-            .records(asList(CS_REQ_TEMPLATE))
-            .build();
-
-    IPFIXMessage IPFIX_MESSAGE_WITH_CS_REQ_TEMPLATE = IPFIXMessage.builder()
-            .header(IPFIX_HEADER_WITH_CS_REQ_TEMPLATE)
-            .sets(asList(IPFIX_SET_WITH_CS_REQ_TEMPLATE))
             .build();
 
     IPFIXDataRecord IPFIX_CS_REQ_DATA_RECORD = IPFIXDataRecord.builder()
@@ -144,6 +127,19 @@ public interface IPFIXMessageTestEntities {
                             .build()))
             .build();
 
+    IPFIXHeader IPFIX_HEADER_WITH_CS_REQ_TEMPLATE = IPFIXHeader.builder()
+            .length(128)
+            .exportTime(LocalDateTime.of(2017, 10, 16, 13, 52, 12).toEpochSecond(ZoneOffset.ofHours(3)))
+            .sequenceNumber(47_108_922)
+            .observationDomainID(1)
+            .build();
+
+    IPFIXMessage IPFIX_MESSAGE_WITH_CS_REQ_TEMPLATE = IPFIXMessage.builder()
+            .header(IPFIX_HEADER_WITH_CS_REQ_TEMPLATE)
+            .dataRecords(new ArrayList<>())
+            .build();
+
+
     IPFIXHeader IPFIX_HEADER_WITH_CS_REQ_DATA = IPFIXHeader.builder()
             .length(565)
             .exportTime(LocalDateTime.of(2017, 10, 16, 13, 52, 18).toEpochSecond(ZoneOffset.ofHours(3)))
@@ -151,15 +147,9 @@ public interface IPFIXMessageTestEntities {
             .observationDomainID(1)
             .build();
 
-    IPFIXSet IPFIX_SET_WITH_CS_REQ_DATA = IPFIXSet.builder()
-            .setID(256)
-            .length(549)
-            .records(asList(IPFIX_CS_REQ_DATA_RECORD))
-            .build();
-
     IPFIXMessage IPFIX_MESSAGE_WITH_CS_REQ_DATA = IPFIXMessage.builder()
             .header(IPFIX_HEADER_WITH_CS_REQ_DATA)
-            .sets(asList(IPFIX_SET_WITH_CS_REQ_DATA))
+            .dataRecords(asList(IPFIX_CS_REQ_DATA_RECORD))
             .build();
 
     static IPFIXFieldSpecifier convertFromInfoModelEntity(InfoModelEntity entity) {

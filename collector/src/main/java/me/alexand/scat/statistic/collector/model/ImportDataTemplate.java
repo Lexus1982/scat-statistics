@@ -25,23 +25,23 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Класс, описывающий шаблон выгружаемых из АПК "СКАТ" данных
+ * Класс, описывающий шаблон выгружаемых данных
  *
  * @author asidorov84@gmail.com
  * @see TemplateType
  * @see InfoModelEntity
  */
-public final class SCATDataTemplate {
+public final class ImportDataTemplate {
     private final TemplateType type;
     private final List<InfoModelEntity> specifiers;
 
-    private SCATDataTemplate(SCATDataTemplate.Builder builder) {
+    private ImportDataTemplate(ImportDataTemplate.Builder builder) {
         this.type = builder.type;
         this.specifiers = builder.specifiers;
     }
 
-    public static SCATDataTemplate.Builder builder() {
-        return new SCATDataTemplate.Builder();
+    public static ImportDataTemplate.Builder builder() {
+        return new ImportDataTemplate.Builder();
     }
 
     public TemplateType getType() {
@@ -56,7 +56,7 @@ public final class SCATDataTemplate {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        SCATDataTemplate template = (SCATDataTemplate) o;
+        ImportDataTemplate template = (ImportDataTemplate) o;
         return type == template.type &&
                 Objects.equals(specifiers, template.specifiers);
     }
@@ -91,8 +91,8 @@ public final class SCATDataTemplate {
             return this;
         }
 
-        public SCATDataTemplate build() {
-            return new SCATDataTemplate(this);
+        public ImportDataTemplate build() {
+            return new ImportDataTemplate(this);
         }
     }
 }

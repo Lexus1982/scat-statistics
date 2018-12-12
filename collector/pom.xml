@@ -28,13 +28,6 @@
             <version>23.0</version>
         </dependency>
 
-        <!--Databases-->
-        <dependency>
-            <groupId>org.hsqldb</groupId>
-            <artifactId>hsqldb</artifactId>
-            <version>2.4.0</version>
-        </dependency>
-        
     </dependencies>
 
     <build>

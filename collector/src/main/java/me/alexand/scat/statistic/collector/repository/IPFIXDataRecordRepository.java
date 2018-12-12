@@ -19,21 +19,24 @@
  * under the License.
  */
 
-package me.alexand.scat.statistic.collector.service;
+package me.alexand.scat.statistic.collector.repository;
 
-import me.alexand.scat.statistic.collector.model.IPFIXFieldSpecifier;
+import me.alexand.scat.statistic.collector.model.IPFIXDataRecord;
 import me.alexand.scat.statistic.collector.model.TemplateType;
-import me.alexand.scat.statistic.collector.utils.exceptions.UnknownInfoModelException;
-import me.alexand.scat.statistic.collector.utils.exceptions.UnknownTemplateTypeException;
 
 import java.util.List;
 
 /**
  * @author asidorov84@gmail.com
  */
-public interface DataTemplateService {
-    void load();
+public interface IPFIXDataRecordRepository {
 
-    TemplateType getTypeByIPFIXSpecifiers(List<IPFIXFieldSpecifier> specifiers)
-            throws UnknownInfoModelException, UnknownTemplateTypeException;
+    /**
+     * Сохранить список IPFIX-записей в виде одного BATCH INSERT
+     *
+     * @param type тип IPFIX-записей
+     * @param records список IPFIX-записей
+     * @return количество успешно сохраненных IPFIX-записей
+     */
+    int save(TemplateType type, List<IPFIXDataRecord> records);
 }

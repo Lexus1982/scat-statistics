@@ -49,7 +49,7 @@ import static java.sql.Types.BIGINT;
 public class TrackedDomainRequestsRepositoryJDBCImpl implements TrackedDomainRequestsRepository {
     private static final Logger LOGGER = LoggerFactory.getLogger(TrackedDomainRequestsRepositoryJDBCImpl.class);
 
-    private static final String INSERT_QUERY = "INSERT INTO tracked_domain_requests AS tdr (date, domain_id, address, login, first_time, last_time, count) " +
+    private static final String INSERT_QUERY = "INSERT INTO reports.tracked_domain_requests AS tdr (date, domain_id, address, login, first_time, last_time, count) " +
             " VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT (date, domain_id, address, login) DO UPDATE SET " +
             "last_time = EXCLUDED.last_time, " +
             "count = tdr.count + EXCLUDED.count";
@@ -182,7 +182,7 @@ public class TrackedDomainRequestsRepositoryJDBCImpl implements TrackedDomainReq
                 "  tdr.first_time, " +
                 "  tdr.last_time, " +
                 "  tdr.count " +
-                "FROM tracked_domain_requests tdr INNER JOIN domain_regex dr ON tdr.domain_id = dr.id " +
+                "FROM reports.tracked_domain_requests tdr INNER JOIN reports.domain_regex dr ON tdr.domain_id = dr.id " +
                 "WHERE date BETWEEN ? AND ? " +
                 "%s %s", sqlFilters, suffix);
 
