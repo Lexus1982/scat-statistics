@@ -21,48 +21,27 @@
 
 package me.alexand.scat.statistic.collector.model;
 
-import java.util.List;
 import java.util.Objects;
 
 /**
- * IP Flow Information Export (IPFIX) Template Record
- * <pre>
- * -----------------------------------------------------------------
- * +0                   1                   2                   3
- * +0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
- * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- * |       Template ID (> 255)     |           Field Count         |
- * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- * |                        Field specifier                        |
- * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- * |                             ...                               |
- * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- * |                        Field specifier                        |
- * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- * </pre>
- *
  * @author asidorov84@gmail.com
- * @see <a href="https://tools.ietf.org/html/rfc7011#section-3.4.1">RFC-7011</a>
- * @see IPFIXFieldSpecifier
  */
 
 public final class IPFIXTemplateRecord {
-    private final TemplateType type;
+    private final ImportDataTemplate dataTemplate;
     private final int templateID;
     private final int fieldCount;
     private final long exportTime;
-    private final List<IPFIXFieldSpecifier> fieldSpecifiers;
 
     public static IPFIXTemplateRecord.Builder builder() {
         return new IPFIXTemplateRecord.Builder();
     }
 
     private IPFIXTemplateRecord(IPFIXTemplateRecord.Builder builder) {
-        this.type = builder.type;
+        this.dataTemplate = builder.dataTemplate;
         this.templateID = builder.templateID;
-        this.fieldCount = builder.fieldCount;
+        this.fieldCount = builder.dataTemplate.getSpecifiers().size();
         this.exportTime = builder.exportTime;
-        this.fieldSpecifiers = builder.fieldSpecifiers;
     }
 
     public int getTemplateID() {
@@ -77,18 +56,14 @@ public final class IPFIXTemplateRecord {
         return exportTime;
     }
 
-    public TemplateType getType() {
-        return type;
-    }
-
-    public List<IPFIXFieldSpecifier> getFieldSpecifiers() {
-        return fieldSpecifiers;
+    public ImportDataTemplate getDataTemplate() {
+        return dataTemplate;
     }
 
     public int getMinDataRecordSize() {
-        return fieldSpecifiers.stream()
-                .filter(s -> s.getFieldLength() != 65535)
-                .map(IPFIXFieldSpecifier::getFieldLength)
+        return dataTemplate.getSpecifiers().stream()
+                .filter(s -> s.getType().getLength() != 65535)
+                .map(s -> s.getType().getLength())
                 .reduce(0, Integer::sum);
     }
 
@@ -100,13 +75,12 @@ public final class IPFIXTemplateRecord {
         return templateID == that.templateID &&
                 fieldCount == that.fieldCount &&
                 exportTime == that.exportTime &&
-                type == that.type &&
-                Objects.equals(fieldSpecifiers, that.fieldSpecifiers);
+                Objects.equals(dataTemplate, that.dataTemplate);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(templateID, fieldCount, exportTime, type, fieldSpecifiers);
+        return Objects.hash(templateID, fieldCount, exportTime, dataTemplate);
     }
 
     @Override
@@ -115,17 +89,14 @@ public final class IPFIXTemplateRecord {
                 "templateID=" + templateID +
                 ", fieldCount=" + fieldCount +
                 ", exportTime=" + exportTime +
-                ", type=" + type +
-                ", fieldSpecifiers=" + fieldSpecifiers +
+                ", dataTemplate=" + dataTemplate +
                 '}';
     }
 
     public static class Builder {
         private int templateID;
-        private int fieldCount;
         private long exportTime;
-        private TemplateType type;
-        private List<IPFIXFieldSpecifier> fieldSpecifiers;
+        private ImportDataTemplate dataTemplate;
 
         private Builder() {
         }
@@ -135,23 +106,13 @@ public final class IPFIXTemplateRecord {
             return this;
         }
 
-        public Builder fieldCount(int fieldCount) {
-            this.fieldCount = fieldCount;
-            return this;
-        }
-
         public Builder exportTime(long exportTime) {
             this.exportTime = exportTime;
             return this;
         }
 
-        public Builder type(TemplateType type) {
-            this.type = type;
-            return this;
-        }
-
-        public Builder fieldSpecifiers(List<IPFIXFieldSpecifier> fieldSpecifiers) {
-            this.fieldSpecifiers = fieldSpecifiers;
+        public Builder dataTemplate(ImportDataTemplate dataTemplate) {
+            this.dataTemplate = dataTemplate;
             return this;
         }
 

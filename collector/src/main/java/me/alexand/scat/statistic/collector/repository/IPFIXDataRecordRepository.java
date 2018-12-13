@@ -22,7 +22,7 @@
 package me.alexand.scat.statistic.collector.repository;
 
 import me.alexand.scat.statistic.collector.model.IPFIXDataRecord;
-import me.alexand.scat.statistic.collector.model.TemplateType;
+import me.alexand.scat.statistic.collector.model.ImportDataTemplate;
 
 import java.util.List;
 
@@ -34,9 +34,9 @@ public interface IPFIXDataRecordRepository {
     /**
      * Сохранить список IPFIX-записей в виде одного BATCH INSERT
      *
-     * @param type тип IPFIX-записей
+     * @param dataTemplate шаблон IPFIX-записей
      * @param records список IPFIX-записей
      * @return количество успешно сохраненных IPFIX-записей
      */
-    int save(TemplateType type, List<IPFIXDataRecord> records);
+    int save(ImportDataTemplate dataTemplate, List<IPFIXDataRecord> records);
 }

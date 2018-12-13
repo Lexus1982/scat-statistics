@@ -22,7 +22,8 @@
 package me.alexand.scat.statistic.collector.service.impls;
 
 import me.alexand.scat.statistic.collector.model.IPFIXDataRecord;
-import me.alexand.scat.statistic.collector.model.TemplateType;
+import me.alexand.scat.statistic.collector.model.ImportDataTemplate;
+import me.alexand.scat.statistic.collector.repository.ImportDataTemplateRepository;
 import me.alexand.scat.statistic.collector.service.OutputRecordsQueue;
 import me.alexand.scat.statistic.collector.utils.exceptions.OutputQueueOverflowException;
 import org.slf4j.Logger;
@@ -30,7 +31,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
@@ -43,17 +47,18 @@ public class OutputRecordsQueueImpl implements OutputRecordsQueue {
     private static final Logger LOGGER = LoggerFactory.getLogger(OutputRecordsQueue.class);
 
     private final int queueLength;
-    private final Map<TemplateType, BlockingQueue<IPFIXDataRecord>> recordsQueues = new HashMap<>();
+    private final Map<ImportDataTemplate, BlockingQueue<IPFIXDataRecord>> recordsQueues = new HashMap<>();
 
-    public OutputRecordsQueueImpl(@Value("${output.records.queue.length}") int queueLength) {
+    public OutputRecordsQueueImpl(@Value("${output.records.queue.length}") int queueLength,
+                                  ImportDataTemplateRepository templateRepository) {
         if (queueLength <= 0) {
             throw new IllegalArgumentException(String.format("Illegal length of output records queue: %d", queueLength));
         }
 
         this.queueLength = queueLength;
 
-        Arrays.stream(TemplateType.values())
-                .forEach(type -> recordsQueues.put(type, new ArrayBlockingQueue<>(queueLength)));
+        templateRepository.findAll()
+                .forEach(template -> recordsQueues.put(template, new ArrayBlockingQueue<>(queueLength)));
         
         LOGGER.debug("initialize output queues with length: {}", queueLength);
     }
@@ -61,8 +66,8 @@ public class OutputRecordsQueueImpl implements OutputRecordsQueue {
     @Override
     public void put(List<IPFIXDataRecord> dataRecords) throws OutputQueueOverflowException {
         for (IPFIXDataRecord record : dataRecords) {
-            TemplateType type = record.getType();
-            BlockingQueue<IPFIXDataRecord> queue = recordsQueues.get(type);
+            ImportDataTemplate dataTemplate = record.getDataTemplate();
+            BlockingQueue<IPFIXDataRecord> queue = recordsQueues.get(dataTemplate);
             
             if (!queue.offer(record)) {
                 throw new OutputQueueOverflowException("output records queue overflow detected");
@@ -71,9 +76,9 @@ public class OutputRecordsQueueImpl implements OutputRecordsQueue {
     }
 
     @Override
-    public List<IPFIXDataRecord> takeNextBatch(TemplateType type, int batchSize) throws InterruptedException {
+    public List<IPFIXDataRecord> takeNextBatch(ImportDataTemplate dataTemplate, int batchSize) throws InterruptedException {
         List<IPFIXDataRecord> resultBatch = new ArrayList<>(batchSize);
-        BlockingQueue<IPFIXDataRecord> queue = recordsQueues.get(type);
+        BlockingQueue<IPFIXDataRecord> queue = recordsQueues.get(dataTemplate);
 
         int addedCount = 0;
         
@@ -90,9 +95,9 @@ public class OutputRecordsQueueImpl implements OutputRecordsQueue {
     }
 
     @Override
-    public Map<TemplateType, Long> getRemainingRecordsCount() {
-        Map<TemplateType, Long> result = new HashMap<>();
-        recordsQueues.entrySet().forEach(e -> result.put(e.getKey(), (long) (queueLength - e.getValue().remainingCapacity())));
+    public Map<String, Long> getRemainingRecordsCount() {
+        Map<String, Long> result = new HashMap<>();
+        recordsQueues.forEach((key, value) -> result.put(key.getName(), (long) (queueLength - value.remainingCapacity())));
         return result;
     }
 }

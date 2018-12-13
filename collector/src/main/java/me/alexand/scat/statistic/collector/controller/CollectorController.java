@@ -21,11 +21,12 @@
 
 package me.alexand.scat.statistic.collector.controller;
 
-import me.alexand.scat.statistic.collector.model.TemplateType;
+import me.alexand.scat.statistic.collector.repository.ImportDataTemplateRepository;
 import me.alexand.scat.statistic.collector.service.IPFIXMessageProcessorFactory;
 import me.alexand.scat.statistic.collector.service.IPFIXRecordsWriterFactory;
 import me.alexand.scat.statistic.collector.service.TCPPacketsReceiver;
 import me.alexand.scat.statistic.collector.service.impls.IPFIXMessageProcessor;
+import me.alexand.scat.statistic.collector.service.impls.IPFIXRecordsWriter;
 import me.alexand.scat.statistic.collector.utils.ThreadFactoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,16 +43,20 @@ import static java.lang.Thread.NORM_PRIORITY;
 /**
  * Контроллер коллектора.
  * <p>
- * Создает и запускает в разных потоках процессоры для обработки.
+ * Запускает потоки для получения данных из сети, для обработки полученных пакетов и
+ * писателей декодированных IPFIX-записей в хранилище. Также производит правильную остановку
+ * коллектора.
  *
  * @author asidorov84@gmail.com
  * @see IPFIXMessageProcessor
+ * @see IPFIXRecordsWriter
  */
 
 @Component
 public final class CollectorController {
     private static final Logger LOGGER = LoggerFactory.getLogger(CollectorController.class);
     
+    private final ImportDataTemplateRepository templateRepository;
     private final IPFIXRecordsWriterFactory recordsWriterFactory;
     private final IPFIXMessageProcessorFactory messageProcessorFactory;
     private final TCPPacketsReceiver packetsReceiver;
@@ -61,6 +66,7 @@ public final class CollectorController {
 
     public CollectorController(@Value("${processors.count}") final int processorsCount,
                                @Value("${records.writer.batch.size}") int batchSize,
+                               ImportDataTemplateRepository templateRepository,
                                IPFIXRecordsWriterFactory recordsWriterFactory,
                                IPFIXMessageProcessorFactory messageProcessorFactory,
                                TCPPacketsReceiver packetsReceiver) {
@@ -72,11 +78,12 @@ public final class CollectorController {
             throw new IllegalArgumentException(String.format("illegal batch size: %d", batchSize));
         }
         
+        this.templateRepository = templateRepository;
         this.recordsWriterFactory = recordsWriterFactory;
         this.messageProcessorFactory = messageProcessorFactory;
         this.packetsReceiver = packetsReceiver;
         
-        int templatesCount = TemplateType.values().length;
+        int templatesCount = templateRepository.getCount();
 
         LOGGER.info("Initializing records writers thread pool with fixed thread count: {}", templatesCount);
 
@@ -112,9 +119,8 @@ public final class CollectorController {
 
     private void runRecordsWriters(int batchSize) {
         LOGGER.info("Staring records writers...");
-        for (TemplateType type : TemplateType.values()) {
-            writersPool.submit(recordsWriterFactory.getWriter(type, batchSize));
-        }
+        templateRepository.findAll()
+                .forEach(template -> writersPool.submit(recordsWriterFactory.getWriter(template, batchSize)));
     }
 
     @PreDestroy

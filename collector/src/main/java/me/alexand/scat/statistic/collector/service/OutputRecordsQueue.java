@@ -22,7 +22,7 @@
 package me.alexand.scat.statistic.collector.service;
 
 import me.alexand.scat.statistic.collector.model.IPFIXDataRecord;
-import me.alexand.scat.statistic.collector.model.TemplateType;
+import me.alexand.scat.statistic.collector.model.ImportDataTemplate;
 import me.alexand.scat.statistic.collector.utils.exceptions.OutputQueueOverflowException;
 
 import java.util.List;
@@ -46,17 +46,17 @@ public interface OutputRecordsQueue {
      * Получить партию IPFIX-записей размером batchSize.
      * Метод блокирующий, до тех пор, пока в очереди не появится необходимого количества записей.
      *
-     * @param type тип записей
+     * @param dataTemplate тип записей
      * @param batchSize размер партии
      * @return список IPFIX-записей
      * @throws InterruptedException если текущий поток был прерван
      */
-    List<IPFIXDataRecord> takeNextBatch(TemplateType type, int batchSize) throws InterruptedException;
+    List<IPFIXDataRecord> takeNextBatch(ImportDataTemplate dataTemplate, int batchSize) throws InterruptedException;
 
     /**
      * Получить текущее количество IPFIX-записей в очереди.
      *
      * @return количество IPFIX-записей в очереди
      */
-    Map<TemplateType, Long> getRemainingRecordsCount();
+    Map<String, Long> getRemainingRecordsCount();
 }

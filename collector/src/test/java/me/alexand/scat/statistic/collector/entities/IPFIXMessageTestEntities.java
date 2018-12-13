@@ -30,35 +30,20 @@ import java.util.ArrayList;
 
 import static java.util.Arrays.asList;
 import static me.alexand.scat.statistic.collector.model.IANAAbstractDataTypes.*;
-import static me.alexand.scat.statistic.collector.model.TemplateType.CS_REQ;
-import static me.alexand.scat.statistic.collector.utils.InfoModelEntities.*;
+import static me.alexand.scat.statistic.collector.utils.SCATDataTemplateEntities.CS_REQ_IMPORT_TEMPLATE;
 
 /**
  * @author asidorov84@gmail.com
  */
 public interface IPFIXMessageTestEntities {
-    IPFIXTemplateRecord CS_REQ_TEMPLATE = IPFIXTemplateRecord.builder()
+    IPFIXTemplateRecord CS_REQ_TEMPLATE_RECORD = IPFIXTemplateRecord.builder()
             .templateID(256)
-            .fieldCount(13)
             .exportTime(LocalDateTime.of(2017, 10, 16, 13, 52, 12).toEpochSecond(ZoneOffset.ofHours(3)))
-            .type(CS_REQ)
-            .fieldSpecifiers(asList(convertFromInfoModelEntity(TIMESTAMP),
-                    convertFromInfoModelEntity(LOGIN),
-                    convertFromInfoModelEntity(SOURCE_IP),
-                    convertFromInfoModelEntity(DESTINATION_IP),
-                    convertFromInfoModelEntity(HOSTNAME),
-                    convertFromInfoModelEntity(PATH),
-                    convertFromInfoModelEntity(REFER),
-                    convertFromInfoModelEntity(USER_AGENT),
-                    convertFromInfoModelEntity(COOKIE),
-                    convertFromInfoModelEntity(SESSION_ID),
-                    convertFromInfoModelEntity(LOCKED),
-                    convertFromInfoModelEntity(HOST_TYPE),
-                    convertFromInfoModelEntity(METHOD)))
+            .dataTemplate(CS_REQ_IMPORT_TEMPLATE)
             .build();
 
     IPFIXDataRecord IPFIX_CS_REQ_DATA_RECORD = IPFIXDataRecord.builder()
-            .type(CS_REQ)
+            .dataTemplate(CS_REQ_IMPORT_TEMPLATE)
             .fieldValues(asList(
                     IPFIXFieldValue.builder()
                             .name("timestamp")
@@ -151,13 +136,4 @@ public interface IPFIXMessageTestEntities {
             .header(IPFIX_HEADER_WITH_CS_REQ_DATA)
             .dataRecords(asList(IPFIX_CS_REQ_DATA_RECORD))
             .build();
-
-    static IPFIXFieldSpecifier convertFromInfoModelEntity(InfoModelEntity entity) {
-        return IPFIXFieldSpecifier.builder()
-                .enterpriseBit(entity.getEnterpriseNumber() != 0)
-                .informationElementIdentifier(entity.getInformationElementId())
-                .fieldLength(entity.getType().getLength())
-                .enterpriseNumber(entity.getEnterpriseNumber())
-                .build();
-    }
 }

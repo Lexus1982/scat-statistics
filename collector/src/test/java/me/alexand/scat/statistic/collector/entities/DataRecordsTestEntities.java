@@ -28,14 +28,14 @@ import java.math.BigInteger;
 
 import static java.util.Arrays.asList;
 import static me.alexand.scat.statistic.collector.model.IANAAbstractDataTypes.*;
-import static me.alexand.scat.statistic.collector.model.TemplateType.CS_REQ;
+import static me.alexand.scat.statistic.collector.utils.SCATDataTemplateEntities.CS_REQ_IMPORT_TEMPLATE;
 
 /**
  * @author asidorov84@gmail.com
  */
 public interface DataRecordsTestEntities {
     IPFIXDataRecord CS_REQ_DATA_RECORD_1 = IPFIXDataRecord.builder()
-            .type(CS_REQ)
+            .dataTemplate(CS_REQ_IMPORT_TEMPLATE)
             .fieldValues(asList(
                     IPFIXFieldValue.builder()
                             .name("timestamp")

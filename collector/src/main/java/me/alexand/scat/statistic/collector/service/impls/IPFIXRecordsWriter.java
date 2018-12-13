@@ -22,7 +22,7 @@
 package me.alexand.scat.statistic.collector.service.impls;
 
 import me.alexand.scat.statistic.collector.model.IPFIXDataRecord;
-import me.alexand.scat.statistic.collector.model.TemplateType;
+import me.alexand.scat.statistic.collector.model.ImportDataTemplate;
 import me.alexand.scat.statistic.collector.repository.IPFIXDataRecordRepository;
 import me.alexand.scat.statistic.collector.service.OutputRecordsQueue;
 import org.slf4j.Logger;
@@ -41,8 +41,9 @@ import java.util.List;
 public final class IPFIXRecordsWriter implements Runnable {
     private static final Logger LOGGER = LoggerFactory.getLogger(IPFIXRecordsWriter.class);
 
-    private final TemplateType type;
+    private final ImportDataTemplate dataTemplate;
     private final int batchSize;
+    private final boolean isWrite;
 
     @Autowired
     private OutputRecordsQueue recordsQueue;
@@ -50,31 +51,34 @@ public final class IPFIXRecordsWriter implements Runnable {
     @Autowired
     private IPFIXDataRecordRepository repository;
 
-    public IPFIXRecordsWriter(TemplateType type, int batchSize) {
-        LOGGER.info("Initializing {} records writer with batch size = {}", type, batchSize);
-        this.type = type;
+    public IPFIXRecordsWriter(ImportDataTemplate dataTemplate, int batchSize) {
+        LOGGER.info("Initializing {} records writer with batch size = {}", dataTemplate.getName(), batchSize);
+        this.dataTemplate = dataTemplate;
         this.batchSize = batchSize;
+        this.isWrite = dataTemplate.isExport();
     }
 
     @Override
     public void run() {
-        LOGGER.info("Started {} records writer...", type);
+        LOGGER.info("Started {} records writer...", dataTemplate.getName());
 
         try {
             while (!Thread.currentThread().isInterrupted()) {
-                List<IPFIXDataRecord> recordsToWrite = recordsQueue.takeNextBatch(type, batchSize);
-                LOGGER.debug("received next {} batch, size = {}", type, recordsToWrite.size());
+                List<IPFIXDataRecord> recordsToWrite = recordsQueue.takeNextBatch(dataTemplate, batchSize);
+                LOGGER.debug("received next {} batch, size = {}", dataTemplate.getName(), recordsToWrite.size());
 
-                long t0 = System.nanoTime();
-                int rowsSaved = repository.save(type, recordsToWrite);
-                long t1 = System.nanoTime();
+                if (isWrite) {
+                    long t0 = System.nanoTime();
+                    int rowsSaved = repository.save(dataTemplate, recordsToWrite);
+                    long t1 = System.nanoTime();
 
-                LOGGER.debug("saving {} {} rows complete in {} ms", rowsSaved, type, (t1 - t0) / 1_000_000);
+                    LOGGER.debug("saving {} {} rows complete in {} ms", rowsSaved, dataTemplate.getName(), (t1 - t0) / 1_000_000);
+                }
             }
         } catch (InterruptedException e) {
             LOGGER.error(e.getMessage());
         }
 
-        LOGGER.info("Stopped {} records writer...", type);
+        LOGGER.info("Stopped {} records writer...", dataTemplate.getName());
     }
 }

@@ -26,8 +26,6 @@ import me.alexand.scat.statistic.collector.model.ImportDataTemplate;
 import java.util.List;
 
 import static java.util.Arrays.asList;
-import static me.alexand.scat.statistic.collector.model.TemplateType.CS_REQ;
-import static me.alexand.scat.statistic.collector.model.TemplateType.CS_RESP;
 import static me.alexand.scat.statistic.collector.utils.InfoModelEntities.*;
 
 /**
@@ -36,8 +34,8 @@ import static me.alexand.scat.statistic.collector.utils.InfoModelEntities.*;
  * @author asidorov84@gmail.com
  */
 public interface SCATDataTemplateEntities {
-    ImportDataTemplate CS_REQ_TEMPLATE = ImportDataTemplate.builder()
-            .type(CS_REQ)
+    ImportDataTemplate CS_REQ_IMPORT_TEMPLATE = ImportDataTemplate.builder()
+            .name("cs_req")
             .specifiers(asList(TIMESTAMP,
                     LOGIN,
                     SOURCE_IP,
@@ -51,10 +49,11 @@ public interface SCATDataTemplateEntities {
                     LOCKED,
                     HOST_TYPE,
                     METHOD))
+            .isExport(true)
             .build();
 
-    ImportDataTemplate CS_RESP_TEMPLATE = ImportDataTemplate.builder()
-            .type(CS_RESP)
+    ImportDataTemplate CS_RESP_IMPORT_TEMPLATE = ImportDataTemplate.builder()
+            .name("cs_resp")
             .specifiers(asList(TIMESTAMP,
                     LOGIN,
                     SOURCE_IP,
@@ -63,10 +62,11 @@ public interface SCATDataTemplateEntities {
                     CONTENT_LENGTH,
                     CONTENT_TYPE,
                     SESSION_ID))
+            .isExport(false)
             .build();
-/*
-    ImportDataTemplate GENERIC_TEMPLATE = ImportDataTemplate.builder()
-            .type(GENERIC)
+
+    ImportDataTemplate GENERIC_IMPORT_TEMPLATE = ImportDataTemplate.builder()
+            .name("generic")
             .specifiers(asList(OCTET_DELTA_COUNT,
                     PACKET_DELTA_COUNT,
                     PROTOCOL_IDENTIFIER,
@@ -88,8 +88,8 @@ public interface SCATDataTemplateEntities {
                     LOGIN_2,
                     PORT_NAT_SRC_ADDR,
                     PORT_NAT_SRC_PORT))
+            .isExport(false)
             .build();
-*/
 
-    List<ImportDataTemplate> DATA_TEMPLATE_LIST = asList(CS_REQ_TEMPLATE, CS_RESP_TEMPLATE);
+    List<ImportDataTemplate> DATA_TEMPLATE_LIST = asList(CS_REQ_IMPORT_TEMPLATE, CS_RESP_IMPORT_TEMPLATE, GENERIC_IMPORT_TEMPLATE);
 }

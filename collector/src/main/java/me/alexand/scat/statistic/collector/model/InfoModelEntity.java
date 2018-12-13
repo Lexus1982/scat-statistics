@@ -24,7 +24,7 @@ package me.alexand.scat.statistic.collector.model;
 import java.util.Objects;
 
 /**
- * Класс, описывающий информационный элемент шаблона АПК "СКАТ".
+ * Класс, описывающий информационный элемент шаблона импортируемых данных.
  *
  * @author asidorov84@gmail.com
  * @see IANAAbstractDataTypes
@@ -75,14 +75,12 @@ public final class InfoModelEntity {
         if (o == null || getClass() != o.getClass()) return false;
         InfoModelEntity that = (InfoModelEntity) o;
         return enterpriseNumber == that.enterpriseNumber &&
-                informationElementId == that.informationElementId &&
-                type == that.type &&
-                Objects.equals(name, that.name);
+                informationElementId == that.informationElementId;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(enterpriseNumber, informationElementId, type, name);
+        return Objects.hash(enterpriseNumber, informationElementId);
     }
 
     @Override

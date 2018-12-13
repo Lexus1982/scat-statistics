@@ -43,7 +43,7 @@ import java.util.Objects;
  * @see IPFIXFieldValue
  */
 public final class IPFIXDataRecord {
-    private final TemplateType type;
+    private final ImportDataTemplate dataTemplate;
     private final List<IPFIXFieldValue> fieldValues;
 
     public static IPFIXDataRecord.Builder builder() {
@@ -51,12 +51,12 @@ public final class IPFIXDataRecord {
     }
 
     private IPFIXDataRecord(IPFIXDataRecord.Builder builder) {
-        this.type = builder.type;
+        this.dataTemplate = builder.dataTemplate;
         this.fieldValues = builder.fieldValues;
     }
 
-    public TemplateType getType() {
-        return type;
+    public ImportDataTemplate getDataTemplate() {
+        return dataTemplate;
     }
 
     public List<IPFIXFieldValue> getFieldValues() {
@@ -67,33 +67,33 @@ public final class IPFIXDataRecord {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        IPFIXDataRecord that = (IPFIXDataRecord) o;
-        return type == that.type &&
-                Objects.equals(fieldValues, that.fieldValues);
+        IPFIXDataRecord record = (IPFIXDataRecord) o;
+        return Objects.equals(dataTemplate, record.dataTemplate) &&
+                Objects.equals(fieldValues, record.fieldValues);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(type, fieldValues);
+        return Objects.hash(dataTemplate, fieldValues);
     }
 
     @Override
     public String toString() {
         return "IPFIXDataRecord{" +
-                "type=" + type +
+                "dataTemplate=" + dataTemplate +
                 ", fieldValues=" + fieldValues +
                 '}';
     }
 
     public static class Builder {
-        private TemplateType type;
+        private ImportDataTemplate dataTemplate;
         private List<IPFIXFieldValue> fieldValues;
 
         private Builder() {
         }
 
-        public Builder type(TemplateType type) {
-            this.type = type;
+        public Builder dataTemplate(ImportDataTemplate dataTemplate) {
+            this.dataTemplate = dataTemplate;
             return this;
         }
 

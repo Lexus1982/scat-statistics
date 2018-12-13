@@ -19,19 +19,26 @@
  * under the License.
  */
 
-package me.alexand.scat.statistic.collector.service;
+package me.alexand.scat.statistic.collector.repository;
 
 import me.alexand.scat.statistic.collector.model.ImportDataTemplate;
-import me.alexand.scat.statistic.collector.service.impls.IPFIXRecordsWriter;
-import org.springframework.beans.factory.annotation.Lookup;
-import org.springframework.stereotype.Component;
+import me.alexand.scat.statistic.collector.model.InfoModelEntity;
+import me.alexand.scat.statistic.collector.utils.exceptions.UnknownInfoModelException;
+import me.alexand.scat.statistic.collector.utils.exceptions.UnknownTemplateTypeException;
+
+import java.util.Collection;
+import java.util.List;
 
 /**
  * @author asidorov84@gmail.com
  */
-@Component
-public abstract class IPFIXRecordsWriterFactory {
+public interface ImportDataTemplateRepository {
+    
+    Collection<ImportDataTemplate> findAll();
+    
+    int getCount();
 
-    @Lookup
-    public abstract IPFIXRecordsWriter getWriter(ImportDataTemplate dataTemplate, int batchSize);
+    InfoModelEntity getInfoModel(long enterpriseNumber, int informationElementId) throws UnknownInfoModelException;
+
+    ImportDataTemplate findByInfoModelEntities(List<InfoModelEntity> infoModelEntities) throws UnknownTemplateTypeException;
 }

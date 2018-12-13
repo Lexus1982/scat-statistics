@@ -23,9 +23,6 @@ package me.alexand.scat.statistic.collector.utils;
 
 import me.alexand.scat.statistic.collector.model.InfoModelEntity;
 
-import java.util.Arrays;
-import java.util.List;
-
 import static me.alexand.scat.statistic.collector.model.IANAAbstractDataTypes.*;
 
 /**
@@ -41,7 +38,7 @@ public interface InfoModelEntities {
     InfoModelEntity TIMESTAMP = InfoModelEntity.builder()
             .enterpriseNumber(VAS_EXPERTS_ENTERPRISE_NUMBER)
             .informationElementId(1001)
-            .name("timestamp")
+            .name("event_datetime")
             .type(DATE_TIME_SECONDS)
             .build();
 
@@ -55,21 +52,21 @@ public interface InfoModelEntities {
     InfoModelEntity SOURCE_IP = InfoModelEntity.builder()
             .enterpriseNumber(VAS_EXPERTS_ENTERPRISE_NUMBER)
             .informationElementId(1003)
-            .name("ipSrc")
+            .name("ip_src")
             .type(IPV4_ADDRESS)
             .build();
 
     InfoModelEntity DESTINATION_IP = InfoModelEntity.builder()
             .enterpriseNumber(VAS_EXPERTS_ENTERPRISE_NUMBER)
             .informationElementId(1004)
-            .name("ipDst")
+            .name("ip_dst")
             .type(IPV4_ADDRESS)
             .build();
 
     InfoModelEntity HOSTNAME = InfoModelEntity.builder()
             .enterpriseNumber(VAS_EXPERTS_ENTERPRISE_NUMBER)
             .informationElementId(1005)
-            .name("domain")
+            .name("hostname")
             .type(STRING)
             .build();
 
@@ -90,7 +87,7 @@ public interface InfoModelEntities {
     InfoModelEntity USER_AGENT = InfoModelEntity.builder()
             .enterpriseNumber(VAS_EXPERTS_ENTERPRISE_NUMBER)
             .informationElementId(1008)
-            .name("userAgent")
+            .name("user_agent")
             .type(STRING)
             .build();
 
@@ -111,7 +108,7 @@ public interface InfoModelEntities {
     InfoModelEntity HOST_TYPE = InfoModelEntity.builder()
             .enterpriseNumber(VAS_EXPERTS_ENTERPRISE_NUMBER)
             .informationElementId(1011)
-            .name("hostType")
+            .name("host_type")
             .type(UNSIGNED8)
             .build();
 
@@ -125,28 +122,28 @@ public interface InfoModelEntities {
     InfoModelEntity RESULT_CODE = InfoModelEntity.builder()
             .enterpriseNumber(VAS_EXPERTS_ENTERPRISE_NUMBER)
             .informationElementId(1020)
-            .name("resultCode")
+            .name("result_code")
             .type(UNSIGNED32)
             .build();
 
     InfoModelEntity CONTENT_LENGTH = InfoModelEntity.builder()
             .enterpriseNumber(VAS_EXPERTS_ENTERPRISE_NUMBER)
             .informationElementId(1021)
-            .name("contentLength")
+            .name("content_length")
             .type(UNSIGNED64)
             .build();
 
     InfoModelEntity CONTENT_TYPE = InfoModelEntity.builder()
             .enterpriseNumber(VAS_EXPERTS_ENTERPRISE_NUMBER)
             .informationElementId(1022)
-            .name("contentType")
+            .name("content_type")
             .type(STRING)
             .build();
 
     InfoModelEntity SESSION_ID = InfoModelEntity.builder()
             .enterpriseNumber(VAS_EXPERTS_ENTERPRISE_NUMBER)
             .informationElementId(2000)
-            .name("sessionID")
+            .name("session_id")
             .type(UNSIGNED64)
             .build();
 
@@ -289,43 +286,4 @@ public interface InfoModelEntities {
             .name("portNATSourceTransportPort")
             .type(UNSIGNED16)
             .build();
-
-    List<InfoModelEntity> INFO_MODEL_DATA_LIST = Arrays.asList(
-            TIMESTAMP,
-            LOGIN,
-            SOURCE_IP,
-            DESTINATION_IP,
-            HOSTNAME,
-            PATH,
-            REFER,
-            USER_AGENT,
-            COOKIE,
-            LOCKED,
-            HOST_TYPE,
-            METHOD,
-            RESULT_CODE,
-            CONTENT_LENGTH,
-            CONTENT_TYPE,
-            SESSION_ID,
-            HTTP_HOST,
-            DPI_PROTOCOL,
-            LOGIN_2,
-            OCTET_DELTA_COUNT,
-            PACKET_DELTA_COUNT,
-            PROTOCOL_IDENTIFIER,
-            IP_CLASS_OF_SERVICE,
-            SOURCE_TRANSPORT_PORT,
-            SOURCE_IPV4_ADDRESS,
-            DESTINATION_TRANSPORT_PORT,
-            DESTINATION_IPV4_ADDRESS,
-            BGP_SOURCE_AS,
-            BGP_DESTINATION_AS,
-            FLOW_START,
-            FLOW_END,
-            IN_SNMP,
-            OUT_SNMP,
-            IP_VERSION,
-            PORT_NAT_SRC_ADDR,
-            PORT_NAT_SRC_PORT
-    );
 }
