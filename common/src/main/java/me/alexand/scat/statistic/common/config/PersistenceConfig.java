@@ -49,7 +49,7 @@ import static me.alexand.scat.statistic.common.utils.DBUtils.databasePopulator;
 @Configuration
 @EnableTransactionManagement
 public class PersistenceConfig {
-    private static final Resource DB_INIT_SCRIPT = new ClassPathResource("initDB.sql");
+    private static final Resource DB_INIT_SCRIPT = new ClassPathResource("db/init.sql");
 
     private final Environment env;
 
@@ -61,12 +61,12 @@ public class PersistenceConfig {
     public BasicDataSource persistenceDataSource() {
         BasicDataSource dataSource = new BasicDataSource();
 
-        dataSource.setDriverClassName(env.getRequiredProperty("db.postgresql.driverClassName"));
-        dataSource.setUrl(env.getRequiredProperty("db.postgresql.url"));
-        dataSource.setUsername(env.getRequiredProperty("db.postgresql.username"));
-        dataSource.setPassword(env.getRequiredProperty("db.postgresql.password"));
-        dataSource.setInitialSize(Integer.parseInt(env.getRequiredProperty("db.postgresql.pool.init.size")));
-        dataSource.setMaxTotal(Integer.parseInt(env.getRequiredProperty("db.postgresql.pool.max.size")));
+        dataSource.setDriverClassName(env.getRequiredProperty("db.driverClassName"));
+        dataSource.setUrl(env.getRequiredProperty("db.url"));
+        dataSource.setUsername(env.getRequiredProperty("db.username"));
+        dataSource.setPassword(env.getRequiredProperty("db.password"));
+        dataSource.setInitialSize(Integer.parseInt(env.getRequiredProperty("db.pool.init.size")));
+        dataSource.setMaxTotal(Integer.parseInt(env.getRequiredProperty("db.pool.max.size")));
 
         DatabasePopulatorUtils.execute(databasePopulator(DB_INIT_SCRIPT), dataSource);
 

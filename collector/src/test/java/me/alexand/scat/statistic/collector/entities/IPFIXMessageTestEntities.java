@@ -46,7 +46,7 @@ public interface IPFIXMessageTestEntities {
             .dataTemplate(CS_REQ_IMPORT_TEMPLATE)
             .fieldValues(asList(
                     IPFIXFieldValue.builder()
-                            .name("timestamp")
+                            .name("event_datetime")
                             .type(DATE_TIME_SECONDS)
                             .value(LocalDateTime.of(2017, 10, 16, 13, 52, 18))
                             .build(),
@@ -56,17 +56,17 @@ public interface IPFIXMessageTestEntities {
                             .value("")
                             .build(),
                     IPFIXFieldValue.builder()
-                            .name("ipSrc")
+                            .name("ip_src")
                             .type(IPV4_ADDRESS)
                             .value("31.170.168.171")
                             .build(),
                     IPFIXFieldValue.builder()
-                            .name("ipDst")
+                            .name("ip_dst")
                             .type(IPV4_ADDRESS)
                             .value("217.12.15.96")
                             .build(),
                     IPFIXFieldValue.builder()
-                            .name("domain")
+                            .name("hostname")
                             .type(STRING)
                             .value("yboss.yahooapis.com")
                             .build(),
@@ -81,7 +81,7 @@ public interface IPFIXMessageTestEntities {
                             .value("")
                             .build(),
                     IPFIXFieldValue.builder()
-                            .name("userAgent")
+                            .name("user_agent")
                             .type(STRING)
                             .value("")
                             .build(),
@@ -91,7 +91,7 @@ public interface IPFIXMessageTestEntities {
                             .value("")
                             .build(),
                     IPFIXFieldValue.builder()
-                            .name("sessionID")
+                            .name("session_id")
                             .type(UNSIGNED64)
                             .value(new BigInteger("301089013125136674"))
                             .build(),
@@ -101,7 +101,7 @@ public interface IPFIXMessageTestEntities {
                             .value(BigInteger.valueOf(0))
                             .build(),
                     IPFIXFieldValue.builder()
-                            .name("hostType")
+                            .name("host_type")
                             .type(UNSIGNED8)
                             .value(1)
                             .build(),

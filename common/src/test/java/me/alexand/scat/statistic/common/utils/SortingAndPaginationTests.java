@@ -86,6 +86,6 @@ public class SortingAndPaginationTests {
                 .build()
                 .formSQLSuffix();
 
-        assertEquals("ORDER BY column1 DESC, column2 ASC, column3 ASC OFFSET 0 LIMIT ALL", suffix);
+        assertEquals("ORDER BY column1 DESC, column2 ASC, column3 ASC OFFSET 0", suffix);
     }
 }

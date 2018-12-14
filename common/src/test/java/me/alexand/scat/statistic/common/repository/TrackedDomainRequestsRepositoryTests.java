@@ -35,7 +35,8 @@ import java.util.Map;
 
 import static java.util.Arrays.asList;
 import static me.alexand.scat.statistic.common.data.TrackedDomainRequestsTestEntities.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Тесты для проверки хранилища сущностей TrackedDomainRequests
@@ -45,22 +46,6 @@ import static org.junit.Assert.*;
 public class TrackedDomainRequestsRepositoryTests extends AbstractCommonTests {
     @Autowired
     private TrackedDomainRequestsRepository repository;
-
-    @Test
-    public void testSave() {
-        assertTrue(repository.save(TEST_1));
-    }
-
-    @Test
-    public void testSaveDuplicate() {
-        assertTrue(repository.save(TEST_1));
-        assertTrue(repository.save(TEST_1));
-    }
-
-    @Test
-    public void testSaveAll() {
-        assertEquals(1, repository.saveAll(Collections.singletonList(TEST_1)));
-    }
 
     @Test
     public void testFindBetweenDates() {

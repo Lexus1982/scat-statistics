@@ -36,17 +36,6 @@ import java.util.List;
 public interface ClickCountRepository {
 
     /**
-     * Метод для сохранения списка экземпляров ClickCount в хранилище.
-     * Если данные для какого-либо дня уже имеются в хранилище, то производится суммирование
-     * старого значения счетчика с новым.
-     *
-     * @param entities список ClickCount (обязательный)
-     * @return количество успешно сохраненных экземпляров
-     * @throws NullPointerException если параметр null
-     */
-    int saveAll(List<ClickCount> entities);
-
-    /**
      * Метод для получения всех экземпляров класса ClickCount из хранилища.
      * Список отсортирован по дате по убыванию.
      *

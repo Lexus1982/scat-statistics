@@ -1,8 +1,4 @@
-INSERT INTO domain_regex (id, pattern, date_added, is_active) VALUES
-  (1, '.*vk\.com$', '2018-01-01 01:01:01.000000', TRUE),
-  (2, '.*mail\.ru$', '2018-01-01 01:01:01.000000', TRUE);
-
-INSERT INTO click_count (date, count) VALUES
+INSERT INTO reports.click_count (date, count) VALUES
   ('2018-07-25', 20180725),
   ('2018-07-26', 20180726),
   ('2018-07-27', 20180727),
@@ -16,7 +12,12 @@ INSERT INTO click_count (date, count) VALUES
   ('2018-08-04', 20180804),
   ('2018-08-05', 20180805);
 
-INSERT INTO tracked_domain_requests (date, domain_id, address, login, first_time, last_time, count) VALUES
+INSERT INTO reports.domain_regex (id, pattern, date_added, is_active) VALUES
+  (1, '.*vk\.com$', '2018-01-01 01:01:01.000000', TRUE),
+  (2, '.*mail\.ru$', '2018-01-01 01:01:01.000000', TRUE),
+  (3, '.*delete\.ru$', '2018-01-01 01:01:01.000000', TRUE);
+
+INSERT INTO reports.tracked_domain_requests (date, domain_id, address, login, first_time, last_time, count) VALUES
   ('2018-08-01', 1, '127.0.0.1', 'login1', '00:40:43', '00:40:43', 2),
   ('2018-08-01', 1, '127.0.0.2', 'login2', '00:40:48', '23:46:15', 66),
   ('2018-08-02', 2, '127.0.0.1', 'login1', '00:41:26', '23:05:16', 55),

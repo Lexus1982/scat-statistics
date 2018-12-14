@@ -21,6 +21,10 @@
 
 package me.alexand.scat.statistic.collector;
 
+import me.alexand.scat.statistic.collector.repository.ImportDataTemplateRepository;
+import me.alexand.scat.statistic.collector.repository.impls.ImportDataTemplateRepositoryImpl;
+import me.alexand.scat.statistic.collector.service.IPFIXParser;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
@@ -30,12 +34,14 @@ import org.springframework.context.annotation.PropertySource;
 @Configuration
 @PropertySource("classpath:app-test.properties")
 public class TestConfig {
-
-
-/*
+    
     @Bean
-    public IPFIXParser ipfixParser() {
-        return new IPFIXParser(dataTemplateService(), infoModelRepository());
+    IPFIXParser parser() {
+        return new IPFIXParser(dataTemplateRepository());
     }
-*/
+    
+    @Bean
+    ImportDataTemplateRepository dataTemplateRepository() {
+        return new ImportDataTemplateRepositoryImpl();
+    }
 }

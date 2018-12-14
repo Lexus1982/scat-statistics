@@ -26,7 +26,6 @@ import me.alexand.scat.statistic.common.utils.SortingAndPagination;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.math.BigInteger;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -44,24 +43,6 @@ public class ClickCountRepositoryTests extends AbstractCommonTests {
 
     @Autowired
     private ClickCountRepository repository;
-
-    @Test
-    public void testSaveAll() {
-        List<ClickCount> clickCounts = asList(COUNTER_20180401, COUNTER_20180402);
-
-        assertEquals(clickCounts.size(), repository.saveAll(clickCounts));
-        assertNotNull(repository.findByDate(TEST_DATE_2018_04_01));
-        assertNotNull(repository.findByDate(TEST_DATE_2018_04_02));
-
-        assertEquals(clickCounts.size(), repository.saveAll(clickCounts));
-        ClickCount clickCount = repository.findByDate(TEST_DATE_2018_04_01);
-        assertNotNull(clickCount);
-        assertEquals(clickCount.getCount(), COUNTER_20180401.getCount().multiply(BigInteger.valueOf(2)));
-
-        clickCount = repository.findByDate(TEST_DATE_2018_04_02);
-        assertNotNull(clickCount);
-        assertEquals(clickCount.getCount(), COUNTER_20180402.getCount().multiply(BigInteger.valueOf(2)));
-    }
 
     @Test
     public void testFindAll() {

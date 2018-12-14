@@ -27,19 +27,14 @@ import me.alexand.scat.statistic.common.utils.SortingAndPagination;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-import static java.sql.Types.BIGINT;
 import static me.alexand.scat.statistic.common.utils.ColumnOrder.DESC;
 
 /**
@@ -62,59 +57,25 @@ public class ClickCountRepositoryJDBCImpl implements ClickCountRepository {
     }
 
     @Override
-    @Transactional("persistenceTM")
-    public int saveAll(List<ClickCount> entities) {
-        Objects.requireNonNull(entities);
-        int recordsAffected = 0;
-
-        if (!entities.isEmpty()) {
-            try {
-                String query = "INSERT INTO reports.click_count AS cc (date, count) VALUES (?, ?)" +
-                        " ON CONFLICT (date) DO UPDATE SET count = cc.count + EXCLUDED.count";
-
-                LOGGER.debug("executing batch update query: [{}]", query);
-
-                recordsAffected = Arrays.stream(jdbcTemplate.batchUpdate(query, new BatchPreparedStatementSetter() {
-                    @Override
-                    public void setValues(PreparedStatement ps, int i) throws SQLException {
-                        ps.setObject(1, entities.get(i).getDate());
-                        ps.setObject(2, entities.get(i).getCount(), BIGINT);
-                    }
-
-                    @Override
-                    public int getBatchSize() {
-                        return entities.size();
-                    }
-                })).sum();
-            } catch (DataAccessException e) {
-                LOGGER.error("exception while saving ClickCount: {}", e.getMessage());
-            }
-        }
-
-        LOGGER.debug("records successfully affected: {}", recordsAffected);
-        return recordsAffected;
-    }
-
-    @Override
-    @Transactional(value = "persistenceTM", readOnly = true)
+    @Transactional(readOnly = true)
     public List<ClickCount> findAll() {
         return findBetween(null, null, DEFAULT_SORTING_PARAM);
     }
 
     @Override
-    @Transactional(value = "persistenceTM", readOnly = true)
+    @Transactional(readOnly = true)
     public List<ClickCount> findAll(SortingAndPagination sortingAndPagination) {
         return findBetween(null, null, sortingAndPagination);
     }
 
     @Override
-    @Transactional(value = "persistenceTM", readOnly = true)
+    @Transactional(readOnly = true)
     public List<ClickCount> findBetween(LocalDate from, LocalDate to) {
         return findBetween(from, to, DEFAULT_SORTING_PARAM);
     }
 
     @Override
-    @Transactional(value = "persistenceTM", readOnly = true)
+    @Transactional(readOnly = true)
     public List<ClickCount> findBetween(LocalDate from, LocalDate to, SortingAndPagination sortingAndPagination) {
         String suffix = sortingAndPagination != null ? sortingAndPagination.formSQLSuffix() : "";
         String filters = "";
@@ -161,7 +122,7 @@ public class ClickCountRepositoryJDBCImpl implements ClickCountRepository {
     }
 
     @Override
-    @Transactional(value = "persistenceTM", readOnly = true)
+    @Transactional(readOnly = true)
     public ClickCount findByDate(LocalDate date) {
         Objects.requireNonNull(date);
         List<ClickCount> list = findBetween(date, date, null);

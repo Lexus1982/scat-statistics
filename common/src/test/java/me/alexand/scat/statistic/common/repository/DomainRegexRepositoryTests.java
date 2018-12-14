@@ -79,7 +79,7 @@ public class DomainRegexRepositoryTests extends AbstractCommonTests {
 
     @Test
     public void testDelete() {
-        Assert.assertTrue(repository.delete(TEST_VK_COM.getId()));
+        Assert.assertTrue(repository.delete(TEST_DELETE.getId()));
         Assert.assertFalse(repository.delete(0));
     }
 

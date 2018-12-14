@@ -28,16 +28,14 @@ import me.alexand.scat.statistic.common.utils.SortingAndPagination;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.*;
-
-import static java.sql.Types.BIGINT;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * Реализация хранилища сущностей TrackedDomainRequests на основе JDBC
@@ -49,11 +47,6 @@ import static java.sql.Types.BIGINT;
 public class TrackedDomainRequestsRepositoryJDBCImpl implements TrackedDomainRequestsRepository {
     private static final Logger LOGGER = LoggerFactory.getLogger(TrackedDomainRequestsRepositoryJDBCImpl.class);
 
-    private static final String INSERT_QUERY = "INSERT INTO reports.tracked_domain_requests AS tdr (date, domain_id, address, login, first_time, last_time, count) " +
-            " VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT (date, domain_id, address, login) DO UPDATE SET " +
-            "last_time = EXCLUDED.last_time, " +
-            "count = tdr.count + EXCLUDED.count";
-
     private final JdbcTemplate jdbcTemplate;
 
     public TrackedDomainRequestsRepositoryJDBCImpl(JdbcTemplate jdbcTemplate) {
@@ -61,86 +54,25 @@ public class TrackedDomainRequestsRepositoryJDBCImpl implements TrackedDomainReq
     }
 
     @Override
-    @Transactional("persistenceTM")
-    public int saveAll(List<TrackedDomainRequests> entities) {
-        Objects.requireNonNull(entities);
-        int result = 0;
-
-        try {
-            LOGGER.debug("executing query: [{}]", INSERT_QUERY);
-
-            result = Arrays.stream(jdbcTemplate.batchUpdate(INSERT_QUERY, new BatchPreparedStatementSetter() {
-                @Override
-                public void setValues(PreparedStatement ps, int i) throws SQLException {
-                    ps.setObject(1, entities.get(i).getDate());
-                    ps.setObject(2, entities.get(i).getDomainRegex().getId());
-                    ps.setString(3, entities.get(i).getAddress());
-                    ps.setString(4, entities.get(i).getLogin());
-                    ps.setObject(5, entities.get(i).getFirstTime());
-                    ps.setObject(6, entities.get(i).getLastTime());
-                    ps.setObject(7, entities.get(i).getCount(), BIGINT);
-                }
-
-                @Override
-                public int getBatchSize() {
-                    return entities.size();
-                }
-            })).sum();
-
-            LOGGER.debug("entities saved: {}", result);
-        } catch (DataAccessException e) {
-            LOGGER.error("exception while saving: {}", e.getMessage());
-        }
-
-        return result;
-    }
-
-    @Override
-    @Transactional("persistenceTM")
-    public boolean save(TrackedDomainRequests entity) {
-        boolean result = false;
-
-        try {
-            LOGGER.debug("executing query: [{}]", INSERT_QUERY);
-
-            result = jdbcTemplate.update(INSERT_QUERY, ps -> {
-                ps.setObject(1, entity.getDate());
-                ps.setObject(2, entity.getDomainRegex().getId());
-                ps.setString(3, entity.getAddress());
-                ps.setString(4, entity.getLogin());
-                ps.setObject(5, entity.getFirstTime());
-                ps.setObject(6, entity.getLastTime());
-                ps.setObject(7, entity.getCount(), BIGINT);
-            }) == 1;
-
-            LOGGER.debug("entity saved: {}", result);
-        } catch (DataAccessException e) {
-            LOGGER.error("exception while saving: {}", e.getMessage());
-        }
-
-        return result;
-    }
-
-    @Override
-    @Transactional(value = "persistenceTM", readOnly = true)
+    @Transactional(readOnly = true)
     public List<TrackedDomainRequests> findBetween(LocalDate from, LocalDate to) {
         return findBetween(from, to, null, null);
     }
 
     @Override
-    @Transactional(value = "persistenceTM", readOnly = true)
+    @Transactional(readOnly = true)
     public List<TrackedDomainRequests> findBetween(LocalDate from, LocalDate to, Map<String, String> filters) {
         return findBetween(from, to, filters, null);
     }
 
     @Override
-    @Transactional(value = "persistenceTM", readOnly = true)
+    @Transactional(readOnly = true)
     public List<TrackedDomainRequests> findBetween(LocalDate from, LocalDate to, SortingAndPagination sortingAndPagination) {
         return findBetween(from, to, null, sortingAndPagination);
     }
 
     @Override
-    @Transactional(value = "persistenceTM", readOnly = true)
+    @Transactional(readOnly = true)
     public List<TrackedDomainRequests> findBetween(LocalDate from,
                                                    LocalDate to,
                                                    Map<String, String> filters,

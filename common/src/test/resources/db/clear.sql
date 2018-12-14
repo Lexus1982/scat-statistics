@@ -1,2 +1,3 @@
-TRUNCATE TABLE tracked_domain_requests, domain_regex CASCADE;
-TRUNCATE TABLE click_count;
+TRUNCATE TABLE reports.tracked_domain_requests;
+TRUNCATE TABLE reports.domain_regex;
+TRUNCATE TABLE reports.click_count;

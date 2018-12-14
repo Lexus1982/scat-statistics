@@ -31,7 +31,7 @@ import java.time.LocalDateTime;
  * @author asidorov84@gmail.com
  */
 public interface DomainRegexTestEntities {
-    int POPULATED_DOMAINS_COUNT = 2;
+    int POPULATED_DOMAINS_COUNT = 3;
 
     String INVALID_PATTERN = "\\\\1111\\q";
     String VK_COM_REGEX_PATTERN = ".*vk\\.com$";
@@ -48,6 +48,13 @@ public interface DomainRegexTestEntities {
     DomainRegex TEST_MAIL_RU = DomainRegex.builder()
             .id(2)
             .pattern(MAIL_RU_REGEX_PATTERN)
+            .dateAdded(LocalDateTime.of(2018, 1, 1, 1, 1, 1))
+            .active(true)
+            .build();
+
+    DomainRegex TEST_DELETE = DomainRegex.builder()
+            .id(3)
+            .pattern(".*delete\\.ru$")
             .dateAdded(LocalDateTime.of(2018, 1, 1, 1, 1, 1))
             .active(true)
             .build();

@@ -75,7 +75,9 @@ public final class SortingAndPagination {
         }
 
         sb.append(" OFFSET ").append(offset);
-        sb.append(" LIMIT ").append(limit == 0 ? "ALL" : limit);
+        if (limit != 0) {
+            sb.append(" LIMIT ").append(limit);
+        }
         return sb.toString();
     }
 

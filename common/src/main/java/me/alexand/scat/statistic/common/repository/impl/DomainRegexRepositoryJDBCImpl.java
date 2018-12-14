@@ -28,6 +28,7 @@ import me.alexand.scat.statistic.common.utils.exceptions.DomainPatternAlreadyExi
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -64,7 +65,7 @@ public class DomainRegexRepositoryJDBCImpl implements DomainRegexRepository {
     }
 
     @Override
-    @Transactional("persistenceTM")
+    @Transactional
     public DomainRegex add(String pattern) {
         Objects.requireNonNull(pattern);
         if (pattern.isEmpty()) {
@@ -73,8 +74,7 @@ public class DomainRegexRepositoryJDBCImpl implements DomainRegexRepository {
         //проверка синтаксиса регулярного выражения
         Pattern.compile(pattern);
 
-        String query = "INSERT INTO reports.domain_regex AS td (pattern, date_added, is_active) VALUES (?, ?, ?)" +
-                " ON CONFLICT (pattern) DO NOTHING ";
+        String query = "INSERT INTO reports.domain_regex AS td (pattern, date_added, is_active) VALUES (?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         try {
@@ -99,10 +99,10 @@ public class DomainRegexRepositoryJDBCImpl implements DomainRegexRepository {
 
                 LOGGER.info("{} saved successfully", result);
                 return result;
-            } else {
-                LOGGER.info("pattern '{}' already present", pattern);
-                throw new DomainPatternAlreadyExistsException(pattern);
             }
+        } catch (DuplicateKeyException e) {
+            LOGGER.info("pattern '{}' already present", pattern);
+            throw new DomainPatternAlreadyExistsException(pattern);
         } catch (DataAccessException e) {
             LOGGER.error("exception while adding domain pattern: {}", e.getMessage());
         }
@@ -110,7 +110,7 @@ public class DomainRegexRepositoryJDBCImpl implements DomainRegexRepository {
     }
 
     @Override
-    @Transactional("persistenceTM")
+    @Transactional
     public boolean delete(long id) {
         boolean result = false;
 
@@ -127,13 +127,13 @@ public class DomainRegexRepositoryJDBCImpl implements DomainRegexRepository {
     }
 
     @Override
-    @Transactional(value = "persistenceTM", readOnly = true)
+    @Transactional(readOnly = true)
     public List<DomainRegex> findAll() {
         return findAll(DEFAULT_SORTING_PARAM);
     }
 
     @Override
-    @Transactional(value = "persistenceTM", readOnly = true)
+    @Transactional(readOnly = true)
     public List<DomainRegex> findAll(SortingAndPagination sortingAndPagination) {
         String suffix = sortingAndPagination != null ? sortingAndPagination.formSQLSuffix() : "";
         String query = String.format("SELECT id, pattern, date_added, is_active FROM reports.domain_regex %s", suffix);
@@ -157,7 +157,7 @@ public class DomainRegexRepositoryJDBCImpl implements DomainRegexRepository {
     }
 
     @Override
-    @Transactional(value = "persistenceTM", readOnly = true)
+    @Transactional(readOnly = true)
     public long getCount() {
         long result = 0;
 
