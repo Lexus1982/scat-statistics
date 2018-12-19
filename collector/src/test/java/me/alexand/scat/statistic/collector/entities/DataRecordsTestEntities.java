@@ -27,8 +27,8 @@ import me.alexand.scat.statistic.collector.model.IPFIXFieldValue;
 import java.math.BigInteger;
 
 import static java.util.Arrays.asList;
+import static me.alexand.scat.statistic.collector.entities.SCATDataTemplateEntities.CS_REQ_IMPORT_TEMPLATE;
 import static me.alexand.scat.statistic.collector.model.IANAAbstractDataTypes.*;
-import static me.alexand.scat.statistic.collector.utils.SCATDataTemplateEntities.CS_REQ_IMPORT_TEMPLATE;
 
 /**
  * @author asidorov84@gmail.com

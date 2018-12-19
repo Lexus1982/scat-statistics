@@ -1,0 +1,58 @@
+<templates>
+    <template name="cs_req" export="true">
+        <fields>
+            <field enterpriseNumber="43823" informationElementId="1001" type="DATE_TIME_SECONDS">event_datetime</field>
+            <field enterpriseNumber="43823" informationElementId="1002" type="STRING">login</field>
+            <field enterpriseNumber="43823" informationElementId="1003" type="IPV4_ADDRESS">ip_src</field>
+            <field enterpriseNumber="43823" informationElementId="1004" type="IPV4_ADDRESS">ip_dst</field>
+            <field enterpriseNumber="43823" informationElementId="1005" type="STRING">hostname</field>
+            <field enterpriseNumber="43823" informationElementId="1006" type="STRING">path</field>
+            <field enterpriseNumber="43823" informationElementId="1007" type="STRING">refer</field>
+            <field enterpriseNumber="43823" informationElementId="1008" type="STRING">user_agent</field>
+            <field enterpriseNumber="43823" informationElementId="1009" type="STRING">cookie</field>
+            <field enterpriseNumber="43823" informationElementId="2000" type="UNSIGNED64">session_id</field>
+            <field enterpriseNumber="43823" informationElementId="1010" type="UNSIGNED64">locked</field>
+            <field enterpriseNumber="43823" informationElementId="1011" type="UNSIGNED8">host_type</field>
+            <field enterpriseNumber="43823" informationElementId="1012" type="UNSIGNED8">method</field>
+        </fields>
+    </template>
+    <template name="cs_resp" export="false">
+        <fields>
+            <field enterpriseNumber="43823" informationElementId="1001" type="DATE_TIME_SECONDS">event_datetime</field>
+            <field enterpriseNumber="43823" informationElementId="1002" type="STRING">login</field>
+            <field enterpriseNumber="43823" informationElementId="1003" type="IPV4_ADDRESS">ip_src</field>
+            <field enterpriseNumber="43823" informationElementId="1004" type="IPV4_ADDRESS">ip_dst</field>
+            <field enterpriseNumber="43823" informationElementId="1020" type="UNSIGNED32">result_code</field>
+            <field enterpriseNumber="43823" informationElementId="1021" type="UNSIGNED64">content_length</field>
+            <field enterpriseNumber="43823" informationElementId="1022" type="STRING">content_type</field>
+            <field enterpriseNumber="43823" informationElementId="2000" type="UNSIGNED64">session_id</field>
+        </fields>
+    </template>
+    <template name="generic" export="false">
+        <fields>
+            <field enterpriseNumber="0" informationElementId="1" type="UNSIGNED64">octetDeltaCount</field>
+            <field enterpriseNumber="0" informationElementId="2" type="UNSIGNED64">packetDeltaCount</field>
+            <field enterpriseNumber="0" informationElementId="4" type="UNSIGNED8">protocolIdentifier</field>
+            <field enterpriseNumber="0" informationElementId="5" type="UNSIGNED8">ipClassOfService</field>
+            <field enterpriseNumber="0" informationElementId="7" type="UNSIGNED16">sourceTransportPort</field>
+            <field enterpriseNumber="0" informationElementId="8" type="IPV4_ADDRESS">sourceIpv4Address</field>
+            <field enterpriseNumber="0" informationElementId="11" type="UNSIGNED16">destinationTransportPort</field>
+            <field enterpriseNumber="0" informationElementId="12" type="IPV4_ADDRESS">destinationIpv4Address</field>
+            <field enterpriseNumber="0" informationElementId="16" type="UNSIGNED32">bgpSourceAsNumber</field>
+            <field enterpriseNumber="0" informationElementId="17" type="UNSIGNED32">bgpDestinationAsNumber</field>
+            <field enterpriseNumber="0" informationElementId="152" type="DATE_TIME_MILLISECONDS">flowStartMillisecond
+            </field>
+            <field enterpriseNumber="0" informationElementId="153" type="DATE_TIME_MILLISECONDS">flowEndMillisecond
+            </field>
+            <field enterpriseNumber="0" informationElementId="10" type="UNSIGNED16">inputSNMP</field>
+            <field enterpriseNumber="0" informationElementId="14" type="UNSIGNED16">outputSNMP</field>
+            <field enterpriseNumber="0" informationElementId="60" type="UNSIGNED8">ipVersion</field>
+            <field enterpriseNumber="43823" informationElementId="2000" type="UNSIGNED64">session_id</field>
+            <field enterpriseNumber="43823" informationElementId="2001" type="STRING">httpHost</field>
+            <field enterpriseNumber="43823" informationElementId="2002" type="UNSIGNED16">dpiProtocol</field>
+            <field enterpriseNumber="43823" informationElementId="2003" type="STRING">login</field>
+            <field enterpriseNumber="0" informationElementId="225" type="IPV4_ADDRESS">portNATSourceIPv4Address</field>
+            <field enterpriseNumber="0" informationElementId="227" type="UNSIGNED16">portNATSourceTransportPort</field>
+        </fields>
+    </template>
+</templates>

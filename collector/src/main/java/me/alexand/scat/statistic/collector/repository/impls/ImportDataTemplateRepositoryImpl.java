@@ -21,16 +21,23 @@
 
 package me.alexand.scat.statistic.collector.repository.impls;
 
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import me.alexand.scat.statistic.collector.model.ImportDataTemplate;
 import me.alexand.scat.statistic.collector.model.InfoModelEntity;
 import me.alexand.scat.statistic.collector.repository.ImportDataTemplateRepository;
-import me.alexand.scat.statistic.collector.utils.SCATDataTemplateEntities;
 import me.alexand.scat.statistic.collector.utils.exceptions.UnknownInfoModelException;
 import me.alexand.scat.statistic.collector.utils.exceptions.UnknownTemplateTypeException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
+import java.io.*;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -41,11 +48,12 @@ import java.util.Map;
  */
 @Repository
 public class ImportDataTemplateRepositoryImpl implements ImportDataTemplateRepository {
+    private final static Logger LOGGER = LoggerFactory.getLogger(ImportDataTemplateRepository.class);
     private final Map<List<InfoModelEntity>, ImportDataTemplate> dataTemplateMap = new HashMap<>();
     private final Table<Long, Integer, InfoModelEntity> infoModelEntityTable = HashBasedTable.create();
 
-    {
-        load();
+    public ImportDataTemplateRepositoryImpl(@Value("${templates.filename:}") String fileName) throws Exception {
+        load(fileName);
     }
 
     @Override
@@ -77,16 +85,68 @@ public class ImportDataTemplateRepositoryImpl implements ImportDataTemplateRepos
         return dataTemplate;
     }
 
-    private void load() {
-        //TODO сделать загрузку из XML-файла 
-        SCATDataTemplateEntities.DATA_TEMPLATE_LIST.forEach(template -> {
-            template.getSpecifiers().forEach(infoModelEntity -> {
-                infoModelEntityTable.put(infoModelEntity.getEnterpriseNumber(),
-                        infoModelEntity.getInformationElementId(),
-                        infoModelEntity);
-            });
-            
-            dataTemplateMap.put(template.getSpecifiers(), template);
-        });
+    private void load(String fileName) throws Exception {
+        InputStream is;
+
+        if (!fileName.isEmpty()) {
+            is = new FileInputStream(new File(fileName));
+        } else {
+            is = getClass().getResourceAsStream("/templates.xml");
+        }
+
+        Templates templates = new XmlMapper().readValue(inputStreamToString(is), Templates.class);
+
+        LOGGER.info("templates successfully loaded: {}", templates);
+
+        templates.getTemplates().forEach(this::save);
     }
+
+    private void save(ImportDataTemplate template) {
+        List<InfoModelEntity> specifiers = template.getSpecifiers();
+        specifiers.forEach(this::save);
+        dataTemplateMap.put(specifiers, template);
+    }
+
+    private void save(InfoModelEntity infoModelEntity) {
+        infoModelEntityTable.put(infoModelEntity.getEnterpriseNumber(),
+                infoModelEntity.getInformationElementId(),
+                infoModelEntity);
+    }
+
+    private String inputStreamToString(InputStream is) {
+        StringBuilder sb = new StringBuilder();
+
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
+            String line;
+
+            while ((line = br.readLine()) != null) {
+                sb.append(line);
+            }
+        } catch (IOException e) {
+            LOGGER.error("exception while reading file with templates: {}", e);
+        }
+
+        return sb.toString();
+    }
+
+    @JacksonXmlRootElement(localName = "templates")
+    private static class Templates {
+        @JacksonXmlElementWrapper(useWrapping = false)
+        @JacksonXmlProperty(localName = "template")
+        private List<ImportDataTemplate> templates;
+
+        public List<ImportDataTemplate> getTemplates() {
+            return templates;
+        }
+
+        public void setTemplates(List<ImportDataTemplate> templates) {
+            this.templates = templates;
+        }
+
+        @Override
+        public String toString() {
+            return "templates=" + templates;
+        }
+    }
+
 }

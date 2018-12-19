@@ -21,6 +21,12 @@
 
 package me.alexand.scat.statistic.collector.model;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+
 import java.util.List;
 import java.util.Objects;
 
@@ -30,6 +36,8 @@ import java.util.Objects;
  * @author asidorov84@gmail.com
  * @see InfoModelEntity
  */
+@JacksonXmlRootElement(localName = "template")
+@JsonDeserialize(builder = ImportDataTemplate.Builder.class)
 public final class ImportDataTemplate {
     private final String name;
     private final List<InfoModelEntity> specifiers;
@@ -45,14 +53,18 @@ public final class ImportDataTemplate {
         return new ImportDataTemplate.Builder();
     }
 
+    @JacksonXmlProperty(isAttribute = true)
     public String getName() {
         return name;
     }
 
+    @JacksonXmlElementWrapper(localName = "fields")
+    @JacksonXmlProperty(localName = "field")
     public List<InfoModelEntity> getSpecifiers() {
         return specifiers;
     }
 
+    @JacksonXmlProperty(localName = "export", isAttribute = true)
     public boolean isExport() {
         return isExport;
     }
@@ -79,6 +91,7 @@ public final class ImportDataTemplate {
                 '}';
     }
 
+    @JsonPOJOBuilder(withPrefix = "")
     public static class Builder {
         private String name;
         private List<InfoModelEntity> specifiers;
@@ -87,16 +100,20 @@ public final class ImportDataTemplate {
         private Builder() {
         }
 
+        @JacksonXmlProperty(isAttribute = true)
         public Builder name(String name) {
             this.name = name;
             return this;
         }
 
+        @JacksonXmlElementWrapper(localName = "fields")
+        @JacksonXmlProperty(localName = "field")
         public Builder specifiers(List<InfoModelEntity> specifiers) {
             this.specifiers = specifiers;
             return this;
         }
         
+        @JacksonXmlProperty(localName = "export", isAttribute = true)
         public Builder isExport(boolean isExport) {
             this.isExport = isExport;
             return this;

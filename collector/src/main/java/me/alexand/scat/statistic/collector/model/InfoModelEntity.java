@@ -21,6 +21,11 @@
 
 package me.alexand.scat.statistic.collector.model;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText;
+
 import java.util.Objects;
 
 /**
@@ -29,17 +34,22 @@ import java.util.Objects;
  * @author asidorov84@gmail.com
  * @see IANAAbstractDataTypes
  */
+@JsonDeserialize(builder = InfoModelEntity.Builder.class)
 public final class InfoModelEntity {
     //Уникальный идентификатор организации, согласно IANA
+    @JacksonXmlProperty(isAttribute = true)
     private final long enterpriseNumber;
 
     //Уникальный идентификатор информационного элемента в рамках данной организации
+    @JacksonXmlProperty(isAttribute = true)
     private final int informationElementId;
 
     //Тип данных информационного элемента, согласно IANA
+    @JacksonXmlProperty(isAttribute = true)
     private final IANAAbstractDataTypes type;
 
     //Имя информационного элемента
+    @JacksonXmlText
     private final String name;
 
     public static InfoModelEntity.Builder builder() {
@@ -93,6 +103,7 @@ public final class InfoModelEntity {
                 '}';
     }
 
+    @JsonPOJOBuilder(withPrefix = "")
     public static class Builder {
         private long enterpriseNumber;
         private int informationElementId;
@@ -102,21 +113,25 @@ public final class InfoModelEntity {
         private Builder() {
         }
 
+        @JacksonXmlProperty(isAttribute = true)
         public Builder enterpriseNumber(long enterpriseNumber) {
             this.enterpriseNumber = enterpriseNumber;
             return this;
         }
 
+        @JacksonXmlProperty(isAttribute = true)
         public Builder informationElementId(int informationElementId) {
             this.informationElementId = informationElementId;
             return this;
         }
 
+        @JacksonXmlProperty(isAttribute = true)
         public Builder type(IANAAbstractDataTypes type) {
             this.type = type;
             return this;
         }
 
+        @JacksonXmlText
         public Builder name(String name) {
             this.name = name;
             return this;

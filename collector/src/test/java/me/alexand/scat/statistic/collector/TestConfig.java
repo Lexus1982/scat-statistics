@@ -36,12 +36,12 @@ import org.springframework.context.annotation.PropertySource;
 public class TestConfig {
     
     @Bean
-    IPFIXParser parser() {
+    IPFIXParser parser() throws Exception {
         return new IPFIXParser(dataTemplateRepository());
     }
     
     @Bean
-    ImportDataTemplateRepository dataTemplateRepository() {
-        return new ImportDataTemplateRepositoryImpl();
+    ImportDataTemplateRepository dataTemplateRepository() throws Exception {
+        return new ImportDataTemplateRepositoryImpl("");
     }
 }

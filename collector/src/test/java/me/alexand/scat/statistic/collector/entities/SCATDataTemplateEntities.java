@@ -19,14 +19,14 @@
  * under the License.
  */
 
-package me.alexand.scat.statistic.collector.utils;
+package me.alexand.scat.statistic.collector.entities;
 
 import me.alexand.scat.statistic.collector.model.ImportDataTemplate;
 
 import java.util.List;
 
 import static java.util.Arrays.asList;
-import static me.alexand.scat.statistic.collector.utils.InfoModelEntities.*;
+import static me.alexand.scat.statistic.collector.entities.InfoModelEntities.*;
 
 /**
  * Шаблоны экспортируемых данных АПК "СКАТ"

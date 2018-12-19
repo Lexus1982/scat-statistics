@@ -19,7 +19,7 @@
  * under the License.
  */
 
-package me.alexand.scat.statistic.collector.utils;
+package me.alexand.scat.statistic.collector.entities;
 
 import me.alexand.scat.statistic.collector.model.InfoModelEntity;
 
