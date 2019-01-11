@@ -21,6 +21,11 @@
 
 package me.alexand.scat.statistic.common.entities;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import me.alexand.scat.statistic.common.utils.Constants;
+
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
@@ -28,13 +33,20 @@ import java.util.UUID;
 /**
  * @author asidorov84@gmail.com
  */
+@JsonDeserialize(builder = CollectorStatRecord.Builder.class)
 public class CollectorStatRecord {
     private final UUID uuid;
     private final String address;
     private final int port;
+    
+    @JsonFormat(pattern = Constants.DATE_TIME_PATTERN)
     private final LocalDateTime started;
+    
     private final int period;
+    
+    @JsonFormat(pattern = Constants.DATE_TIME_PATTERN)
     private final LocalDateTime lastUpdated;
+    
     private final int processorsThreadsCount;
     private final int packetsReceivedCount;
     private final int packetsProcessedCount;
@@ -146,14 +158,21 @@ public class CollectorStatRecord {
                 ", recordsExportedCount=" + recordsExportedCount +
                 '}';
     }
-
+    
+    @JsonPOJOBuilder(withPrefix = "")
     public static class Builder {
         private UUID uuid;
         private String address;
         private int port;
+        
+        @JsonFormat(pattern = Constants.DATE_TIME_PATTERN)
         private LocalDateTime started;
+        
         private int period;
+        
+        @JsonFormat(pattern = Constants.DATE_TIME_PATTERN)
         private LocalDateTime lastUpdated;
+        
         private int processorsThreadsCount;
         private int packetsReceivedCount;
         private int packetsProcessedCount;

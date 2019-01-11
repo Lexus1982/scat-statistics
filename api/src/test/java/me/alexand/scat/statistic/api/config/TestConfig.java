@@ -22,6 +22,7 @@
 package me.alexand.scat.statistic.api.config;
 
 import me.alexand.scat.statistic.common.repository.ClickCountRepository;
+import me.alexand.scat.statistic.common.repository.CollectorStatRecordRepository;
 import me.alexand.scat.statistic.common.repository.DomainRegexRepository;
 import me.alexand.scat.statistic.common.repository.TrackedDomainRequestsRepository;
 import org.mockito.Mockito;
@@ -50,5 +51,10 @@ public class TestConfig {
     @Bean
     public TrackedDomainRequestsRepository trackedDomainRequestsMockRepository() {
         return Mockito.mock(TrackedDomainRequestsRepository.class);
+    }
+    
+    @Bean
+    public CollectorStatRecordRepository collectorStatRecordRepository() {
+        return Mockito.mock(CollectorStatRecordRepository.class);
     }
 }
