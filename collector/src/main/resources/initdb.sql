@@ -32,7 +32,7 @@ CREATE UNLOGGED TABLE IF NOT EXISTS ipfix_data.cs_req (
   host_type      SMALLINT      NOT NULL,
   method         SMALLINT      NOT NULL
 )
-  PARTITION BY RANGE (date_trunc('day', event_datetime))
+  PARTITION BY RANGE (date_trunc('hour', event_datetime))
 WITHOUT OIDS;
 
 CREATE UNLOGGED TABLE IF NOT EXISTS ipfix_data.cs_resp (
@@ -44,33 +44,33 @@ CREATE UNLOGGED TABLE IF NOT EXISTS ipfix_data.cs_resp (
   content_length DECIMAL,
   content_type   VARCHAR(8000),
   session_id     DECIMAL
-) PARTITION BY RANGE (date_trunc('day', event_datetime))
+) PARTITION BY RANGE (date_trunc('hour', event_datetime))
 WITHOUT OIDS;
 
 CREATE TABLE IF NOT EXISTS ipfix_data.partitions (
-  id           SERIAL PRIMARY KEY,
-  basename     TEXT UNIQUE NOT NULL,
-  history_days SMALLINT    NOT NULL DEFAULT 2
+  id       SERIAL PRIMARY KEY,
+  basename TEXT UNIQUE NOT NULL,
+  history  SMALLINT    NOT NULL DEFAULT 5
 );
 
-INSERT INTO ipfix_data.partitions (basename, history_days) VALUES ('cs_req', 2), ('cs_resp', 2) ON CONFLICT DO NOTHING;
+INSERT INTO ipfix_data.partitions (basename, history) VALUES ('cs_req', 5), ('cs_resp', 5) ON CONFLICT DO NOTHING;
 
--- Функция для создания новых секций, как правило для следующего дня
+-- Функция для создания новых секций
 
-CREATE OR REPLACE FUNCTION ipfix_data.create_partitions(day DATE DEFAULT (CURRENT_DATE + '1 day' :: INTERVAL))
+CREATE OR REPLACE FUNCTION ipfix_data.create_partitions(date TIMESTAMP DEFAULT (now() + '1 hour' :: INTERVAL))
   RETURNS VOID
 LANGUAGE plpgsql
 AS $$
 DECLARE
   p                RECORD;
-  start_date       DATE := day;
-  end_date         DATE := day + INTERVAL '1 day';
-  partition_suffix TEXT := to_char(day, 'YYYYMMDD');
+  start_date       TIMESTAMP := date_trunc('hour', date);
+  end_date         TIMESTAMP := date_trunc('hour', date + INTERVAL '1 hour');
+  partition_suffix TEXT := to_char(date, 'YYYYMMDD_HH24');
   schema_name      TEXT := 'ipfix_data';
   pattern          TEXT := 'CREATE UNLOGGED TABLE IF NOT EXISTS %s.%s_%s PARTITION OF %s.%s' ||
                            ' FOR VALUES FROM (%s) TO (%s) WITH (AUTOVACUUM_ENABLED = FALSE)';
 BEGIN
-  RAISE NOTICE 'create new partitions for % ...', day;
+  RAISE NOTICE 'create new partitions for between % and %...', start_date, end_date;
 
   FOR p IN SELECT basename FROM ipfix_data.partitions LOOP
     EXECUTE format(pattern, schema_name, p.basename, partition_suffix, schema_name, p.basename,
@@ -80,9 +80,9 @@ END;
 $$
 SECURITY DEFINER;
 
--- Функция для отсоединения секций, как правило для вчерашнего дня
+-- Функция для отсоединения секций
 
-CREATE OR REPLACE FUNCTION ipfix_data.detach_partitions(day date DEFAULT (CURRENT_DATE - INTERVAL '1 day')::date)
+CREATE OR REPLACE FUNCTION ipfix_data.detach_partitions(date timestamp DEFAULT (now() - INTERVAL '1 hour'))
   RETURNS void
 LANGUAGE plpgsql
 AS $$
@@ -92,7 +92,7 @@ DECLARE
   partition_name text;
 BEGIN
   FOR p IN SELECT basename FROM ipfix_data.partitions LOOP
-    partition_name = format('%s.%s_%s', sname, p.basename, to_char(day, 'YYYYMMDD'));
+    partition_name = format('%s.%s_%s', sname, p.basename, to_char(date, 'YYYYMMDD_HH24'));
     RAISE NOTICE 'detach section: %', partition_name;
     EXECUTE format('ALTER TABLE %s.%s DETACH PARTITION %s', sname, p.basename, partition_name);
   END LOOP;
@@ -102,7 +102,7 @@ SECURITY DEFINER;
 
 -- Функция для удаления старых секций
 
-CREATE OR REPLACE FUNCTION ipfix_data.drop_old_partitions(day date DEFAULT CURRENT_DATE)
+CREATE OR REPLACE FUNCTION ipfix_data.drop_old_partitions(date TIMESTAMP DEFAULT now())
   RETURNS void
 LANGUAGE plpgsql
 AS $$
@@ -111,8 +111,8 @@ DECLARE
   sname text := 'ipfix_data';
   partition_name text;
 BEGIN
-  FOR p IN SELECT basename, history_days FROM ipfix_data.partitions LOOP
-    partition_name = format('%s.%s_%s', sname, p.basename, to_char(day - INTERVAL '1 day' * p.history_days , 'YYYYMMDD'));
+  FOR p IN SELECT basename, history FROM ipfix_data.partitions LOOP
+    partition_name = format('%s.%s_%s', sname, p.basename, to_char(date - INTERVAL '1 hour' * p.history , 'YYYYMMDD_HH24'));
     RAISE NOTICE 'drop section: %', partition_name;
     EXECUTE format('DROP TABLE IF EXISTS %s', partition_name);
   END LOOP;
@@ -122,10 +122,10 @@ SECURITY DEFINER;
 
 -- Функция для агрегация данных
 
-CREATE OR REPLACE FUNCTION ipfix_data.evaluate_data(day DATE DEFAULT current_date - INTERVAL '1 day')
+CREATE OR REPLACE FUNCTION ipfix_data.evaluate_data(date TIMESTAMP DEFAULT now() - INTERVAL '1 hour')
   RETURNS VOID AS $$
 DECLARE
-  partition_name TEXT := format('ipfix_data.cs_req_%s', to_char(day, 'YYYYMMDD'));
+  partition_name TEXT := format('ipfix_data.cs_req_%s', to_char(date, 'YYYYMMDD_HH24'));
   rows_inserted  BIGINT;
 BEGIN
   -- cоздаем в этой секции индекс по hostname
@@ -134,13 +134,14 @@ BEGIN
 
   -- общее количество запросов
   RAISE NOTICE 'evaluate click count from %', partition_name;
-  EXECUTE 'INSERT INTO reports.click_count SELECT event_datetime::date, count(*) FROM ' || partition_name || ' GROUP BY 1';
+  EXECUTE 'INSERT INTO reports.click_count AS cc SELECT event_datetime::date, count(*) FROM ' || partition_name ||
+          ' GROUP BY 1 ON CONFLICT (date) DO UPDATE SET count = cc.count + EXCLUDED.count';
   GET DIAGNOSTICS rows_inserted = ROW_COUNT;
   RAISE NOTICE '% rows inserted', rows_inserted;
 
   -- статистика по отслеживаемым доменам
   RAISE NOTICE 'evaluate tracked domain requests from %', partition_name;
-  EXECUTE 'INSERT INTO reports.tracked_domain_requests' ||
+  EXECUTE 'INSERT INTO reports.tracked_domain_requests AS tdr ' ||
           ' SELECT ' ||
           '   event_datetime::date, ' ||
           '   dr.id              AS domain_id, ' ||
@@ -151,7 +152,10 @@ BEGIN
           '   count(*)           AS cnt ' ||
           ' FROM ' || partition_name || ' AS cs INNER JOIN reports.domain_regex dr ' ||
           ' ON cs.hostname ~* dr.pattern ' ||
-          ' GROUP BY 1, 2, 3, 4';
+          ' GROUP BY 1, 2, 3, 4' ||
+          ' ON CONFLICT (date, domain_id, address, login) DO UPDATE SET ' ||
+          '   last_time = EXCLUDED.last_time, ' ||
+          '   count = tdr.count + EXCLUDED.count ';
 
   GET DIAGNOSTICS rows_inserted = ROW_COUNT;
   RAISE NOTICE '% rows inserted', rows_inserted;

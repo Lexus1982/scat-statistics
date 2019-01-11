@@ -105,7 +105,7 @@ public class CollectorStatRecordRepositoryImpl implements CollectorStatRecordRep
     @Override
     @Transactional(readOnly = true)
     public List<CollectorStatRecord> findAll() {
-        String query = "SELECT * FROM log.collectors_history";
+        String query = "SELECT * FROM log.collectors_history ORDER BY started DESC";
         List<CollectorStatRecord> result = null;
 
         try {
