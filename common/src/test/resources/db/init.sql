@@ -1,4 +1,5 @@
 CREATE SCHEMA IF NOT EXISTS reports;
+CREATE SCHEMA IF NOT EXISTS log;
 
 CREATE TABLE IF NOT EXISTS reports.click_count (
   date  DATE   NOT NULL UNIQUE,
@@ -21,4 +22,20 @@ CREATE TABLE IF NOT EXISTS reports.tracked_domain_requests (
   last_time  TIME          NOT NULL,
   count      BIGINT        NOT NULL,
   CONSTRAINT unique_track UNIQUE (date, domain_id, address, login)
+);
+
+CREATE TABLE IF NOT EXISTS log.collectors_history (
+  uuid                        VARCHAR(8000) PRIMARY KEY,
+  address                     VARCHAR(8000)               NOT NULL,
+  port                        SMALLINT                    NOT NULL,
+  started                     TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+  last_update                 TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+  period                      SMALLINT                    NOT NULL,
+  processors_threads_count    INTEGER                     NOT NULL,
+  packets_received_count      INTEGER                     NOT NULL,
+  packets_processed_count     INTEGER                     NOT NULL,
+  packets_parse_failed_count  INTEGER                     NOT NULL,
+  input_queue_overflow_count  INTEGER                     NOT NULL,
+  output_queue_overflow_count INTEGER                     NOT NULL,
+  records_exported_count      INTEGER                     NOT NULL
 );

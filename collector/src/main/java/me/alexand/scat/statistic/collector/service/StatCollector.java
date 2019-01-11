@@ -21,16 +21,18 @@
 
 package me.alexand.scat.statistic.collector.service;
 
-import me.alexand.scat.statistic.collector.utils.DateTimeUtils;
+import me.alexand.scat.statistic.common.entities.CollectorStatRecord;
+import me.alexand.scat.statistic.common.repository.CollectorStatRecordRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author asidorov84@gmail.com
@@ -39,24 +41,32 @@ import java.util.concurrent.atomic.AtomicLong;
 @Component
 public class StatCollector {
     private static final Logger LOGGER = LoggerFactory.getLogger(StatCollector.class);
+    private static final int FREQUENCY = 60_000;//in ms
 
     private final AtomicInteger activeProcessorsCounter = new AtomicInteger(0);
     private final AtomicInteger inputQueueOverflowCounter = new AtomicInteger(0);
     private final AtomicInteger outputQueueOverflowCounter = new AtomicInteger(0);
-    private final AtomicLong receivedPacketsCounter = new AtomicLong(0);
-    private final AtomicLong processedPacketsCounter = new AtomicLong(0);
-    private final AtomicLong failedParseCounter = new AtomicLong(0);
+    private final AtomicInteger receivedPacketsCounter = new AtomicInteger(0);
+    private final AtomicInteger processedPacketsCounter = new AtomicInteger(0);
+    private final AtomicInteger failedParseCounter = new AtomicInteger(0);
+    private final AtomicInteger exportedRecordsCounter = new AtomicInteger(0);
     
-    private final InputPacketsQueue inputPacketsQueue;
-    private final OutputRecordsQueue outputRecordsQueue;
-
+    private final UUID uuid;
+    private final String address;
+    private final int port;
     private final LocalDateTime applicationStart = LocalDateTime.now();
     private LocalDateTime lastReportDateTime;
+    
+    private final CollectorStatRecordRepository statRecordRepository;
 
-    public StatCollector(InputPacketsQueue inputPacketsQueue, OutputRecordsQueue outputRecordsQueue) {
-        this.inputPacketsQueue = inputPacketsQueue;
-        this.outputRecordsQueue = outputRecordsQueue;
+    public StatCollector(@Value("${net.address}") String address,
+                         @Value("${net.port}") int port,
+                         CollectorStatRecordRepository statRecordRepository) {
         lastReportDateTime = applicationStart;
+        uuid = UUID.randomUUID();
+        this.address = address;
+        this.port = port;
+        this.statRecordRepository = statRecordRepository;
     }
 
     public void registerProcessorThread() {
@@ -86,58 +96,35 @@ public class StatCollector {
     public void registerParseFail() {
         failedParseCounter.incrementAndGet();
     }
-
-    @Scheduled(fixedDelay = 60_000, initialDelay = 5_000)
-    public void report() {
-        LocalDateTime currentDateTime = LocalDateTime.now();
-        long secondsSinceLastReport = ChronoUnit.SECONDS.between(lastReportDateTime, currentDateTime);
-        lastReportDateTime = currentDateTime;
-
-        StringBuilder sb = new StringBuilder("\n\nStart periodical collector report....\n");
-
-        sb.append("\n\tuptime: ")
-                .append(getUptime(currentDateTime))
-                .append("\n");
-
-        sb.append("\tactive parser threads: ")
-                .append(activeProcessorsCounter.get())
-                .append("\n\n");
-
-        sb.append("\tpackets receive rate: ")
-                .append(receivedPacketsCounter.getAndSet(0) / secondsSinceLastReport)
-                .append(" pps\n");
-
-        sb.append("\tpackets processed rate: ")
-                .append(processedPacketsCounter.getAndSet(0) / secondsSinceLastReport)
-                .append(" pps\n");
-
-        sb.append("\tpackets parse failed rate: ")
-                .append(failedParseCounter.getAndSet(0) / secondsSinceLastReport)
-                .append(" pps\n");
-
-        sb.append("\tinput packets queue overflows: ")
-                .append(inputQueueOverflowCounter.get())
-                .append("\n");
-
-        sb.append("\toutput records queue overflows: ")
-                .append(outputQueueOverflowCounter.get())
-                .append("\n");
-
-
-        sb.append("\tpackets number in input queue for now: ")
-                .append(inputPacketsQueue.getRemainingPacketsCount())
-                .append(" \n");
-
-        sb.append("\trecords number in output queue for now: ")
-                .append(outputRecordsQueue.getRemainingRecordsCount())
-                .append(" \n");
-
-        sb.append("\n...end of periodical collector report\n");
-
-        LOGGER.info(sb.toString());
+    
+    public void registerExportedRecord(int count) {
+        exportedRecordsCounter.updateAndGet(operand -> operand + count);
     }
 
-    private String getUptime(LocalDateTime currentDateTime) {
-        return DateTimeUtils.getFormattedDifferenceBetweenLocalDateTime(applicationStart, currentDateTime);
+    @Scheduled(fixedDelay = FREQUENCY, initialDelay = 5_000)
+    public void report() {
+        LocalDateTime currentDateTime = LocalDateTime.now();
+        int period = (int) ChronoUnit.SECONDS.between(lastReportDateTime, currentDateTime);
+        lastReportDateTime = currentDateTime;
+
+        CollectorStatRecord statRecord = CollectorStatRecord.builder()
+                .uuid(uuid)
+                .address(address)
+                .port(port)
+                .started(applicationStart)
+                .lastUpdated(lastReportDateTime)
+                .period(period)
+                .processorsThreadsCount(activeProcessorsCounter.get())
+                .packetsReceivedCount(receivedPacketsCounter.getAndSet(0))
+                .packetsProcessedCount(processedPacketsCounter.getAndSet(0))
+                .packetsParseFailedCount(failedParseCounter.getAndSet(0))
+                .inputQueueOverflowCount(inputQueueOverflowCounter.get())
+                .outputQueueOverflowCount(outputQueueOverflowCounter.get())
+                .recordsExportedCount(exportedRecordsCounter.getAndSet(0))
+                .build();
+        
+        if (!statRecordRepository.save(statRecord)) {
+            LOGGER.error("failed to save collector statistics");
+        }
     }
 }

@@ -1,4 +1,21 @@
 CREATE SCHEMA IF NOT EXISTS ipfix_data;
+CREATE SCHEMA IF NOT EXISTS log;
+
+CREATE TABLE IF NOT EXISTS log.collectors_history (
+  uuid                        TEXT PRIMARY KEY,
+  address                     TEXT                        NOT NULL,
+  port                        SMALLINT                    NOT NULL,
+  started                     TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+  last_update                 TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+  period                      SMALLINT                    NOT NULL,
+  processors_threads_count    INTEGER                     NOT NULL  DEFAULT 0,
+  packets_received_count      INTEGER                     NOT NULL  DEFAULT 0,
+  packets_processed_count     INTEGER                     NOT NULL  DEFAULT 0,
+  packets_parse_failed_count  INTEGER                     NOT NULL  DEFAULT 0,
+  input_queue_overflow_count  INTEGER                     NOT NULL  DEFAULT 0,
+  output_queue_overflow_count INTEGER                     NOT NULL  DEFAULT 0,
+  records_exported_count      INTEGER                     NOT NULL  DEFAULT 0
+);
 
 CREATE UNLOGGED TABLE IF NOT EXISTS ipfix_data.cs_req (
   event_datetime TIMESTAMP     NOT NULL,

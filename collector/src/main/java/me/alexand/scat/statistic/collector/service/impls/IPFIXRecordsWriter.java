@@ -25,6 +25,7 @@ import me.alexand.scat.statistic.collector.model.IPFIXDataRecord;
 import me.alexand.scat.statistic.collector.model.ImportDataTemplate;
 import me.alexand.scat.statistic.collector.repository.IPFIXDataRecordRepository;
 import me.alexand.scat.statistic.collector.service.OutputRecordsQueue;
+import me.alexand.scat.statistic.collector.service.StatCollector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +52,9 @@ public final class IPFIXRecordsWriter implements Runnable {
     @Autowired
     private IPFIXDataRecordRepository repository;
 
+    @Autowired
+    private StatCollector statCollector;
+
     public IPFIXRecordsWriter(ImportDataTemplate dataTemplate, int batchSize) {
         LOGGER.info("Initializing {} records writer with batch size = {}", dataTemplate.getName(), batchSize);
         this.dataTemplate = dataTemplate;
@@ -65,14 +69,9 @@ public final class IPFIXRecordsWriter implements Runnable {
         try {
             while (!Thread.currentThread().isInterrupted()) {
                 List<IPFIXDataRecord> recordsToWrite = recordsQueue.takeNextBatch(dataTemplate, batchSize);
-                LOGGER.debug("received next {} batch, size = {}", dataTemplate.getName(), recordsToWrite.size());
 
                 if (isWrite) {
-                    long t0 = System.nanoTime();
-                    int rowsSaved = repository.save(dataTemplate, recordsToWrite);
-                    long t1 = System.nanoTime();
-
-                    LOGGER.debug("saving {} {} rows complete in {} ms", rowsSaved, dataTemplate.getName(), (t1 - t0) / 1_000_000);
+                    statCollector.registerExportedRecord(repository.save(dataTemplate, recordsToWrite));
                 }
             }
         } catch (InterruptedException e) {

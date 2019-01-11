@@ -23,3 +23,22 @@ INSERT INTO reports.tracked_domain_requests (date, domain_id, address, login, fi
   ('2018-08-02', 2, '127.0.0.1', 'login1', '00:41:26', '23:05:16', 55),
   ('2018-08-03', 2, '127.0.0.3', 'login3', '00:41:34', '23:39:20', 143),
   ('2018-08-05', 1, '127.0.0.5', '', '00:41:13', '21:40:32', 208);
+
+INSERT INTO log.collectors_history (uuid,
+                                    address,
+                                    port,
+                                    started,
+                                    last_update,
+                                    period,
+                                    processors_threads_count,
+                                    packets_received_count,
+                                    packets_processed_count,
+                                    packets_parse_failed_count,
+                                    input_queue_overflow_count,
+                                    output_queue_overflow_count,
+                                    records_exported_count)
+VALUES
+  ('7fc93183-4760-4295-87d4-2f5ade5fef0b', 'localhost', 9996, '2019-01-01 00:00:00', '2019-01-01 00:01:00', 30, 1,
+                                           250000, 300000, 0, 0, 0, 350000),
+  ('7fc93183-4760-4295-87d4-2f5ade5fef0c', 'localhost', 9997, '2019-01-02 00:00:00', '2019-01-02 00:01:00', 30, 1,
+                                           250000, 300000, 0, 0, 0, 350000);

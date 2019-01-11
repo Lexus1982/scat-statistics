@@ -22,9 +22,11 @@
 package me.alexand.scat.statistic.common.config;
 
 import me.alexand.scat.statistic.common.repository.ClickCountRepository;
+import me.alexand.scat.statistic.common.repository.CollectorStatRecordRepository;
 import me.alexand.scat.statistic.common.repository.DomainRegexRepository;
 import me.alexand.scat.statistic.common.repository.TrackedDomainRequestsRepository;
 import me.alexand.scat.statistic.common.repository.impl.ClickCountRepositoryJDBCImpl;
+import me.alexand.scat.statistic.common.repository.impl.CollectorStatRecordRepositoryImpl;
 import me.alexand.scat.statistic.common.repository.impl.DomainRegexRepositoryJDBCImpl;
 import me.alexand.scat.statistic.common.repository.impl.TrackedDomainRequestsRepositoryJDBCImpl;
 import org.apache.commons.dbcp2.BasicDataSource;
@@ -96,5 +98,10 @@ public class PersistenceConfig {
     @Bean
     public TrackedDomainRequestsRepository trackedDomainRequestsRepository() {
         return new TrackedDomainRequestsRepositoryJDBCImpl(persistenceJdbcTemplate());
+    }
+    
+    @Bean
+    public CollectorStatRecordRepository collectorStatRecordRepository() {
+        return new CollectorStatRecordRepositoryImpl(persistenceJdbcTemplate());
     }
 }
